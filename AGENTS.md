@@ -96,3 +96,5 @@
 - sbt 2 的编译输出可能是指向操作系统缓存的符号链接，不能直接跨 Windows／WSL 复用。入口遇未知输出或平台切换时归档 target/out、target/streams、project/target 到 backend/.build-cache/output-backups；保留 target/fixture-demo 数据库。不得同时在两个系统或 IDE 中构建。
 - Linux 默认缓存改为 backend/.build-cache/linux，不能再依赖跨会话可能消失的 /tmp 缓存。Windows 日志为 backend/.build-cache/windows-test.log 与 windows-run.log。
 - 已在原生 Windows PowerShell + Java 21 重新编译并通过 11 项测试。验收命令、预期输出和缓存修复说明见 docs/backend/minimal_backend.md。
+
+- 恢复演示曾有用户单次失败，原因未复现；不能把最终“无法访问该会话”视为预期权限拒绝。现有12项测试包括同一文件数据库连续20个会话的恢复核对。演示使用平台独立的固定绝对路径，恢复要求 IFEXISTS=TRUE 并比较完整状态；只在打印 `[验收通过]` 且退出码0时通过。旧 target/fixture-demo/db.mv.db 保留，不以清库掩盖问题。

@@ -177,6 +177,38 @@ class MinimalFixtureSuite extends FunSuite:
     yield ()).unsafeRunSync()
   }
 
+  test("repeated sessions survive reopening an existing database without losing older sessions") {
+    val dir = Files.createTempDirectory("detective-h2-repeat-")
+    val database = dir.resolve("case").toAbsolutePath.normalize()
+    val url = s"jdbc:h2:file:${database};LOCK_TIMEOUT=10000"
+    val restoreUrl = s"${url};IFEXISTS=TRUE"
+    (for
+      _ <- DatabaseSession.connection(url).use { c =>
+        SessionTableInitializer.initialize(c) *> CommitTableInitializer.initialize(c) *> ReceiptTableInitializer.initialize(c)
+      }
+      _ <- (1 to 20).toVector.traverse_ { n =>
+        val id = SessionId(s"repeat-$n")
+        for
+          _ <- DatabaseSession.connection(restoreUrl).use { c => for
+            fixture <- LoadFixtureMessage(fixturePath).plan(c)
+            _ <- DatabaseSession.transaction(c)(StartGameMessage(user, id, fixture).plan(c))
+            _ <- DatabaseSession.transaction(c)(ExecuteOperationMessage(user, id, RequestId("open"), Sequence(0), OperationId("open_drawer")).plan(c))
+            _ <- DatabaseSession.transaction(c)(InvestigateMessage(user, id, RequestId("read"), Sequence(1), PointId("point_letter"), RouteId("route_letter")).plan(c))
+          yield () }
+          _ <- DatabaseSession.connection(restoreUrl).use { c =>
+            (1 to n).toVector.traverse_ { previous =>
+              DatabaseSession.transaction(c)(GetGameStateMessage(user, SessionId(s"repeat-$previous")).plan(c)).map { state =>
+                assertEquals(state.sequence, Sequence(2))
+                assertEquals(state.clues, Set(ClueId("clue_letter")))
+                assertEquals(state.facts, Set(FactId("fact_letter_text")))
+              }
+            }
+          }
+        yield ()
+      }
+    yield ()).unsafeRunSync()
+  }
+
   test("loader rejects unsupported execution branches instead of silently ignoring them") {
     val raw = Files.readString(fixturePath)
     val invalid = raw.replace("\"OperationDone\"", "\"TimeReached\"")
