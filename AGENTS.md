@@ -82,3 +82,10 @@
 - 领域契约 v1.4 使用 AssessmentSpec 区分仅调查与带评分配置；示例在 `docs/fixtures/minimal_investigation.json`。运行 `python3 tools/validate_minimal_fixture.py`，边界见 `docs/backend/minimal_fixture.md`。
 - tools 下 Python 只用于文档契约验证，不替代课程要求的 Scala 后端。结构／内存重放通过不代表数据库事务、并发去重、3D 发布验收已经完成。
 - 已进入最小调查路径的阶段基线，不以先完成所有评审建议为开工门槛；新增能力按需局部修订，安全与数据一致性问题及时修复。API 草案暂不扩展，正式案情随后确定。
+
+## 已实现的最小 Scala 切片
+
+- backend 使用 sbt 2.0.9／Scala 3.9.0（复用本机环境）、Cats Effect、Circe、H2、MUnit。生产源码遵循 services/{cases,games,system}/{api,objects,tables,utils}；测试位于 src/test/scala。
+- 运行 `python3 tools/backend_sbt.py test`／`run`；工具仅复用现有启动器，不下载 IDE 或启动器。详细边界见 docs/backend/minimal_backend.md。
+- Fixture* 是显式最小调查投影，不是通用领域类型的隐式删改。加载不支持的协议须拒绝。暂未接入 HTTP、accounts 登录、前端、3D 或 AI；不得直接暴露接受可信 UserId 的内部消息。
+- 同步消息需在 DatabaseSession.transaction 中执行；会话行锁、日志、序号及成功回执保证短事务一致性。加入 AI 前必须重新实现 Pending 和短事务边界。

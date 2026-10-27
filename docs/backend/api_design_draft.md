@@ -120,3 +120,9 @@ PlayerCommand／GameRequest 是领域命令／去重输入，不替代独立 API
 - 判别字段统一 `kind`，明确每个 case 的字段。普通 deriveEncoder／deriveDecoder 不自动保证这种形状；选定 Circe 版本后使用明确配置或显式伴生编解码器，并以往返测试确认，不复制一个未经验证的注解名。
 - SessionCommit 可存为经过类型化解码的 jsonb，jsonb 不等于任意字典。已提交日志包含自足的 Record 内容，Record 表是可重建索引投影；不采纳“日志只存引用、另表记录可独立修改”以免破坏重放。若改为引用，记录表必须不可变、版本固定并同事务写入，另行调整契约。
 - 新增可选字段、变更枚举或候选结构不天然前向兼容；明确 schemaVersion／reducerVersion，旧日志使用旧解码器或经过验证的迁移。文档 v1.3 不是运行时版本自动迁移标记。
+
+## 4. 最小切片的内部消息实现
+
+已有 LoadFixtureMessage、StartGameMessage、ExecuteOperationMessage、InvestigateMessage、GetGameStateMessage，均是本地 Scala 切片的内部调用，未注册 HTTP 路由，不替代本文未来公开接口方案。StartGame 接受经加载器验证的 InvestigationFixture，执行消息接收可信 UserId、SessionId、RequestId、expectedSequence；具体构造与响应见源码及 [minimal_backend.md](minimal_backend.md)。
+
+这里只落实最小调查路径；不据此扩充其他 API。前端令牌转换、服务路由注册和 AI 短事务仍需在实际使用前设计。
