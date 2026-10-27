@@ -87,7 +87,7 @@
 
 - backend 使用 sbt 2.0.9／Scala 3.9.0（复用本机环境）、Cats Effect、Circe、H2、MUnit。生产源码遵循 services/{cases,games,system}/{api,objects,tables,utils}；测试位于 src/test/scala。
 - 运行 `python3 tools/backend_sbt.py test`／`run`；工具仅复用现有启动器，不下载 IDE 或启动器。详细边界见 docs/backend/minimal_backend.md。
-- Fixture* 是显式最小调查投影，不是通用领域类型的隐式删改。加载不支持的协议须拒绝。暂未接入 HTTP、accounts 登录、前端、3D 或 AI；不得直接暴露接受可信 UserId 的内部消息。
+- Fixture* 是显式最小调查投影，不是通用领域类型的隐式删改。加载不支持的协议须拒绝。已有本机 HTTP 与前端调查切片；正式 accounts 登录和 AI 尚未接入。不得直接暴露接受可信 UserId 的内部消息。
 - 同步消息需在 DatabaseSession.transaction 中执行；会话行锁、日志、序号及成功回执保证短事务一致性。加入 AI 前必须重新实现 Pending 和短事务边界。
 
 ## Windows／WSL 构建输出
@@ -103,7 +103,7 @@
 
 - 前端类型初稿在 `docs/frontend/frontend_types.md`，区分后端玩家视图、页面／请求状态、制作期表现清单。当前只拟定3D调查切片，其他必备页面暂缓专用类型，不等于取消功能。
 - 只加载已登记的场景包；用稳定编号绑定节点、点击入口和可扩展的局部姿态，不穷举现实动作。后端获准状态决定目标表现，动画不授予知识。
-- 当前 Scala 响应仍不足以直接驱动3D；一致快照、场景姿态与获准线索／日志投影属于待实现契约，不能将完整案件直接下发。身份边界与结果不确定的请求重试规则在接浏览器前落实。
+- 当前已实现 study/1 的受限玩家视图、一致读取和请求恢复；通用矩阵／资源／多场景协议仍是草案，不能将完整案件下发。
 
 ## 类型组织方式
 
@@ -113,6 +113,17 @@
 ## 前端实现与隔离环境
 
 - 已开始 frontend/ 的调查页本地预览；React／TypeScript strict、Tailwind、React Three Fiber。入口显式展示业务区域，本页类型、纯函数、hooks 和组件就近组织。
-- 当前仅本地预览，不含 HTTP、登录、AI 或服务端存档；演示正文可在客户端看到，不得将此实现作为正式案件信息隔离方案。后端接入时移除预览结果来源。
+- 当前已联网：Scala HTTP、accounts 本机演示凭证、数据库存档及安全玩家视图；前端已移除预置正文和本地授予规则。尚无正式账户登录、AI 或公网部署方案。
 - 用户要求 E 盘存放前端工具与依赖，并强调不破坏环境。使用 tools/frontend.ps1 的 doctor/install/dev/build/test/browser-test；通过进程局部环境显式选择 E:\dev\nodejs、npm-cache、npm-global，依赖存 E:\dev\project-dependencies 并联接到项目。保留 C 盘安装与缓存，不改系统 PATH／用户配置／其他项目。
 - 详细路径、准备步骤与验收见 docs/frontend/implementation.md。不得直接对联接目录执行普通 npm install；使用脚本在 E 盘安装。
+
+
+## 联网调查切片
+
+- 入口：tools/backend.ps1 serve；等待 [HTTP ready] 后启动现有前端。HTTP 仅127.0.0.1:8080，前端5173、独立浏览器验收5175；不终止用户已有前端进程。
+- 停止使用 tools/backend.ps1 stop-serve 的本项目停止标记，等待服务退出；不要杀所有 Java、删除数据库或依赖锁文件来处理占用。
+- accounts 管理本地随机凭证，Cookie 为 HttpOnly/SameSite=Strict；只存摘要。用户身份在路由边界由 ResolveLocalIdentityMessage 转换。此机制限本机演示，不声称完成正式账户。
+- 新 browser_investigation.json 和 target/web-demo/{platform}/db-v1 与旧 CLI 案件／存档隔离。前端只存会话定位和未决请求，状态、线索与日志从数据库恢复；不迁入旧预览真假状态。
+- 跨表玩家视图在会话行锁下读取；新建会话用固定案件行锁串行化缺失会话的创建重试。业务状态、记录、回执仍原子提交。
+- 用户验收反馈的可逆操作、观察中心切换、普通物体观察见 docs/frontend/interaction_backlog.md，尚未实现，不能遗漏。
+- 路由、命令及验收说明见 docs/frontend/implementation.md；API 草案保留未实现的通用设计，实际消息以源码为准。

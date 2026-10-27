@@ -1,11 +1,20 @@
 ﻿param(
-    [ValidateSet('doctor', 'test', 'run', 'migrate')]
+    [ValidateSet('doctor', 'test', 'run', 'migrate', 'serve', 'stop-serve')]
     [string]$Task = 'doctor'
 )
 $ErrorActionPreference = 'Stop'
 $ProjectRoot = Split-Path $PSScriptRoot -Parent
 $Backend = Join-Path $ProjectRoot 'backend'
 $BuildCache = Join-Path $Backend '.build-cache'
+
+# Graceful stop of this project's web demo, without process-name killing.
+if ($Task -eq 'stop-serve') {
+    $StopDirectory = Join-Path $Backend 'target\web-demo\windows'
+    if (-not (Test-Path -LiteralPath $StopDirectory)) { throw 'Web demo has not been initialized.' }
+    Set-Content -LiteralPath (Join-Path $StopDirectory 'stop-requested') -Value 'stop' -Encoding ASCII
+    Write-Host '[OK] Graceful stop requested for this project web demo.'
+    exit 0
+}
 
 function Find-Java {
     if ($env:DETECTIVE_JAVA) {
@@ -102,7 +111,7 @@ try {
         '-Dsbt.boot.server=false', '-Dsbt.server.autostart=false'
         '-Dsbt.supershell=false', '-Dsbt.log.noformat=true'
         '-Dsbt.override.build.repos=true', "-Dsbt.repository.config=$Repositories"
-        '-jar', $Launcher, $(if ($Task -eq 'migrate') { 'runMain services.system.api.MigrateLegacyDemo' } else { $Task })
+        '-jar', $Launcher, $(if ($Task -eq 'migrate') { 'runMain services.system.api.MigrateLegacyDemo' } elseif ($Task -eq 'serve') { 'runMain services.system.api.WebDemo' } else { $Task })
     )
     Write-Host "[log]   $Log"
     Write-Host '[info] First dependency resolution may take several minutes. sbt output follows.'

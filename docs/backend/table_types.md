@@ -62,3 +62,10 @@ ActionPlan 是纯规则产生的临时计算结果，包含下一会话状态、
 Record 是后端内部存储类型，不等于前端响应。玩家只接收 GetGameStateResponse 和获准的 CommandResult；不能直接下发 CaseContent。
 
 旧库迁移类型集中在 objects/migration，旧表只读适配器集中在 tables/migration，不属于正常玩法模型。启动及验收见 [minimal_backend.md](minimal_backend.md)。
+
+
+## 5. 本机身份 local_identities → LocalIdentityRecord
+
+accounts 新增的技术表，不是案件内容或玩家业务状态。userId 是服务器分配的身份编号；tokenHash 是随机凭证的 SHA-256 摘要。原令牌只通过 HttpOnly Cookie 交给浏览器，不存明文、不下发到业务视图。ResolveLocalIdentityMessage 在路由边界验证凭证，其他消息只接受转换后的可信 UserId。此实现仅面向本机演示，不是正式登录系统。
+
+调查页读取 GetInvestigationSnapshotMessage 的公开组合视图，创建／恢复使用 OpenStudyMessage；原有 GetGameStateMessage 仍供内部最小测试使用。新增 API DTO 不是新业务表。

@@ -32,7 +32,7 @@ python3 tools/backend_sbt.py run
 ### 验收标准
 
 1. doctor 输出 `[OK] Environment located`（Windows），确认执行的是 Java，而不是无输出的 Python 应用别名。
-2. test 最后包含 `Passed: Total 15, Failed 0, Errors 0, Passed 15` 与 `[OK] test completed`。
+2. test 最后包含 `Passed: Total 20, Failed 0, Errors 0, Passed 20` 与 `[OK] test completed`。
 3. run 显示：提前阅读为 `Left(当前无法访问该调查入口。)`；获得“信上写着：今晚九点见。”；相同请求重试为 `true`；恢复后的 sequence 为 2，含 clue_letter 与 fact_letter_text，最后出现 `[验收通过] 调查、请求去重、关闭数据库后恢复均成功。`。
 
 提前阅读的 Left 是预期的权限拒绝，不是演示失败。当前无网页可打开，验收对象是这条 Scala／数据库流程，不是视觉场景。
@@ -45,7 +45,7 @@ Windows 日志保存在 backend/.build-cache/windows-test.log 与 windows-run.lo
 
 启动器现在记录输出平台；发现未知输出或切换 Windows／Linux 时，将 target/out、target/streams、project/target 移到 backend/.build-cache/output-backups/，不删除源码或 target/fixture-demo 中的数据库，然后重新生成当前平台输出。各平台的归档分开保留；不支持两边同时构建。直接绕过入口在 IDE 里构建前，也应确保当前缓存属于该平台。
 
-已在 Windows 原生 PowerShell 实际完成诊断、旧缓存归档、重新编译、全部 15 项测试和演示。启动 JVM 与 fork 出的演示／测试 JVM 均显式使用 UTF-8，中文信件及错误提示已实际显示正确。
+已在 Windows 原生 PowerShell 实际完成诊断、旧缓存归档、重新编译、全部 20 项测试和演示。启动 JVM 与 fork 出的演示／测试 JVM 均显式使用 UTF-8，中文信件及错误提示已实际显示正确。
 
 当前使用本机已有的 sbt 2.0.9、Scala 3.9.0 及 Java 21；Cats Effect 与 Circe 版本沿用课程样本。H2 是本阶段嵌入式数据库选择，MUnit 用于自动测试；不是把课程后端改为 Python。
 
@@ -87,7 +87,7 @@ system/api 中的 DatabaseSession 和 FixtureDemo 是共享事务与应用启动
 
 它校验所消费的运行字段和引用，不是完整案件发布校验器。文档 Python 校验仍检查原始完整 JSON 的形状。占位模型没有被渲染，视觉验收没有完成。
 
-消息目前仅供本地可信程序调用，未注册 HTTP routes，也没有前端或登录服务；userId 由本地调用方提供，消息仍验证会话归属。未来开放 HTTP 必须先按课程规范由 accounts 校验令牌，再构造可信 userId；不能把当前内部消息直接公开为“已鉴权 API”。
+CLI 仍由可信本地调用方提供 userId。新增浏览器入口已通过 accounts 本机凭证校验构造可信 UserId，再调用已注册消息；未实现正式账户登录。HTTP 与前端启动见 [联网说明](../frontend/implementation.md)，不能将本机演示身份当作公网账户方案。
 
 ## 验证结果
 
@@ -100,3 +100,6 @@ system/api 中的 DatabaseSession 和 FixtureDemo 是共享事务与应用启动
 随后加固：打印固定的数据库绝对路径、按操作系统区分演示文件、恢复时 IFEXISTS=TRUE、比较关闭前后完整状态、明确打印成功／失败标记。新增回归测试在同一个文件数据库连续创建20个会话，每次关闭连接，重新打开后核对所有既有会话。此测试在原生 Windows 通过，但加固与通过测试不等于已解释此前单次失败。
 
 若更新后再出现失败，保留完整 windows-run.log；其中应包含数据库路径及待恢复会话编号。出现 `[FAILED]` 或非零退出码均不得判为通过。
+
+
+新增联网切片有5项 HTTP 测试，与原15项基线共20项；覆盖安全玩家投影、身份／来源／输入边界、请求去重与冲突、文件数据库及 HTTP 重启恢复、并发新建幂等。CLI 演示路径不变，网页使用单独的 target/web-demo 数据库。实际跨进程浏览器恢复另见前端说明。

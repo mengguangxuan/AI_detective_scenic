@@ -133,3 +133,20 @@ PlayerCommand／GameRequest 是领域命令／去重输入，不替代独立 API
 
 
 > 2026-10-27 实施同步：最小 Scala 切片已按四张表重构，具体实现及验收命令以 [minimal_backend.md](minimal_backend.md) 为准。当前状态直接存储；旧提交日志重放仅用于离线迁移。导入入口为 ImportCaseMessage，操作和调查直接返回 CommandResult，不再增加 result 包装。本文件中尚未实施的完整领域或接口仍是设计草案。
+
+
+## 已落地的本机 HTTP 切片
+
+以下为已注册的独立消息，不代表本文所有接口已实现。HTTP 统一 POST /api/{消息名去掉Message后转小写}；前端对应 API 类按相同规则去掉API后缀。JSON 直接返回 DTO，无 result 包装。服务器在边界读取并验证本机 Cookie，替换为可信 UserId，拒绝输入中伪造的 userId。
+
+| 消息 | 外部 JSON 字段 | 响应 |
+|---|---|---|
+| OpenLocalIdentityMessage | 无业务字段，发送 {}；已有凭证来自 Cookie | mode=local-demo，并设置 HttpOnly Cookie |
+| OpenStudyMessage | sessionId（浏览器先保存的 UUID） | InvestigationSnapshot；固定公开书房，创建重试不重置进度 |
+| GetInvestigationSnapshotMessage | sessionId | InvestigationSnapshot；只含获准内容 |
+| ExecuteOperationMessage | sessionId, requestId, expectedSequence, operation | CommandResult |
+| InvestigateMessage | sessionId, requestId, expectedSequence, point, route | CommandResult |
+
+Sequence 仍为 {value: 整数}，HTTP 限制为 JS 安全非负整数。401表示演示凭证失效，403表示会话／入口不可访问，409表示过期序号、载荷冲突或条件不满足；格式错误400，内部失败500且不回传堆栈。网络错误、无法解码成功响应和500都按结果不确定处理，保留原请求；已成功但读取失败只刷新视图。
+
+GetInvestigationSnapshotMessage 锁定会话后读取绑定案件修订和本会话记录，投影固定 study/1 的表现、获准操作、已获线索和公开日志。该受限视图未采用本文尚待实现的通用矩阵协议。完整启动与恢复验收见 ../frontend/implementation.md。

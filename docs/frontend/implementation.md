@@ -1,8 +1,40 @@
-# 调查页首版与本机运行
+# 联网调查页与本机运行
 
-首版是显式的本地交互预览：React + TypeScript strict、Tailwind、React Three Fiber。书房使用本地基础几何体，无外部模型或图片依赖。包含对象选择、打开抽屉、阅读信件、线索面板、调查记录、本地进度恢复和重置；小屏按单列显示。WebGL 失败时保留文字调查入口。
+现有 React／TypeScript strict、Tailwind、React Three Fiber 调查页已改为真实连接 Scala 后端。抽屉状态、可用入口与操作、线索正文和调查记录均来自后端玩家视图。前端不再预置正文或自行授予线索。
 
-本版尚未连接 Scala 后端，不是鉴权／数据库／AI 版本。预览信件是公开测试数据，包含在客户端；正式接入时必须移除预览结果来源，从后端获准投影读取。浏览器 localStorage 仅保存预览状态，不能当作服务端存档。对象选择与场景动画不授予正式线索。
+本阶段使用仅限本机的演示凭证，不是正式账户登录，也尚未接入 AI 或正式案情。书房模型沿用首版；可逆操作、切换观察中心与普通物体观察已记入 [interaction_backlog.md](interaction_backlog.md)，不在此次联网实现中。
+
+## 启动：两个 PowerShell 终端
+
+都在项目根目录执行。后端只启动一份；若已有前端在运行，刷新现有页面即可。
+
+```powershell
+# 终端一：等待输出 [HTTP ready]
+powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\backend.ps1 serve
+
+# 终端二：打开 http://127.0.0.1:5173
+powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\frontend.ps1 dev
+```
+
+前端通过同源 /api 代理到 127.0.0.1:8080。为避免默默改端口后无法通过本机边界检查，开发服务固定5173，冲突时明确退出。Playwright 使用独立的5175，不停止用户的5173服务。
+
+关闭前端可 Ctrl+C。也可在另一终端优雅停止本项目后端：
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\backend.ps1 stop-serve
+```
+
+后端读取本项目的停止标记后释放服务资源并退出，不按进程名批量终止 Java。出现数据库已占用时先确认是否已有服务，不删除数据库或锁文件。
+
+## 身份与存档
+
+后端生成随机本地凭证，以 HttpOnly、SameSite=Strict 的 /api Cookie 返回。accounts 服务保存凭证 SHA-256 摘要并解析可信 UserId；games 服务继续核对会话归属。API 不接受浏览器自报 userId，不开放案件导入／文件路径接口。HTTP 仅监听127.0.0.1，检查 Host、Origin、JSON 类型、自定义请求头、请求字段和长度，不开放 CORS。此边界用于本机课程演示，不是公网部署认证方案。
+
+联网数据库为 backend/target/web-demo/windows/db-v1.mv.db（Linux 对应 linux）；与旧 CLI 演示数据库隔离。启动时只导入新的 browser_investigation.json，不修改旧案件修订或清空存档。四张业务表保留，另加 accounts 的 local_identities 技术表存演示凭证摘要。
+
+浏览器只保存新的会话记录 detective-scenic:server-session:v1：会话编号、是否等待新建完成，以及未决请求的原编号、载荷和确认序号；不保存线索正文或权威现场状态。旧本地预览进度不自动当作后端存档，也不删除。清除 Cookie 会丢失演示身份；页面不会因此悄悄覆盖原会话，可以明确选择新建调查。新建保留原数据库会话。
+
+请求发送前必须先保存原载荷。响应不确定时保留原 RequestId 和 expectedSequence，包括刷新页面后重试；已确认成功但视图读取失败时只重读视图。客户端拒绝较旧视图覆盖较新状态，并检查会话与案件修订一致。服务器在会话行锁下投影一致视图，状态、调查记录和成功回执仍同事务提交。
 
 ## E 盘隔离环境
 
@@ -12,55 +44,48 @@
 | npm 安装包缓存 | E:\dev\npm-cache |
 | 本项目进程的 npm 全局目录 | E:\dev\npm-global |
 | 本项目依赖 | E:\dev\project-dependencies\detective-scenic-frontend\node_modules |
-| 浏览器测试资源 | E:\dev\playwright-browsers |
+| 测试浏览器 | E:\dev\playwright-browsers |
 
-项目 frontend/node_modules 为 Windows 目录联接，实际内容在 E 盘。package.json、锁文件和源码仍放在项目内供 Git 管理。hw_mooddiary 没有已安装的 node_modules，复用的是其版本信息及本机已有 npm 缓存。3D 等缺少的包另行安装。
-
-复制已有 Node/npm 与缓存后核对 node.exe 的 SHA-256。保留 C 盘原安装和缓存，不修改系统／用户 PATH、注册表、用户 .npmrc 或其他项目。启动器只在自己的子进程中配置 PATH、缓存及 prefix。此过程是隔离副本并切换本项目入口，不是卸载 C 盘的系统安装。
-
-## PowerShell 命令
-
-在项目根目录运行：
+frontend/node_modules 为指向 E 盘的 Windows 目录联接；源码和锁文件留在项目内。C 盘原安装、缓存、系统／用户 PATH、用户 .npmrc 和其他项目均保留。启动器只修改自身进程环境。
 
 ```powershell
-# 首次准备或换电脑时；本机已有 E 盘环境则不必重复
+# 首次准备；本机已完成则无需重复
 powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\prepare_frontend_environment.ps1
 powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\frontend.ps1 doctor
 powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\frontend.ps1 install
-powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\frontend.ps1 dev
 ```
 
-打开终端输出的本地地址（默认 http://127.0.0.1:5173）。Ctrl+C 停止。不要同时启动多个同端口服务。
+使用脚本在 E 盘实际目录安装，不对项目联接直接执行普通 npm install。TypeScript 与构建产物不应混用 Windows／WSL 的依赖。
 
-请使用项目脚本安装依赖。脚本在 E 盘实际目录执行 npm install，再同步锁文件与建立目录联接，避免 npm 对目录联接的重建行为把依赖写回 D 盘。
+## 课程组织与接口对应
+
+- index.tsx 明确展示场景、检查、线索和记录；页面 types、纯函数、hooks、存储适配和组件就近组织。
+- apis/accounts 与 apis/games 按服务组织。5 个公开消息对应5个前端 API 类；输入、响应解码就近，发送和错误处理在 apiClient。
+- API 类的 send 使用统一命名函数，对应后端 Message 去后缀并转小写。生产构建保留类名；浏览器验收针对生产构建，避免仅开发模式命名正确。
+- 同步调查仍为短事务，不在事务中等待 AI。objects 为数据和编解码，utils 为服务内纯规则，Table 封装 SQL，各表单独初始化。
+- 几何、灯光和普通装饰由已登记的 study/1 场景代码提供。StudySceneView 是首个场景的受限表现投影，不宣称实现草案的通用资源／矩阵协议。
+
+## 验收
 
 ```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\frontend.ps1 build
+powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\backend.ps1 test
 powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\frontend.ps1 test
-powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\frontend.ps1 browser-install
+powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\frontend.ps1 build
+# 后端 serve 已就绪后：
 powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\frontend.ps1 browser-test
 ```
 
-浏览器测试需要 E 盘已安装对应 Playwright 浏览器。build 执行 TypeScript 检查与生产构建；test 验证状态转换和存档校验；browser-test 实际打开网页检查操作、刷新恢复、小屏与控制台。生成文件不提交 Git。
+browser-test 自行构建并启动5175上的生产预览，完成后停止自己的前端。覆盖真实调查、初始响应无正文、刷新恢复、移动布局、提交成功但响应丢失后的原请求重试、提交后刷新失败只重读视图，以及断网时不回退假数据。
 
-## 课程代码组织
+它还在 frontend/.build-cache/browser-restart-state.json 保存测试浏览器身份（不提交 Git）。完成 browser-test 后，优雅停止后端、用同一数据库重新 serve，再执行：
 
-- pages/Investigation/index.tsx 直接展示场景、检查、线索和记录等业务区域。
-- objects 定义本页类型，functions 存纯规则，utils 隔离本地存储副作用，hooks 协调页面行为，components 按可见区域组织。
-- 预览不建立虚假的 apis/games 文件。真实 HTTP 消息注册后，再按独立 Message 对应前端 API 文件，并把发送、身份处理和解码基础设施放在共享位置。
-- 页面样式只用 Tailwind；styles.css 只有 Tailwind 导入。Three.js 材质用于场景绘制。
-- 状态转换为纯函数；localStorage、确认框与渲染副作用在边界调用。存档经过运行时校验，不能用类型断言替代检查。
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\frontend.ps1 browser-restore
+```
 
-## 手工验收
+这是独立的跨进程恢复检查，复用之前测试浏览器的 Cookie 和会话编号。后端另外有 HTTP 身份、越权、伪造字段、过期序号、请求冲突、并发新建和文件恢复测试。
 
-1. 初始显示“本地预览”，没有信件正文或信件入口。
-2. 选“书桌抽屉”，点“打开抽屉”；信件出现，可从 3D 标记或文字入口选择。
-3. 点“阅读信件”，线索笔记显示正文，调查记录出现两条。
-4. 刷新浏览器，抽屉、线索和记录保持；重置须确认。
-5. doctor 显示 E 盘可执行文件、缓存、prefix 与联接目标；其他终端的原 Node 环境不变。
+3D 包仍较大，构建有超过500KB分块提示；场景已按需加载。这一限制不影响调查区先加载，但尚未做移动设备性能验收。
 
-## 本次验证结果
 
-原生 Windows 的 E 盘 Node 环境下，TypeScript strict 检查与生产构建通过；3 项纯规则／存档校验测试通过；2 项 Playwright 浏览器测试通过，覆盖调查闭环、刷新恢复、WebGL 场景显示、390px 小屏无横向溢出、损坏进度提示及确认重置。测试监听到的未处理页面异常为零。截图位于 frontend/test-results（不提交）。
-
-Three.js 渲染包较大，已按需加载场景，文字调查区可以先显示；生产构建仍会提示 3D 分块超过500KB，这是当前首版的体积限制。未声称验证 HTTP、身份隔离、后端存档或完整案件。
+本次验证：20项后端测试、4项前端规则／解码测试、4项生产构建浏览器测试通过；另外实际停止后端进程后，用同一数据库启动新进程并通过1项原浏览器身份恢复测试。恢复结果为序号2、两条记录、一条线索。旧演示库与用户原前端进程均未清理。

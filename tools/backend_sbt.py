@@ -50,6 +50,8 @@ def main() -> int:
     print(f'[java] {java}\n[sbt] {launcher}\n[cache] {cache}\n[task] {tasks}', flush=True)
     if tasks == ['doctor']:
         return subprocess.run([java, '-version'], check=False).returncode
+    if tasks == ['serve']:
+        tasks = ['runMain services.system.api.WebDemo']
     if tasks == ['migrate']:
         tasks = ['runMain services.system.api.MigrateLegacyDemo']
     prepare_outputs('linux')

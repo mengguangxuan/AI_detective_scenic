@@ -1,15 +1,15 @@
 import { Component, Suspense, lazy, type ReactNode } from 'react';
 import { Canvas } from '@react-three/fiber';
-import type { PreviewPointId } from '../../objects/PreviewPointId';
+import type { PointId } from '../../../../objects/PointId';
 const StudyScene = lazy(() => import('./StudyScene'));
 class SceneBoundary extends Component<{ children: ReactNode }, { failed: boolean }> {
   state = { failed: false };
   static getDerivedStateFromError() { return { failed: true }; }
   render() {
-    return this.state.failed ? <p role="alert" className="p-8 text-stone-300">3D 场景无法加载。仍可通过“现场检查”的文字入口完成预览。</p> : this.props.children;
+    return this.state.failed ? <p role="alert" className="p-8 text-stone-300">3D 场景无法加载。仍可通过“现场检查”的文字入口完成调查。</p> : this.props.children;
   }
 }
-type Props = { drawerOpened: boolean; selected: PreviewPointId | null; onSelect: (point: PreviewPointId) => void };
+type Props = { drawerOpened: boolean; letterVisible: boolean; selected: PointId | null; onSelect: (point: PointId) => void };
 export default function SceneViewport(props: Props) {
   return <section aria-label="书房三维场景" className="relative h-[420px] min-w-0 overflow-hidden rounded-2xl border border-white/10 bg-[#202d2b] lg:h-[540px]">
     <div className="pointer-events-none absolute left-5 top-5 z-10 rounded-full border border-white/15 bg-stone-950/50 px-3 py-1.5 text-xs text-stone-200">现场 01 / 书房</div>

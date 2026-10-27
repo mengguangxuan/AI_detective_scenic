@@ -37,3 +37,13 @@ object CaseRevisionTable:
     val record = CaseRevisionRecord(CaseId(rows.getString("case_id")),Revision(rows.getInt("revision")),1,rows.getString("title"),content)
     if !FixtureLoader.valid(record) then throw GameError(ErrorCode.InvalidValue,"已存案件引用不合法。")
     record
+
+  // A stable existing row serializes retryable creation of otherwise absent session IDs.
+  private val lockSql = "SELECT * FROM case_revisions WHERE case_id=? AND revision=? FOR UPDATE"
+  def lock(connection: Connection, id: CaseId, revision: Revision): IO[Option[CaseRevisionRecord]] = IO.blocking {
+    Using.resource(connection.prepareStatement(lockSql)) { statement =>
+      statement.setString(1,id.value)
+      statement.setInt(2,revision.value)
+      Using.resource(statement.executeQuery())(rows => if rows.next() then Some(read(rows)) else None)
+    }
+  }

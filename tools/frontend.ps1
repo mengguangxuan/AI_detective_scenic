@@ -1,4 +1,4 @@
-param([ValidateSet('doctor','install','dev','build','test','preview','browser-test','browser-install')][string]$Task = 'doctor')
+param([ValidateSet('doctor','install','dev','build','test','preview','browser-test','browser-install','browser-restore')][string]$Task = 'doctor')
 $ErrorActionPreference = 'Stop'
 $nodeRoot = 'E:\dev\nodejs'
 $node = Join-Path $nodeRoot 'node.exe'
@@ -33,6 +33,7 @@ try {
         if (-not (Test-Path $link)) { New-Item -ItemType Junction -Path $link -Target $target | Out-Null }
         elseif ((Get-Item $link -Force).Target -notcontains $target) { throw 'Unexpected project node_modules; stopped.' }
     }
+    elseif ($Task -eq 'browser-restore') { & $node $npm run test:restore }
     elseif ($Task -eq 'browser-install') { & $node 'node_modules\playwright\cli.js' install chromium --only-shell }
     elseif ($Task -eq 'browser-test') { & $node $npm run test:browser }
     else { & $node $npm run $Task }

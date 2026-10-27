@@ -5,7 +5,7 @@ import io.circe.generic.semiauto.*
 
 // Finite failures handled by this slice, not narrative categories.
 enum ErrorCode:
-  case InvalidValue, UnsupportedOperation, AccessDenied, ConditionFailed, StaleState, RequestConflict, ReplayVersionMismatch, ConflictingContent
+  case ServerFailure, Unauthenticated, InvalidValue, UnsupportedOperation, AccessDenied, ConditionFailed, StaleState, RequestConflict, ReplayVersionMismatch, ConflictingContent
 
 object ErrorCode:
   def toString(value: ErrorCode): String = value.productPrefix
