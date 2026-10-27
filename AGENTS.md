@@ -103,7 +103,7 @@
 
 - 前端类型初稿在 `docs/frontend/frontend_types.md`，区分后端玩家视图、页面／请求状态、制作期表现清单。当前只拟定3D调查切片，其他必备页面暂缓专用类型，不等于取消功能。
 - 只加载已登记的场景包；用稳定编号绑定节点、点击入口和可扩展的局部姿态，不穷举现实动作。后端获准状态决定目标表现，动画不授予知识。
-- 当前已实现 study/1 的受限玩家视图、一致读取和请求恢复；通用矩阵／资源／多场景协议仍是草案，不能将完整案件下发。
+- 当前已实现 study/2 的受限玩家视图、一致读取和请求恢复；通用矩阵／资源／多场景协议仍是草案，不能将完整案件下发。
 
 ## 类型组织方式
 
@@ -125,5 +125,14 @@
 - accounts 管理本地随机凭证，Cookie 为 HttpOnly/SameSite=Strict；只存摘要。用户身份在路由边界由 ResolveLocalIdentityMessage 转换。此机制限本机演示，不声称完成正式账户。
 - 新 browser_investigation.json 和 target/web-demo/{platform}/db-v1 与旧 CLI 案件／存档隔离。前端只存会话定位和未决请求，状态、线索与日志从数据库恢复；不迁入旧预览真假状态。
 - 跨表玩家视图在会话行锁下读取；新建会话用固定案件行锁串行化缺失会话的创建重试。业务状态、记录、回执仍原子提交。
-- 用户验收反馈的可逆操作、观察中心切换、普通物体观察见 docs/frontend/interaction_backlog.md，尚未实现，不能遗漏。
+- 用户验收反馈的可逆操作、观察中心切换、普通物体观察见 docs/frontend/interaction_backlog.md，现已在最新书房实现。
 - 路由、命令及验收说明见 docs/frontend/implementation.md；API 草案保留未实现的通用设计，实际消息以源码为准。
+
+
+## 当前演示数据保留策略
+
+- 用户明确表示当前演示进度不必保留，避免堆积旧配置和兼容分支。本轮可重置 target/web-demo 的网页 Demo 数据，书房只保留一份最新 browser_investigation.json，不保留并行的旧版场景配置。
+- Git 保存代码历史；不据此删除课程最小测试、CLI 夹具、其他项目或扩张为通用数据清理授权。
+
+- 最新书房支持 repeatable 与 EntityOpenRequirement 条件、SetOpened 布尔效果；完成操作集合表示历史，不能用它直接禁止所有后续开关。关闭只改变现场状态，不回收已获知识。
+- CaseContent.observations 只放作者允许公开的外观说明，按可见节点过滤后展示；观察不授予线索、不写案件操作日志。镜头选择是前端 SceneSelection 的有限 UI 状态，不改变人物位置。

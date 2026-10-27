@@ -105,6 +105,7 @@ class WebInvestigationSuite extends FunSuite:
           _ <- send(port,"openstudy",payload(id),identity._3)
           _ <- send(port,"executeoperation",execute(id),identity._3)
           _ <- send(port,"investigate",investigate(id),identity._3)
+          _ <- send(port,"executeoperation",execute(id,"close-before-restart",2).replace("open_drawer","close_drawer"),identity._3)
           snapshot <- send(port,"getinvestigationsnapshot",payload(id),identity._3)
         yield (identity._3,snapshot._2)
       }
@@ -127,5 +128,38 @@ class WebInvestigationSuite extends FunSuite:
       replies <- Vector(1,2).parTraverse(_ => send(port,"openstudy",payload(id),identity._3))
       _ = assertEquals(replies.map(_._1),Vector(200,200))
       _ = assertEquals(replies.head._2,replies.last._2)
+    yield () }
+  }
+
+  test("reversible drawer keeps acquired knowledge and rejects unavailable actions") {
+    withServer { port => for
+      identity <- send(port,"openlocalidentity")
+      id = UUID.randomUUID().toString
+      initial <- send(port,"openstudy",payload(id),identity._3)
+      _ = assertEquals(initial._2.hcursor.downField("observations").focus.get.asArray.get.size,4)
+      badClose <- send(port,"executeoperation",execute(id,"bad-close",0).replace("open_drawer","close_drawer"),identity._3)
+      _ = assertEquals(badClose._1,409)
+      _ <- send(port,"executeoperation",execute(id),identity._3)
+      _ <- send(port,"investigate",investigate(id),identity._3)
+      closePayload = execute(id,"close",2).replace("open_drawer","close_drawer")
+      closed <- send(port,"executeoperation",closePayload,identity._3)
+      retry <- send(port,"executeoperation",closePayload,identity._3)
+      afterClose <- send(port,"getinvestigationsnapshot",payload(id),identity._3)
+      _ = assertEquals(closed._1,200)
+      _ = assertEquals(retry._2,closed._2)
+      _ = assertEquals(afterClose._2.hcursor.downField("scene").get[Boolean]("drawerOpened"),Right(false))
+      _ = assertEquals(afterClose._2.hcursor.downField("scene").get[Boolean]("letterVisible"),Right(false))
+      _ = assertEquals(afterClose._2.hcursor.downField("clues").focus.get.asArray.get.size,1)
+      hidden <- send(port,"investigate",investigate(id,"hidden",3),identity._3)
+      _ = assertEquals(hidden._1,403)
+      reopened <- send(port,"executeoperation",execute(id,"reopen",3),identity._3)
+      _ = assertEquals(reopened._1,200)
+      repeatRead <- send(port,"investigate",investigate(id,"already-known",4),identity._3)
+      _ = assertEquals(repeatRead._1,409)
+      _ <- send(port,"executeoperation",execute(id,"close-again",4).replace("open_drawer","close_drawer"),identity._3)
+      finalState <- send(port,"getinvestigationsnapshot",payload(id),identity._3)
+      _ = assertEquals(finalState._2.hcursor.downField("sequence").get[Long]("value"),Right(5L))
+      _ = assertEquals(finalState._2.hcursor.downField("journal").focus.get.asArray.get.size,5)
+      _ = assertEquals(finalState._2.hcursor.downField("clues").focus.get.asArray.get.size,1)
     yield () }
   }

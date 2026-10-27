@@ -10,8 +10,9 @@ final case class CaseContent(place: PlaceId, placeName: String, initialStoryTime
   spawnPosition: Vec3, nodes: Vector[FixtureNode], points: Vector[FixturePoint],
   facts: Vector[FixtureFact], clues: Vector[FixtureClue], routes: Vector[FixtureRoute],
   operations: Vector[FixtureOperation], initiallyOpened: Set[EntityId],
-  initiallyUnlocked: Set[EntityId], commonFacts: Set[FactId])
+  initiallyUnlocked: Set[EntityId], commonFacts: Set[FactId], observations: Vector[SceneObservation] = Vector.empty)
 
 object CaseContent:
   given Encoder[CaseContent] = deriveEncoder[CaseContent]
-  given Decoder[CaseContent] = deriveDecoder[CaseContent]
+  given Decoder[CaseContent] = deriveDecoder[CaseContent].prepare(_.withFocus(json =>
+    json.mapObject(obj => if obj.contains("observations") then obj else obj.add("observations",io.circe.Json.arr()))))

@@ -3,6 +3,8 @@ import { APIError } from '../../../apiClient/APIError';
 import { ExecuteOperationAPI } from '../../../apis/games/ExecuteOperationAPI';
 import { InvestigateAPI } from '../../../apis/games/InvestigateAPI';
 import { GetInvestigationSnapshotAPI } from '../../../apis/games/GetInvestigationSnapshotAPI';
+import type { SceneNodeId } from '../../../objects/SceneNodeId';
+import { retainSelection } from '../functions/retainSelection';
 import type { PointId } from '../../../objects/PointId';
 import type { OperationId } from '../../../objects/OperationId';
 import type { RouteId } from '../../../objects/RouteId';
@@ -24,7 +26,7 @@ export function useInvestigation() {
   function remember(value: BrowserSession) { saveBrowserSession(value); stored.current = value; }
   function connected(result: Awaited<ReturnType<typeof connectInvestigation>>) {
     stored.current = result.stored;
-    setState({ kind: 'ready', snapshot: result.snapshot, selected: null,
+    setState({ kind: 'ready', snapshot: result.snapshot, selected: { kind: 'none' },
       notice: '已从后端读取当前调查进度。', mutation: result.stored.pending
         ? { kind: 'outcomeUnknown', pending: result.stored.pending.command, problem: '上次请求的结果尚未确认。请用原请求重试。' }
         : { kind: 'idle' } });
@@ -45,7 +47,14 @@ export function useInvestigation() {
   }
   function select(point: PointId) {
     if (state.kind === 'ready' && state.snapshot.points.some(p => p.id === point))
-      setState({ ...state, selected: point });
+      setState({ ...state, selected: { kind: 'point', id: point } });
+  }
+  function observe(node: SceneNodeId) {
+    if (state.kind === 'ready' && state.snapshot.observations.some(item => item.node === node))
+      setState({ ...state, selected: { kind: 'observation', node } });
+  }
+  function overview() {
+    if (state.kind === 'ready') setState({ ...state, selected: { kind: 'none' } });
   }
   async function submit(command: PendingCommand) {
     if (inFlight.current || state.kind !== 'ready' || !stored.current) return;
@@ -71,7 +80,7 @@ export function useInvestigation() {
         if (next.sequence < result.sequence) throw new Error('视图尚未更新');
         const snapshot = acceptSnapshot(previous.snapshot, next);
         remember({ ...stored.current, pending: null });
-        setState({ kind: 'ready', snapshot, selected: snapshot.points.some(p => p.id === previous.selected) ? previous.selected : null,
+        setState({ kind: 'ready', snapshot, selected: retainSelection(previous.selected,snapshot),
           mutation: { kind: 'idle' }, notice: '调查结果已保存，当前视图已更新。' });
       } catch (error) {
         setState({ ...previous, mutation: { kind: 'awaitingSnapshot', problem: `操作已经保存。${problem(error)} 请重新读取视图。` } });
@@ -82,7 +91,7 @@ export function useInvestigation() {
           remember({ ...stored.current, pending: null });
           const next = await new GetInvestigationSnapshotAPI(command.sessionId).send();
           const snapshot = acceptSnapshot(previous.snapshot, next);
-          setState({ ...previous, snapshot, selected: snapshot.points.some(p => p.id === previous.selected) ? previous.selected : null,
+          setState({ ...previous, snapshot, selected: retainSelection(previous.selected,snapshot),
             mutation: { kind: 'idle' }, notice: error.message });
         } catch {
           setState({ ...previous, mutation: { kind: 'awaitingSnapshot', problem: `${error.message} 请重新连接并读取当前视图。` } });
@@ -94,14 +103,14 @@ export function useInvestigation() {
   }
   function execute(operation: OperationId) {
     if (state.kind !== 'ready' || state.mutation.kind !== 'idle') return;
-    const point = state.snapshot.points.find(p => p.id === state.selected);
+    const point = state.snapshot.points.find(p => state.selected.kind === 'point' && p.id === state.selected.id);
     if (!point?.operations.some(o => o.id === operation)) return;
     void submit({ kind: 'execute', sessionId: state.snapshot.sessionId, requestId: requestIdSchema.parse(crypto.randomUUID()),
       expectedSequence: state.snapshot.sequence, operation });
   }
   function investigate(route: RouteId) {
     if (state.kind !== 'ready' || state.mutation.kind !== 'idle') return;
-    const point = state.snapshot.points.find(p => p.id === state.selected);
+    const point = state.snapshot.points.find(p => state.selected.kind === 'point' && p.id === state.selected.id);
     if (!point?.routes.some(r => r.id === route)) return;
     void submit({ kind: 'investigate', sessionId: state.snapshot.sessionId, requestId: requestIdSchema.parse(crypto.randomUUID()),
       expectedSequence: state.snapshot.sequence, point: point.id, route });
@@ -113,5 +122,5 @@ export function useInvestigation() {
     try { newBrowserSession(); void reconnect(); }
     catch { setState({ kind: 'failed', message: '无法保存新会话编号；没有提交新建请求。' }); }
   }
-  return { state, select, execute, investigate, reconnect, retry, reset };
+  return { state, select, observe, overview, execute, investigate, reconnect, retry, reset };
 }

@@ -69,3 +69,6 @@ Record 是后端内部存储类型，不等于前端响应。玩家只接收 Get
 accounts 新增的技术表，不是案件内容或玩家业务状态。userId 是服务器分配的身份编号；tokenHash 是随机凭证的 SHA-256 摘要。原令牌只通过 HttpOnly Cookie 交给浏览器，不存明文、不下发到业务视图。ResolveLocalIdentityMessage 在路由边界验证凭证，其他消息只接受转换后的可信 UserId。此实现仅面向本机演示，不是正式登录系统。
 
 调查页读取 GetInvestigationSnapshotMessage 的公开组合视图，创建／恢复使用 OpenStudyMessage；原有 GetGameStateMessage 仍供内部最小测试使用。新增 API DTO 不是新业务表。
+
+
+当前 CaseContent 增加 observations: Vector[SceneObservation]（node、label、description），只承载公开外观。FixtureOperation 增加 repeatable 和 openedRequirement: Option[EntityOpenRequirement]；后者包含实体编号与要求的 opened 布尔值。SetOpened(entity, opened) 与 SetNodeVisible 是封闭的程序效果，不穷举犯罪或调查内容。累计完成集合继续保留历史；当前能否执行由纯函数 operationAvailable 判断，不从标签文字推测。未增加业务表。

@@ -28,14 +28,19 @@ private[games] object FixtureRules:
       dx*dx+dy*dy+dz*dz <= point.radiusMeters*point.radiusMeters
     }
 
-  private[games] def open(f: CaseContent,state: GameSessionRecord,request: RequestId,operation: OperationId): Either[GameError,ActionPlan] =
+  private[games] def operationAvailable(state: GameSessionRecord,operation: FixtureOperation): Boolean =
+    (operation.repeatable || !state.completedOperations(operation.id)) &&
+      operation.openedRequirement.forall(requirement => state.opened(requirement.entity) == requirement.opened)
+
+  private[games] def execute(f: CaseContent,state: GameSessionRecord,request: RequestId,operation: OperationId): Either[GameError,ActionPlan] =
     for
       op <- f.operations.find(_.id==operation).toRight(denied)
       _ <- f.points.find(_.id==op.point).filter(accessible(f,state,_)).toRight(denied)
-      _ <- Either.cond(!state.completedOperations(operation),(),GameError(ErrorCode.ConditionFailed,"该操作已完成。"))
+      _ <- Either.cond(operationAvailable(state,op),(),GameError(ErrorCode.ConditionFailed,"当前状态不允许执行该操作。"))
     yield
       val changed=op.effects.foldLeft(state) { (s,effect) => effect match
         case FixtureEffect.Open(entity) => s.copy(opened=s.opened+entity)
+        case FixtureEffect.SetOpened(entity, opened) => s.copy(opened=if opened then s.opened+entity else s.opened-entity)
         case FixtureEffect.SetNodeVisible(node,true) => s.copy(visibleNodes=s.visibleNodes+node)
         case FixtureEffect.SetNodeVisible(node,false) => s.copy(visibleNodes=s.visibleNodes-node)
       }
@@ -50,8 +55,9 @@ private[games] object FixtureRules:
       _ <- f.points.find(_.id==pointId).filter(accessible(f,state,_)).toRight(denied)
       route <- f.routes.find(r => r.id==routeId && r.point==pointId).toRight(denied)
       _ <- Either.cond(state.completedOperations(route.prerequisite),(),GameError(ErrorCode.ConditionFailed,"需要先完成前置操作。"))
+      _ <- Either.cond(!route.clues.forall(state.clues.contains),(),GameError(ErrorCode.ConditionFailed,"该途径的信息已经记录。"))
     yield
-      val disclosed=f.clues.filter(c => route.clues.contains(c.id))
+      val disclosed=f.clues.filter(c => route.clues.contains(c.id) && !state.clues(c.id))
       val clues=disclosed.map(_.id).toSet
       val facts=disclosed.flatMap(_.facts).toSet
       val text=disclosed.map(_.text.value).mkString("\n")

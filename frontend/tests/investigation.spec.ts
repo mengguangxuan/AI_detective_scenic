@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
 const secret = '信上写着：今晚九点见。';
-const sessionKey = 'detective-scenic:server-session:v1';
+const sessionKey = 'detective-scenic:server-session:v2';
 
 test('real investigation, hidden content, browser restore and mobile layout', async ({ page }) => {
   const errors: string[] = [];
@@ -78,4 +78,52 @@ test('backend unavailable shows a connection problem without local fake progress
   await page.goto('/');
   await expect(page.getByRole('button', { name: '重新连接' })).toBeVisible();
   await expect(page.getByRole('button', { name: '书桌抽屉', exact: true })).toHaveCount(0);
+});
+
+test('close, restore and reopen drawer without losing or granting the clue twice', async ({ page }) => {
+  await page.goto('/');
+  await page.getByRole('button', { name: '书桌抽屉', exact: true }).click();
+  await page.getByRole('button', { name: '打开抽屉', exact: true }).click();
+  await page.getByRole('button', { name: '抽屉中的信', exact: true }).click();
+  await page.getByRole('button', { name: '阅读信件', exact: true }).click();
+  await expect(page.getByRole('heading', { name: '信件正文' })).toBeVisible();
+  await page.getByRole('button', { name: '书桌抽屉', exact: true }).click();
+  await page.getByRole('button', { name: '推回抽屉', exact: true }).click();
+  await expect(page.getByRole('button', { name: '抽屉中的信', exact: true })).toHaveCount(0);
+  await expect(page.getByRole('heading', { name: '信件正文' })).toBeVisible();
+  await page.reload();
+  await expect(page.getByRole('button', { name: '书桌抽屉', exact: true })).toBeVisible();
+  await expect(page.getByRole('button', { name: '抽屉中的信', exact: true })).toHaveCount(0);
+  await expect(page.getByRole('heading', { name: '信件正文' })).toBeVisible();
+  await page.getByRole('button', { name: '书桌抽屉', exact: true }).click();
+  await page.getByRole('button', { name: '打开抽屉', exact: true }).click();
+  await page.getByRole('button', { name: '抽屉中的信', exact: true }).click();
+  await expect(page.getByRole('button', { name: '阅读信件', exact: true })).toHaveCount(0);
+  const stored = await page.evaluate(key => JSON.parse(localStorage.getItem(key)!), sessionKey);
+  const response = await page.request.post('/api/getinvestigationsnapshot', { data: { sessionId: stored.sessionId }, headers: { 'X-Detective-Client': 'web' } });
+  const snapshot = await response.json();
+  expect(snapshot.sequence.value).toBe(4);
+  expect(snapshot.clues).toHaveLength(1);
+  expect(snapshot.journal).toHaveLength(4);
+});
+
+test('ordinary observation changes focus without mutating case progress', async ({ page }) => {
+  await page.goto('/');
+  await expect(page.getByRole('button', { name: '窗户', exact: true })).toBeVisible();
+  await page.getByRole('button', { name: '窗户', exact: true }).click();
+  await expect(page.getByRole('heading', { name: '正在观察：窗户' })).toBeVisible();
+  await page.waitForTimeout(1000); // The authored camera transition lasts 0.8 seconds.
+  await page.screenshot({ path: 'test-results/observe-window.png', fullPage: true });
+  await page.getByRole('button', { name: '台灯', exact: true }).click();
+  await expect(page.getByRole('heading', { name: '正在观察：台灯' })).toBeVisible();
+  await page.getByRole('button', { name: '书架', exact: true }).click();
+  await expect(page.getByRole('heading', { name: '正在观察：书架' })).toBeVisible();
+  await page.getByRole('button', { name: '恢复全景', exact: true }).click();
+  await expect(page.getByRole('heading', { name: /正在观察：/ })).toHaveCount(0);
+  const stored = await page.evaluate(key => JSON.parse(localStorage.getItem(key)!), sessionKey);
+  const response = await page.request.post('/api/getinvestigationsnapshot', { data: { sessionId: stored.sessionId }, headers: { 'X-Detective-Client': 'web' } });
+  const snapshot = await response.json();
+  expect(snapshot.sequence.value).toBe(0);
+  expect(snapshot.clues).toHaveLength(0);
+  expect(snapshot.journal).toHaveLength(0);
 });

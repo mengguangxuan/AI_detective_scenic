@@ -150,3 +150,6 @@ PlayerCommand／GameRequest 是领域命令／去重输入，不替代独立 API
 Sequence 仍为 {value: 整数}，HTTP 限制为 JS 安全非负整数。401表示演示凭证失效，403表示会话／入口不可访问，409表示过期序号、载荷冲突或条件不满足；格式错误400，内部失败500且不回传堆栈。网络错误、无法解码成功响应和500都按结果不确定处理，保留原请求；已成功但读取失败只刷新视图。
 
 GetInvestigationSnapshotMessage 锁定会话后读取绑定案件修订和本会话记录，投影固定 study/1 的表现、获准操作、已获线索和公开日志。该受限视图未采用本文尚待实现的通用矩阵协议。完整启动与恢复验收见 ../frontend/implementation.md。
+
+
+当前单一书房修订2支持可逆开关：操作入口仍为 ExecuteOperationMessage，由当前 opened 状态和 FixtureOperation.openedRequirement／repeatable 校验，不增加 OpenDrawer／CloseDrawer 专用 API。GetInvestigationSnapshotMessage 同时投影按可见节点过滤的公开 observations；普通观察由前端选择与镜头完成，不写入调查或授予线索。未保留并行旧场景版本。

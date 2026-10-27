@@ -2,7 +2,7 @@
 
 现有 React／TypeScript strict、Tailwind、React Three Fiber 调查页已改为真实连接 Scala 后端。抽屉状态、可用入口与操作、线索正文和调查记录均来自后端玩家视图。前端不再预置正文或自行授予线索。
 
-本阶段使用仅限本机的演示凭证，不是正式账户登录，也尚未接入 AI 或正式案情。书房模型沿用首版；可逆操作、切换观察中心与普通物体观察已记入 [interaction_backlog.md](interaction_backlog.md)，不在此次联网实现中。
+本阶段使用仅限本机的演示凭证，不是正式账户登录，也尚未接入 AI 或正式案情。书房模型沿用首版；抽屉可逆开关、观察中心切换，以及书桌／台灯／窗户／书架的公开外观观察已实现，详见 [交互状态](interaction_backlog.md)。
 
 ## 启动：两个 PowerShell 终端
 
@@ -32,7 +32,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\backend.ps1 stop-ser
 
 联网数据库为 backend/target/web-demo/windows/db-v1.mv.db（Linux 对应 linux）；与旧 CLI 演示数据库隔离。启动时只导入新的 browser_investigation.json，不修改旧案件修订或清空存档。四张业务表保留，另加 accounts 的 local_identities 技术表存演示凭证摘要。
 
-浏览器只保存新的会话记录 detective-scenic:server-session:v1：会话编号、是否等待新建完成，以及未决请求的原编号、载荷和确认序号；不保存线索正文或权威现场状态。旧本地预览进度不自动当作后端存档，也不删除。清除 Cookie 会丢失演示身份；页面不会因此悄悄覆盖原会话，可以明确选择新建调查。新建保留原数据库会话。
+浏览器只保存新的会话记录 detective-scenic:server-session:v2：会话编号、是否等待新建完成，以及未决请求的原编号、载荷和确认序号；不保存线索正文或权威现场状态。按用户明确授权，早期网页 Demo 进度已重置；前端清除旧 v1 会话定位与预览键，只使用当前存档。清除 Cookie 会丢失演示身份；页面不会因此悄悄覆盖原会话，可以明确选择新建调查。新建保留原数据库会话。
 
 请求发送前必须先保存原载荷。响应不确定时保留原 RequestId 和 expectedSequence，包括刷新页面后重试；已确认成功但视图读取失败时只重读视图。客户端拒绝较旧视图覆盖较新状态，并检查会话与案件修订一致。服务器在会话行锁下投影一致视图，状态、调查记录和成功回执仍同事务提交。
 
@@ -63,7 +63,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\frontend.ps1 install
 - apis/accounts 与 apis/games 按服务组织。5 个公开消息对应5个前端 API 类；输入、响应解码就近，发送和错误处理在 apiClient。
 - API 类的 send 使用统一命名函数，对应后端 Message 去后缀并转小写。生产构建保留类名；浏览器验收针对生产构建，避免仅开发模式命名正确。
 - 同步调查仍为短事务，不在事务中等待 AI。objects 为数据和编解码，utils 为服务内纯规则，Table 封装 SQL，各表单独初始化。
-- 几何、灯光和普通装饰由已登记的 study/1 场景代码提供。StudySceneView 是首个场景的受限表现投影，不宣称实现草案的通用资源／矩阵协议。
+- 几何、灯光和普通装饰由已登记的 study/2 场景代码提供。StudySceneView 是首个场景的受限表现投影，不宣称实现草案的通用资源／矩阵协议。
 
 ## 验收
 
@@ -88,4 +88,16 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\frontend.ps1 browser
 3D 包仍较大，构建有超过500KB分块提示；场景已按需加载。这一限制不影响调查区先加载，但尚未做移动设备性能验收。
 
 
-本次验证：20项后端测试、4项前端规则／解码测试、4项生产构建浏览器测试通过；另外实际停止后端进程后，用同一数据库启动新进程并通过1项原浏览器身份恢复测试。恢复结果为序号2、两条记录、一条线索。旧演示库与用户原前端进程均未清理。
+本次验证：21项后端测试、6项前端规则／解码测试、6项生产构建浏览器测试通过；另外实际停止后端进程后，用同一数据库启动新进程并通过1项原浏览器身份恢复测试。恢复结果为序号2、两条记录、一条线索。当前只保留最新网页 Demo 配置，用户原前端进程未停止。
+
+
+## 当前交互验收
+
+1. 在“现场检查”选择抽屉，打开、阅读信件，再推回抽屉；正文仍在笔记中，信件入口消失。
+2. 刷新后仍是关闭状态；再次打开可看到信件，但没有重复阅读授予按钮。
+3. 在“观察环境”选择台灯、窗户、书架或书桌，或直接点击其模型；镜头中心切换，显示普通外观说明，案件操作序号不变。
+4. “恢复全景”可返回初始视角，包括已经手动旋转或缩放后的情况。
+
+repeatable 与 openedRequirement 描述程序可执行条件，completedOperations 仍只是历史“曾完成”集合。SetOpened 是实体打开状态的布尔赋值，不是枚举现实世界的一切动作。公开外观放在 CaseContent.observations，按可见节点投影；没有用普通观察结果伪造线索。
+
+最新书房配置仍为 browser_investigation.json，修订号2；不保留并行旧版文件或旧场景兼容分支。此次清理仅针对用户明确可丢弃的网页 Demo，课程最小 CLI 夹具及其他项目不动。

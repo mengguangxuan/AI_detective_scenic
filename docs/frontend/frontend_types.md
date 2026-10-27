@@ -1,6 +1,6 @@
 # 前端类型初稿 v0.2
 
-本文为完整目标的前端契约草案。当前已实现联网调查页和基础几何书房，范围见 [implementation.md](implementation.md)；当前切片已有受限的 study/1 玩家视图、HTTP 和本机演示身份；本文通用 SceneView／矩阵／资源协议及正式登录仍是目标设计。优先实现现有书房夹具的浏览器闭环，不重新做全量类型评审。
+本文为完整目标的前端契约草案。当前已实现联网调查页和基础几何书房，范围见 [implementation.md](implementation.md)；当前切片已有受限的 study/2 玩家视图、HTTP 和本机演示身份；本文通用 SceneView／矩阵／资源协议及正式登录仍是目标设计。优先实现现有书房夹具的浏览器闭环，不重新做全量类型评审。
 
 依据：[项目约定](../../AGENTS.md)、[功能规划](../../plan.md)、[课程规范](../../../samples/samples/rules.txt)、[后端领域类型](../backend/case_truth_types.md)、[API 草案](../backend/api_design_draft.md)、[已实现的表与类型](../backend/table_types.md)。前端使用 React／TypeScript，3D 拟采用 Three.js／React Three Fiber；实现时再确定兼容版本。
 
@@ -418,3 +418,6 @@ frontend/src/
 
 
 > 实施说明：实际联网 DTO 以 backend 的 objects/apiTypes 与前端 apis/*/objects 为准。当前使用 StudySceneView 的受限表现绑定，不强行生成本文尚未使用的全部类型。浏览器只保存定位和原请求，不保存权威场景／线索。详见 implementation.md；待补交互见 interaction_backlog.md。
+
+
+> 当前交互已补充可逆开关及普通观察。实际 DTO 的 observations 只含 node、label、description；页面 SceneSelection 区分未选择、调查入口和普通物体。普通观察切换镜头，不改变案件状态。当前只维护最新书房修订2，旧 Demo 进度按用户授权丢弃。

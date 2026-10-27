@@ -78,9 +78,14 @@ private[cases] object FixtureLoader:
     for
       id <- c.get[OperationId]("id")
       point <- c.get[PointId]("point")
-      kind <- c.downField("condition").get[String]("kind")
-      conditions <- c.downField("condition").get[Vector[Json]]("items")
-      _ <- check(kind == "All" && conditions.isEmpty, "Only unconditional fixture operations supported", c)
+      condition <- c.get[Json]("condition")
+      kind <- condition.hcursor.get[String]("kind")
+      requirement <- kind match
+        case "All" => condition.hcursor.get[Vector[Json]]("items").flatMap(items => check(items.isEmpty,"Unsupported operation condition",c)).map(_ => Option.empty[EntityOpenRequirement])
+        case "EntityOpen" => (condition.hcursor.get[EntityId]("entity"),condition.hcursor.get[Boolean]("opened"))
+          .mapN((entity,opened) => Option(EntityOpenRequirement(entity,opened)))
+        case _ => Left(DecodingFailure("Unsupported operation condition",c.history))
+      repeatable <- c.get[Option[Boolean]]("repeatable")
       rawEffects <- c.get[Vector[Json]]("effects")
       effects <- rawEffects.traverse { raw =>
         for
@@ -90,7 +95,7 @@ private[cases] object FixtureLoader:
         yield effect
       }
       _ <- check(effects.nonEmpty, "Empty effects", c)
-    yield FixtureOperation(id, point, effects, c.get[String]("label").getOrElse(id.value))
+    yield FixtureOperation(id, point, effects, c.get[String]("label").getOrElse(id.value),repeatable.getOrElse(false),requirement)
 
   private[cases] def decode(raw: String): Either[GameError, CaseRevisionRecord] =
     (for
@@ -123,6 +128,7 @@ private[cases] object FixtureLoader:
       origin <- c.get[String]("timeOriginLabel")
       rawNodes <- scene.hcursor.get[Vector[Json]]("nodes")
       nodes <- rawNodes.traverse(node)
+      observations <- scene.hcursor.get[Option[Vector[SceneObservation]]]("observations").map(_.getOrElse(Vector.empty))
       rawPoints <- scene.hcursor.get[Vector[Json]]("points")
       points <- rawPoints.traverse(point)
       rawFacts <- truth.hcursor.get[Vector[Json]]("facts")
@@ -148,9 +154,11 @@ private[cases] object FixtureLoader:
       _ <- check(opened.subsetOf(entityIds.toSet) && unlocked.subsetOf(entityIds.toSet), "Unknown initial entity", c)
       _ <- check(operations.flatMap(_.effects).forall {
         case FixtureEffect.Open(entity) => entityIds.contains(entity)
+        case FixtureEffect.SetOpened(entity, _) => entityIds.contains(entity)
         case _ => true
       }, "Missing effect entity", c)
-      content = CaseContent(place, placeName, time, origin, position, nodes, points, facts, clues, routes, operations, opened, unlocked, common)
+      _ <- check(operations.forall(_.openedRequirement.forall(r => entityIds.contains(r.entity))),"Unknown operation condition entity",c)
+      content = CaseContent(place, placeName, time, origin, position, nodes, points, facts, clues, routes, operations, opened, unlocked, common, observations)
       record = CaseRevisionRecord(caseId, revision, 1, title, content)
       _ <- check(valid(record), "Invalid fixture references / node hierarchy", c)
     yield record).left.map(error => GameError(ErrorCode.InvalidValue, s"案件数据不合法：${error.getMessage}"))
@@ -170,6 +178,7 @@ private[cases] object FixtureLoader:
       f.clues.forall(c => c.facts.subsetOf(f.facts.map(_.id).toSet)) &&
       f.commonFacts.subsetOf(f.facts.map(_.id).toSet) &&
       f.routes.forall(r => f.points.exists(_.id == r.point) && f.operations.exists(_.id == r.prerequisite) && r.clues.forall(id => f.clues.exists(_.id == id))) &&
+      unique(f.observations.map(_.node)) && f.observations.forall(o => nodes.contains(o.node) && o.label.trim.nonEmpty && o.description.trim.nonEmpty) &&
       f.operations.forall(o => f.points.exists(_.id == o.point) && o.effects.forall {
         case FixtureEffect.SetNodeVisible(node, _) => nodes.contains(node)
         case _ => true

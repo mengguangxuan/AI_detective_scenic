@@ -28,7 +28,7 @@ private[games] object LegacyMigrationRules:
             val operation=field[OperationId](last,"operation")
             val effects=field[Vector[FixtureEffect]](first,"effects")
             require(revision.content.operations.find(_.id==operation).exists(_.effects==effects),"Legacy effects mismatch")
-            FixtureRules.open(revision.content,state,commit.request,operation).fold(throw _,identity)
+            FixtureRules.execute(revision.content,state,commit.request,operation).fold(throw _,identity)
           case ("Investigated","Acquired") =>
             val record=field[Json](first,"record")
             val route=field[RouteId](record,"route")

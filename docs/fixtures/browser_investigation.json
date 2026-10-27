@@ -1,7 +1,7 @@
 {
   "id": "fixture_drawer_web",
   "revision": {
-    "value": 1
+    "value": 2
   },
   "schemaVersion": {
     "value": 2
@@ -235,6 +235,81 @@
         "represents": "letter",
         "place": "study",
         "initiallyVisible": true
+      },
+      {
+        "id": "node_lamp",
+        "asset": "model_placeholder",
+        "transform": {
+          "position": {
+            "x": -1,
+            "y": 1.6,
+            "z": 0.2
+          },
+          "rotation": {
+            "xRad": 0,
+            "yRad": 0,
+            "zRad": 0
+          },
+          "scale": {
+            "x": 1,
+            "y": 1,
+            "z": 1
+          }
+        },
+        "parent": null,
+        "represents": null,
+        "place": "study",
+        "initiallyVisible": true
+      },
+      {
+        "id": "node_window",
+        "asset": "model_placeholder",
+        "transform": {
+          "position": {
+            "x": 1.4,
+            "y": 2,
+            "z": -2.2
+          },
+          "rotation": {
+            "xRad": 0,
+            "yRad": 0,
+            "zRad": 0
+          },
+          "scale": {
+            "x": 1,
+            "y": 1,
+            "z": 1
+          }
+        },
+        "parent": null,
+        "represents": null,
+        "place": "study",
+        "initiallyVisible": true
+      },
+      {
+        "id": "node_bookshelf",
+        "asset": "model_placeholder",
+        "transform": {
+          "position": {
+            "x": -2.5,
+            "y": 1.1,
+            "z": -1.7
+          },
+          "rotation": {
+            "xRad": 0,
+            "yRad": 0,
+            "zRad": 0
+          },
+          "scale": {
+            "x": 1,
+            "y": 1,
+            "z": 1
+          }
+        },
+        "parent": null,
+        "represents": null,
+        "place": "study",
+        "initiallyVisible": true
       }
     ],
     "cues": [],
@@ -285,7 +360,29 @@
     "requirementBindings": [],
     "movement": {
       "maximumStepMeters": 2
-    }
+    },
+    "observations": [
+      {
+        "node": "node_desk",
+        "label": "书桌",
+        "description": "一张木制书桌，右侧有抽屉，桌面上摆着台灯和一本书。"
+      },
+      {
+        "node": "node_lamp",
+        "label": "台灯",
+        "description": "桌面上放着一盏金属灯座、锥形灯罩的台灯。"
+      },
+      {
+        "node": "node_window",
+        "label": "窗户",
+        "description": "墙上是一扇分格窗，可以观察窗框和窗面。"
+      },
+      {
+        "node": "node_bookshelf",
+        "label": "书架",
+        "description": "一座木制书架，搁板上摆着几本不同颜色的书。"
+      }
+    ]
   },
   "investigation": {
     "clues": [
@@ -328,15 +425,17 @@
         "point": "point_drawer",
         "label": "打开抽屉",
         "condition": {
-          "kind": "All",
-          "items": []
+          "kind": "EntityOpen",
+          "entity": "drawer",
+          "opened": false
         },
         "effects": [
           {
             "kind": "World",
             "effect": {
-              "kind": "Open",
-              "entity": "drawer"
+              "kind": "SetOpened",
+              "entity": "drawer",
+              "opened": true
             }
           },
           {
@@ -345,6 +444,36 @@
               "kind": "SetNodeVisible",
               "node": "node_contents",
               "visible": true
+            }
+          }
+        ],
+        "repeatable": true
+      },
+      {
+        "id": "close_drawer",
+        "point": "point_drawer",
+        "label": "推回抽屉",
+        "repeatable": true,
+        "condition": {
+          "kind": "EntityOpen",
+          "entity": "drawer",
+          "opened": true
+        },
+        "effects": [
+          {
+            "kind": "World",
+            "effect": {
+              "kind": "SetOpened",
+              "entity": "drawer",
+              "opened": false
+            }
+          },
+          {
+            "kind": "World",
+            "effect": {
+              "kind": "SetNodeVisible",
+              "node": "node_contents",
+              "visible": false
             }
           }
         ]

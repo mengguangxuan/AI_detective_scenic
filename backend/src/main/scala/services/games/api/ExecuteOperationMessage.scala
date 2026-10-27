@@ -26,7 +26,7 @@ final case class ExecuteOperationMessage(userId: UserId,sessionId: SessionId,req
           for
             _ <- MutationSupport.checkSequence(session,expectedSequence)
             revision <- CaseRevisionTable.find(connection,session.caseId,session.caseRevision).flatMap(value => IO.fromOption(value)(GameError(ErrorCode.InvalidValue,"案件修订不存在。")))
-            plan <- IO.fromEither(FixtureRules.open(revision.content,session,requestId,operation))
+            plan <- IO.fromEither(FixtureRules.execute(revision.content,session,requestId,operation))
             result <- MutationSupport.commit(connection,session,requestId,digest,plan)
           yield result
     yield result
