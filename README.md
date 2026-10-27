@@ -23,6 +23,13 @@ python3 tools/backend_sbt.py test
 python3 tools/backend_sbt.py run
 ```
 
+Windows PowerShell 不需要 Python，直接执行：
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\backend.ps1 test
+powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\backend.ps1 run
+```
+
 Scala 切片使用嵌入式 H2 验证调查、事务、去重和重放；HTTP、登录、3D 场景及 AI 尚未实现。
 
 远端仓库：<https://github.com/mengguangxuan/AI_detective_scenic>

@@ -13,5 +13,7 @@ lazy val root = (project in file(".")).settings(
   ),
   Compile / run / mainClass := Some("services.system.api.FixtureDemo"),
   Compile / run / fork := true,
+  Compile / run / javaOptions ++= Seq("-Dfile.encoding=UTF-8", "-Dstdout.encoding=UTF-8", "-Dstderr.encoding=UTF-8"),
+  Test / javaOptions ++= Seq("-Dfile.encoding=UTF-8", "-Dstdout.encoding=UTF-8", "-Dstderr.encoding=UTF-8"),
   Test / fork := true
 )

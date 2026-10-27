@@ -4,14 +4,48 @@
 
 ## 启动与测试
 
-在项目根目录运行（需要 Java，复用已有 sbt 或 IntelliJ Scala 插件中的启动器）：
+Windows／PowerShell 推荐直接使用原生脚本，不依赖 python／python3 命令：
+
+```powershell
+Set-Location 'D:\2026autumn\software_making\detective_scenic'
+powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\backend.ps1 doctor
+powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\backend.ps1 test
+powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\backend.ps1 run
+```
+
+以上 Bypass 只作用于该次 PowerShell 进程，不修改系统长期执行策略。doctor 只查找环境，不下载、不编译；应显示 Java 路径、启动器路径、版本和 `[OK]`。本机已在原生 Windows 验证找到 `C:\Program Files\Java\jdk-21\bin\java.exe` 与 IntelliJ Scala 插件启动器。
+
+有真正 Python 解释器时也可用 `python tools/backend_sbt.py test`／`run`；Windows 下会转入同一 PowerShell 入口。VS Code 直接运行该 Python 文件、不传参数时只执行 doctor，不会自动开始测试。PowerShell 中的 python3 可能是 WindowsApps 应用别名，不能根据“命令存在”判断 Python 可用；优先采用上面的原生入口。
+
+WSL／Linux 在项目根目录运行：
 
 ```bash
+python3 tools/backend_sbt.py doctor
 python3 tools/backend_sbt.py test
 python3 tools/backend_sbt.py run
 ```
 
-工具不下载启动器；首次运行 sbt 会下载尚未缓存的项目依赖。可以用 SBT_LAUNCH_JAR 指定本地启动器，用 DETECTIVE_BUILD_CACHE 指定可写缓存目录，默认系统临时目录下的 detective-sbt。没有命令行 Python 时，也可在 IntelliJ 中打开 backend 作为 sbt 项目，通过 sbt 面板执行 test／run；若终端已装 sbt，则在 backend 执行 `sbt test`／`sbt run`。
+工具不下载启动器；首次运行 sbt 会下载未缓存的依赖。SBT_LAUNCH_JAR 可以指定启动器，DETECTIVE_JAVA 可以指定 Java 可执行文件；Linux 可用 DETECTIVE_BUILD_CACHE 指定缓存目录，默认 backend/.build-cache/linux，避免临时目录消失后缓存链接失效。Windows 复用本机 sbt 默认缓存，不复制整份缓存到临时目录。
+
+也可在 IntelliJ 中打开 backend 作为 sbt 项目；但不要让 IDE 自动导入、WSL 和 Windows 终端同时构建同一工作目录。
+
+### 验收标准
+
+1. doctor 输出 `[OK] Environment located`（Windows），确认执行的是 Java，而不是无输出的 Python 应用别名。
+2. test 最后包含 `Passed: Total 11, Failed 0, Errors 0, Passed 11` 与 `[OK] test completed`。
+3. run 显示：提前阅读为 `Left(当前无法访问该调查入口。)`；获得“信上写着：今晚九点见。”；相同请求重试为 `true`；恢复后的 sequence 为 2，含 clue_letter 与 fact_letter_text。
+
+提前阅读的 Left 是预期的权限拒绝，不是演示失败。当前无网页可打开，验收对象是这条 Scala／数据库流程，不是视觉场景。
+
+Windows 日志保存在 backend/.build-cache/windows-test.log 与 windows-run.log。卡住或失败时保留完整日志；首次下载时终端会先显示环境与日志位置，随后才是 sbt 输出，不应把尚未显示测试结果视为通过。
+
+### 本次 FileSystemException 的原因与修复
+
+实际检查到 backend/target/out 下的 inc_compile_3.zip 是指向 WSL `/tmp/detective-sbt/...` 的符号链接。Windows 无法通过该链接读取编译缓存；此前在 WSL 跑通并不能证明同一输出目录可以直接给 Windows 复用。
+
+启动器现在记录输出平台；发现未知输出或切换 Windows／Linux 时，将 target/out、target/streams、project/target 移到 backend/.build-cache/output-backups/，不删除源码或 target/fixture-demo 中的数据库，然后重新生成当前平台输出。各平台的归档分开保留；不支持两边同时构建。直接绕过入口在 IDE 里构建前，也应确保当前缓存属于该平台。
+
+已在 Windows 原生 PowerShell 实际完成诊断、旧缓存归档、重新编译、全部 11 项测试和演示。启动 JVM 与 fork 出的演示／测试 JVM 均显式使用 UTF-8，中文信件及错误提示已实际显示正确。
 
 当前使用本机已有的 sbt 2.0.9、Scala 3.9.0 及 Java 21；Cats Effect 与 Circe 版本沿用课程样本。H2 是本阶段嵌入式数据库选择，MUnit 用于自动测试；不是把课程后端改为 Python。
 

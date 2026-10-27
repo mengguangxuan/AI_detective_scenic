@@ -89,3 +89,10 @@
 - 运行 `python3 tools/backend_sbt.py test`／`run`；工具仅复用现有启动器，不下载 IDE 或启动器。详细边界见 docs/backend/minimal_backend.md。
 - Fixture* 是显式最小调查投影，不是通用领域类型的隐式删改。加载不支持的协议须拒绝。暂未接入 HTTP、accounts 登录、前端、3D 或 AI；不得直接暴露接受可信 UserId 的内部消息。
 - 同步消息需在 DatabaseSession.transaction 中执行；会话行锁、日志、序号及成功回执保证短事务一致性。加入 AI 前必须重新实现 Pending 和短事务边界。
+
+## Windows／WSL 构建输出
+
+- Windows 推荐 tools/backend.ps1 的 doctor／test／run，不依赖 WindowsApps 的 Python 别名；Python 入口在 Windows 下转入同一脚本。
+- sbt 2 的编译输出可能是指向操作系统缓存的符号链接，不能直接跨 Windows／WSL 复用。入口遇未知输出或平台切换时归档 target/out、target/streams、project/target 到 backend/.build-cache/output-backups；保留 target/fixture-demo 数据库。不得同时在两个系统或 IDE 中构建。
+- Linux 默认缓存改为 backend/.build-cache/linux，不能再依赖跨会话可能消失的 /tmp 缓存。Windows 日志为 backend/.build-cache/windows-test.log 与 windows-run.log。
+- 已在原生 Windows PowerShell + Java 21 重新编译并通过 11 项测试。验收命令、预期输出和缓存修复说明见 docs/backend/minimal_backend.md。
