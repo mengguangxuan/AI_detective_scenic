@@ -1,0 +1,17 @@
+# Credentials and local overrides
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+# Tool and build output
+__pycache__/
+*.py[cod]
+.venv/
+node_modules/
+target/
+.bsp/
+.metals/
+.idea/
+.DS_Store
+Thumbs.db

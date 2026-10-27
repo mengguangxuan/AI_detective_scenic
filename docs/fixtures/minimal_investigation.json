@@ -1,0 +1,373 @@
+{
+  "id": "fixture_drawer",
+  "revision": {
+    "value": 1
+  },
+  "schemaVersion": {
+    "value": 2
+  },
+  "reducerVersion": {
+    "value": "fixture-v1"
+  },
+  "title": "最小调查示例",
+  "initialStoryTime": {
+    "seconds": 0
+  },
+  "timeOriginLabel": "调查开始",
+  "calendarOrigin": null,
+  "assets": [
+    {
+      "id": "model_placeholder",
+      "kind": "Model",
+      "uri": "fixture:placeholder-model"
+    }
+  ],
+  "world": {
+    "places": [
+      {
+        "id": "study",
+        "name": "书房",
+        "parent": null,
+        "geography": null,
+        "background": "仅用于契约验证",
+        "walkable": [
+          {
+            "min": {
+              "x": -2,
+              "y": -1,
+              "z": -2
+            },
+            "max": {
+              "x": 2,
+              "y": 3,
+              "z": 2
+            }
+          }
+        ]
+      }
+    ],
+    "connections": [],
+    "environments": [],
+    "entities": [
+      {
+        "id": "desk",
+        "name": "书桌",
+        "initialPlace": "study",
+        "owner": null,
+        "background": "普通书桌"
+      },
+      {
+        "id": "drawer",
+        "name": "抽屉",
+        "initialPlace": "study",
+        "owner": null,
+        "background": "书桌抽屉，初始关闭"
+      },
+      {
+        "id": "letter",
+        "name": "信件",
+        "initialPlace": "study",
+        "owner": null,
+        "background": "放在抽屉内"
+      }
+    ],
+    "relationships": [],
+    "scenes": []
+  },
+  "truth": {
+    "background": "调查示例，无凶案与人物",
+    "persons": [],
+    "privateContexts": [],
+    "motives": [],
+    "events": [],
+    "incidents": [],
+    "topics": [
+      {
+        "id": "topic_letter_text",
+        "subject": {
+          "kind": "Entity",
+          "id": "letter"
+        },
+        "question": "信件上的内容是什么？",
+        "when": {
+          "earliest": {
+            "seconds": 0
+          },
+          "latest": {
+            "seconds": 0
+          }
+        },
+        "boundary": "本封信的正文"
+      }
+    ],
+    "facts": [
+      {
+        "id": "fact_letter_text",
+        "topic": "topic_letter_text",
+        "value": {
+          "kind": "AuthoredDetail",
+          "detail": "信上写着：今晚九点见。"
+        },
+        "requiresOccurred": [],
+        "explanation": "阅读固定信件所得",
+        "sources": [
+          "source_fixture"
+        ]
+      }
+    ],
+    "claims": [],
+    "sources": [
+      {
+        "id": "source_fixture",
+        "kind": "Original",
+        "reference": "本项目最小测试数据"
+      }
+    ]
+  },
+  "publicInfo": {
+    "background": {
+      "introduction": "检查书桌里的信件。",
+      "commonKnowledge": [],
+      "persons": [],
+      "openingReports": [],
+      "openingMaterials": []
+    },
+    "reports": []
+  },
+  "scene": {
+    "nodes": [
+      {
+        "id": "node_desk",
+        "asset": "model_placeholder",
+        "transform": {
+          "position": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "rotation": {
+            "xRad": 0,
+            "yRad": 0,
+            "zRad": 0
+          },
+          "scale": {
+            "x": 1,
+            "y": 1,
+            "z": 1
+          }
+        },
+        "parent": null,
+        "represents": "desk",
+        "place": "study",
+        "initiallyVisible": true
+      },
+      {
+        "id": "node_drawer",
+        "asset": "model_placeholder",
+        "transform": {
+          "position": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "rotation": {
+            "xRad": 0,
+            "yRad": 0,
+            "zRad": 0
+          },
+          "scale": {
+            "x": 1,
+            "y": 1,
+            "z": 1
+          }
+        },
+        "parent": "node_desk",
+        "represents": "drawer",
+        "place": "study",
+        "initiallyVisible": true
+      },
+      {
+        "id": "node_contents",
+        "asset": "model_placeholder",
+        "transform": {
+          "position": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "rotation": {
+            "xRad": 0,
+            "yRad": 0,
+            "zRad": 0
+          },
+          "scale": {
+            "x": 1,
+            "y": 1,
+            "z": 1
+          }
+        },
+        "parent": "node_drawer",
+        "represents": null,
+        "place": "study",
+        "initiallyVisible": false
+      },
+      {
+        "id": "node_letter",
+        "asset": "model_placeholder",
+        "transform": {
+          "position": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "rotation": {
+            "xRad": 0,
+            "yRad": 0,
+            "zRad": 0
+          },
+          "scale": {
+            "x": 1,
+            "y": 1,
+            "z": 1
+          }
+        },
+        "parent": "node_contents",
+        "represents": "letter",
+        "place": "study",
+        "initiallyVisible": true
+      }
+    ],
+    "cues": [],
+    "points": [
+      {
+        "id": "point_drawer",
+        "subject": {
+          "kind": "Entity",
+          "id": "drawer"
+        },
+        "label": "打开抽屉",
+        "entry": {
+          "kind": "OnNode",
+          "node": "node_drawer",
+          "localPoint": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "radiusMeters": 2
+        },
+        "topics": [],
+        "fallbackFinding": null
+      },
+      {
+        "id": "point_letter",
+        "subject": {
+          "kind": "Entity",
+          "id": "letter"
+        },
+        "label": "阅读信件",
+        "entry": {
+          "kind": "OnNode",
+          "node": "node_letter",
+          "localPoint": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "radiusMeters": 2
+        },
+        "topics": [
+          "topic_letter_text"
+        ],
+        "fallbackFinding": null
+      }
+    ],
+    "requirementBindings": [],
+    "movement": {
+      "maximumStepMeters": 2
+    }
+  },
+  "investigation": {
+    "clues": [
+      {
+        "id": "clue_letter",
+        "title": "信件正文",
+        "finding": "信上写着：今晚九点见。",
+        "facts": [
+          "fact_letter_text"
+        ],
+        "relatedClaims": [],
+        "result": {
+          "text": "信上写着：今晚九点见。",
+          "media": []
+        },
+        "suggests": []
+      }
+    ],
+    "routes": [
+      {
+        "id": "route_letter",
+        "point": "point_letter",
+        "condition": {
+          "kind": "OperationDone",
+          "operation": "open_drawer"
+        },
+        "method": {
+          "kind": "Fixed",
+          "label": "阅读信件"
+        },
+        "grants": [
+          "clue_letter"
+        ],
+        "reports": []
+      }
+    ],
+    "operations": [
+      {
+        "id": "open_drawer",
+        "point": "point_drawer",
+        "label": "打开抽屉",
+        "condition": {
+          "kind": "All",
+          "items": []
+        },
+        "effects": [
+          {
+            "kind": "World",
+            "effect": {
+              "kind": "Open",
+              "entity": "drawer"
+            }
+          },
+          {
+            "kind": "World",
+            "effect": {
+              "kind": "SetNodeVisible",
+              "node": "node_contents",
+              "visible": true
+            }
+          }
+        ]
+      }
+    ],
+    "rules": [],
+    "questions": [],
+    "options": [],
+    "initial": {
+      "spawnPlace": "study",
+      "spawnPosition": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "opened": [],
+      "unlocked": [],
+      "occurredEvents": {},
+      "npcs": []
+    },
+    "scheduled": [],
+    "assessment": {
+      "kind": "InvestigationOnly"
+    }
+  }
+}
