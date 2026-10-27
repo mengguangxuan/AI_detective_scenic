@@ -1,35 +1,35 @@
 package services.games.api
 
 import cats.effect.IO
-import io.circe.{Decoder, Encoder}
+import io.circe.{Decoder,Encoder}
 import io.circe.generic.semiauto.*
 import java.sql.Connection
-import services.cases.objects.OperationId
-import services.games.objects.FixtureCommand
-import services.games.objects.apiTypes.ExecuteOperationResponse
+import services.cases.objects.*
+import services.cases.tables.CaseRevisionTable.CaseRevisionTable
+import services.games.objects.apiTypes.CommandResult
+import services.games.tables.SessionTable.SessionTable
 import services.games.tables.ReceiptTable.ReceiptTable
-import services.games.utils.{FixtureRules, MutationSupport}
+import services.games.utils.{FixtureRules,MutationSupport}
 import services.system.api.APIMessage
 import services.system.objects.*
 
-final case class ExecuteOperationMessage(userId: UserId, sessionId: SessionId,
-    requestId: RequestId, expectedSequence: Sequence, operation: OperationId)
-    extends APIMessage[ExecuteOperationResponse]:
-  override def plan(connection: Connection): IO[ExecuteOperationResponse] =
-    val digest = MutationSupport.digest(userId, sessionId, requestId, expectedSequence, FixtureCommand.Execute(operation))
+final case class ExecuteOperationMessage(userId: UserId,sessionId: SessionId,requestId: RequestId,expectedSequence: Sequence,operation: OperationId) extends APIMessage[CommandResult]:
+  override def plan(connection: Connection): IO[CommandResult] =
+    val digest=MutationSupport.operationDigest(userId,sessionId,requestId,expectedSequence,operation)
     for
-      _ <- IO.blocking(require(!connection.getAutoCommit, "Message requires transaction"))
-      session <- MutationSupport.lockOwned(connection, userId, sessionId)
-      receipt <- ReceiptTable.find(connection, sessionId, requestId)
+      _ <- IO.blocking(require(!connection.getAutoCommit,"Message requires transaction"))
+      session <- SessionTable.lock(connection,sessionId).flatMap(MutationSupport.owned(_,userId))
+      receipt <- ReceiptTable.find(connection,sessionId,requestId)
       result <- receipt match
-        case Some(saved) => MutationSupport.retry(saved, digest)
+        case Some(saved) => MutationSupport.retry(saved,digest)
         case None =>
           for
-            state <- MutationSupport.stateForNewRequest(connection, session, expectedSequence)
-            changes <- IO.fromEither(FixtureRules.open(session.fixture, state, operation))
-            result <- MutationSupport.commit(connection, session, requestId, digest, changes)
+            _ <- MutationSupport.checkSequence(session,expectedSequence)
+            revision <- CaseRevisionTable.find(connection,session.caseId,session.caseRevision).flatMap(value => IO.fromOption(value)(GameError(ErrorCode.InvalidValue,"案件修订不存在。")))
+            plan <- IO.fromEither(FixtureRules.open(revision.content,session,requestId,operation))
+            result <- MutationSupport.commit(connection,session,requestId,digest,plan)
           yield result
-    yield ExecuteOperationResponse(result)
+    yield result
 
 object ExecuteOperationMessage:
   given Encoder[ExecuteOperationMessage] = deriveEncoder[ExecuteOperationMessage]

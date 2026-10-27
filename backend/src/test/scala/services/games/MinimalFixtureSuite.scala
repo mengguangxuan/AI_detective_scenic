@@ -9,15 +9,15 @@ import java.nio.file.{Files, Paths}
 import java.sql.{Connection, DriverManager}
 import java.util.UUID
 import munit.FunSuite
-import services.cases.api.LoadFixtureMessage
+import services.cases.api.ImportCaseMessage
 import services.cases.objects.*
 import services.games.api.*
 import services.games.objects.*
 import services.games.tables.SessionTable.{SessionTable, SessionTableInitializer}
-import services.games.tables.CommitTable.{CommitTable, CommitTableInitializer}
+import services.games.tables.SessionRecordTable.SessionRecordTable
 import services.games.tables.ReceiptTable.{ReceiptTable, ReceiptTableInitializer}
 import services.games.utils.FixtureRules
-import services.system.api.DatabaseSession
+import services.system.api.{DatabaseSession, DatabaseSchema}
 import services.system.objects.*
 
 class MinimalFixtureSuite extends FunSuite:
@@ -25,15 +25,13 @@ class MinimalFixtureSuite extends FunSuite:
   private val session = SessionId("session")
   private val fixturePath = Paths.get("../docs/fixtures/minimal_investigation.json")
 
-  private def setup(connection: Connection): IO[InvestigationFixture] = for
-    _ <- SessionTableInitializer.initialize(connection)
-    _ <- CommitTableInitializer.initialize(connection)
-    _ <- ReceiptTableInitializer.initialize(connection)
-    fixture <- LoadFixtureMessage(fixturePath).plan(connection)
-    _ <- DatabaseSession.transaction(connection)(StartGameMessage(user, session, fixture).plan(connection))
+  private def setup(connection: Connection): IO[CaseRevisionRecord] = for
+    _ <- DatabaseSchema.initialize(connection)
+    fixture <- DatabaseSession.transaction(connection)(ImportCaseMessage(fixturePath).plan(connection))
+    _ <- DatabaseSession.transaction(connection)(StartGameMessage(user, session, fixture.caseId, fixture.revision).plan(connection))
   yield fixture
 
-  private def withGame[A](f: (String, Connection, InvestigationFixture) => IO[A]): A =
+  private def withGame[A](f: (String, Connection, CaseRevisionRecord) => IO[A]): A =
     val url = s"jdbc:h2:mem:${UUID.randomUUID()};DB_CLOSE_DELAY=-1;LOCK_TIMEOUT=10000"
     DatabaseSession.connection(url).use(c => setup(c).flatMap(fixture => f(url, c, fixture)))
       .guarantee(DatabaseSession.connection(url).use(c => IO.blocking(c.createStatement().execute("SHUTDOWN")).void)).unsafeRunSync()
@@ -51,7 +49,7 @@ class MinimalFixtureSuite extends FunSuite:
     withGame { (_, c, _) => for
       initial <- view(c)
       result <- read(c, seq = 0).attempt
-      log <- CommitTable.list(c, session)
+      log <- SessionRecordTable.list(c, session)
       receipt <- ReceiptTable.find(c, session, RequestId("read"))
       _ = assertEquals(initial.visiblePoints, Vector(PointId("point_drawer")))
       _ = assertEquals(errorCode(result), ErrorCode.AccessDenied)
@@ -66,14 +64,14 @@ class MinimalFixtureSuite extends FunSuite:
       learned <- read(c)
       original <- view(c)
       restored <- DatabaseSession.connection(url).use(view)
-      log <- CommitTable.list(c, session)
-      _ = assertEquals(opened.result.sequence, Sequence(1))
+      log <- SessionRecordTable.list(c, session)
+      _ = assertEquals(opened.sequence, Sequence(1))
       _ = assert(visible.visiblePoints.contains(PointId("point_letter")))
-      _ = assertEquals(learned.result.findings.map(_.value), Vector("信上写着：今晚九点见。"))
+      _ = assertEquals(learned.findings.map(_.value), Vector("信上写着：今晚九点见。"))
       _ = assertEquals(original.clues, Set(ClueId("clue_letter")))
       _ = assertEquals(original.facts, Set(FactId("fact_letter_text")))
       _ = assertEquals(restored, original)
-      _ = assert(log.last.changes.last.isInstanceOf[FixtureChange.Acquired])
+      _ = assertEquals(log.last.disclosedFacts, original.facts)
     yield () }
   }
 
@@ -83,7 +81,7 @@ class MinimalFixtureSuite extends FunSuite:
       retry <- open(c)
       _ <- read(c)
       retryLater <- open(c)
-      log <- CommitTable.list(c, session)
+      log <- SessionRecordTable.list(c, session)
       _ = assertEquals(retry, first)
       _ = assertEquals(retryLater, first)
       _ = assertEquals(log.size, 2)
@@ -119,7 +117,7 @@ class MinimalFixtureSuite extends FunSuite:
       ).attempt
       after <- view(c)
       receipt <- ReceiptTable.find(c, session, RequestId("rollback"))
-      commits <- CommitTable.list(c, session)
+      commits <- SessionRecordTable.list(c, session)
       _ = assert(result.isLeft)
       _ = assertEquals(after.sequence, Sequence(0))
       _ = assertEquals(after.visiblePoints, Vector(PointId("point_drawer")))
@@ -133,7 +131,7 @@ class MinimalFixtureSuite extends FunSuite:
         DatabaseSession.connection(url).use(other => open(other, id).attempt)
       }
       state <- view(c)
-      log <- CommitTable.list(c, session)
+      log <- SessionRecordTable.list(c, session)
       _ = assertEquals(outcomes.count(_.isRight), 1)
       _ = assertEquals(errorCode(outcomes.find(_.isLeft).get), ErrorCode.StaleState)
       _ = assertEquals(state.sequence, Sequence(1))
@@ -144,26 +142,24 @@ class MinimalFixtureSuite extends FunSuite:
   test("two connections retrying the same request return the same success and one commit") {
     withGame { (url, c, _) => for
       outcomes <- List(1, 2).parTraverse(_ => DatabaseSession.connection(url).use(other => open(other).attempt))
-      log <- CommitTable.list(c, session)
+      log <- SessionRecordTable.list(c, session)
       _ = assert(outcomes.forall(_.isRight))
       _ = assertEquals(outcomes.head, outcomes.last)
       _ = assertEquals(log.size, 1)
     yield () }
   }
 
-  test("replay checks reducer version and contiguous journal order; inspection alone grants nothing") {
-    withGame { (_, c, fixture) => for
+  test("current session stores cumulative knowledge; records store individual disclosures") {
+    withGame { (_, c, _) => for
       _ <- open(c)
       _ <- read(c)
       stored <- SessionTable.find(c, session).map(_.get)
-      log <- CommitTable.list(c, session)
-      _ = assert(FixtureRules.replay(stored, log.reverse).isLeft)
-      wrong = log.updated(0, log.head.copy(reducerVersion = ReducerVersion("wrong")))
-      _ = assert(FixtureRules.replay(stored, wrong).isLeft)
-      onlyAttempt = log.last.copy(sequence = Sequence(1), changes = log.last.changes.take(1))
-      replayed = FixtureRules.replay(stored.copy(sequence = Sequence(1)), Vector(onlyAttempt)).toOption.get
-      _ = assert(replayed.facts.isEmpty && replayed.clues.isEmpty)
-      _ = assertEquals(decode[FixtureCommit](log.last.asJson.noSpaces), Right(log.last))
+      log <- SessionRecordTable.list(c, session)
+      _ = assertEquals(stored.sequence, Sequence(2))
+      _ = assert(log.head.disclosedFacts.isEmpty && log.head.disclosedClues.isEmpty)
+      _ = assertEquals(log.last.disclosedFacts, stored.facts)
+      _ = assertEquals(log.last.disclosedClues, stored.clues)
+      _ = assertEquals(decode[SessionRecord](log.last.asJson.noSpaces), Right(log.last))
     yield () }
   }
 
@@ -184,14 +180,14 @@ class MinimalFixtureSuite extends FunSuite:
     val restoreUrl = s"${url};IFEXISTS=TRUE"
     (for
       _ <- DatabaseSession.connection(url).use { c =>
-        SessionTableInitializer.initialize(c) *> CommitTableInitializer.initialize(c) *> ReceiptTableInitializer.initialize(c)
+        DatabaseSchema.initialize(c)
       }
       _ <- (1 to 20).toVector.traverse_ { n =>
         val id = SessionId(s"repeat-$n")
         for
           _ <- DatabaseSession.connection(restoreUrl).use { c => for
-            fixture <- LoadFixtureMessage(fixturePath).plan(c)
-            _ <- DatabaseSession.transaction(c)(StartGameMessage(user, id, fixture).plan(c))
+            fixture <- DatabaseSession.transaction(c)(ImportCaseMessage(fixturePath).plan(c))
+            _ <- DatabaseSession.transaction(c)(StartGameMessage(user, id, fixture.caseId, fixture.revision).plan(c))
             _ <- DatabaseSession.transaction(c)(ExecuteOperationMessage(user, id, RequestId("open"), Sequence(0), OperationId("open_drawer")).plan(c))
             _ <- DatabaseSession.transaction(c)(InvestigateMessage(user, id, RequestId("read"), Sequence(1), PointId("point_letter"), RouteId("route_letter")).plan(c))
           yield () }
@@ -214,6 +210,39 @@ class MinimalFixtureSuite extends FunSuite:
     val invalid = raw.replace("\"OperationDone\"", "\"TimeReached\"")
     val path = Files.createTempFile("detective-invalid-", ".json")
     Files.writeString(path, invalid)
-    val outcome = DatabaseSession.connection("jdbc:h2:mem:invalid").use(c => LoadFixtureMessage(path).plan(c).attempt).unsafeRunSync()
+    val outcome = DatabaseSession.connection("jdbc:h2:mem:invalid").use(c => ImportCaseMessage(path).plan(c).attempt).unsafeRunSync()
     assertEquals(errorCode(outcome), ErrorCode.InvalidValue)
+  }
+
+  test("case revisions are frozen for existing sessions") {
+    withGame { (_, c, original) => for
+      _ <- DatabaseSession.transaction(c)(services.cases.tables.CaseRevisionTable.CaseRevisionTable.insert(c,
+        original.copy(revision = Revision(2), title = "修订后的案件")))
+      _ <- DatabaseSession.transaction(c)(StartGameMessage(user, SessionId("new"), original.caseId, Revision(2)).plan(c))
+      old <- SessionTable.find(c, session)
+      fresh <- SessionTable.find(c, SessionId("new"))
+      duplicate <- DatabaseSession.transaction(c)(services.cases.tables.CaseRevisionTable.CaseRevisionTable.insert(c, original)).attempt
+      _ = assertEquals(old.get.caseRevision, original.revision)
+      _ = assertEquals(fresh.get.caseRevision, Revision(2))
+      _ = assert(duplicate.isLeft)
+    yield () }
+  }
+
+  test("record identifiers can repeat across sessions") {
+    withGame { (_, c, revision) => for
+      _ <- open(c)
+      _ <- DatabaseSession.transaction(c)(StartGameMessage(user, SessionId("second"), revision.caseId, revision.revision).plan(c))
+      _ <- DatabaseSession.transaction(c)(ExecuteOperationMessage(user, SessionId("second"), RequestId("open"), Sequence(0), OperationId("open_drawer")).plan(c))
+      first <- SessionRecordTable.list(c, session)
+      second <- SessionRecordTable.list(c, SessionId("second"))
+      _ = assertEquals(first.head.id, second.head.id)
+      _ = assert(first.head.sessionId != second.head.sessionId)
+    yield () }
+  }
+
+  test("structured request digest distinguishes separator-containing identifiers") {
+    import services.games.utils.MutationSupport
+    val a = MutationSupport.operationDigest(UserId("a:b"), SessionId("c"), RequestId("r"), Sequence(0), OperationId("op"))
+    val b = MutationSupport.operationDigest(UserId("a"), SessionId("b:c"), RequestId("r"), Sequence(0), OperationId("op"))
+    assert(a != b)
   }

@@ -35,7 +35,7 @@ private[cases] object FixtureLoader:
       node <- c.downField("entry").get[SceneNodeId]("node")
       local <- c.downField("entry").get[Vec3]("localPoint")
       radius <- c.downField("entry").get[Double]("radiusMeters")
-    yield FixturePoint(id, node, local, radius)
+    yield FixturePoint(id, node, local, radius, c.get[String]("label").getOrElse(id.value))
 
   private def fact(raw: Json): Decoder.Result[FixtureFact] =
     val c = raw.hcursor
@@ -71,7 +71,7 @@ private[cases] object FixtureLoader:
       clues <- c.get[Vector[ClueId]]("grants")
       _ <- check(clues.nonEmpty, "Empty grants", c)
       _ <- empty(c, "reports")
-    yield FixtureRoute(id, point, prerequisite, clues)
+    yield FixtureRoute(id, point, prerequisite, clues, c.downField("method").get[String]("label").getOrElse(id.value))
 
   private def operation(raw: Json): Decoder.Result[FixtureOperation] =
     val c = raw.hcursor
@@ -90,9 +90,9 @@ private[cases] object FixtureLoader:
         yield effect
       }
       _ <- check(effects.nonEmpty, "Empty effects", c)
-    yield FixtureOperation(id, point, effects)
+    yield FixtureOperation(id, point, effects, c.get[String]("label").getOrElse(id.value))
 
-  private[cases] def decode(raw: String): Either[GameError, InvestigationFixture] =
+  private[cases] def decode(raw: String): Either[GameError, CaseRevisionRecord] =
     (for
       json <- parse(raw)
       c = json.hcursor
@@ -117,7 +117,10 @@ private[cases] object FixtureLoader:
       place <- places.head.hcursor.get[PlaceId]("id")
       caseId <- c.get[CaseId]("id")
       revision <- c.get[Revision]("revision")
-      reducer <- c.get[ReducerVersion]("reducerVersion")
+      title <- c.get[String]("title")
+      placeName <- places.head.hcursor.get[String]("name")
+      time <- c.downField("initialStoryTime").get[Long]("seconds")
+      origin <- c.get[String]("timeOriginLabel")
       rawNodes <- scene.hcursor.get[Vector[Json]]("nodes")
       nodes <- rawNodes.traverse(node)
       rawPoints <- scene.hcursor.get[Vector[Json]]("points")
@@ -147,17 +150,19 @@ private[cases] object FixtureLoader:
         case FixtureEffect.Open(entity) => entityIds.contains(entity)
         case _ => true
       }, "Missing effect entity", c)
-      fixture = InvestigationFixture(caseId, revision, reducer, place, position, nodes, points, facts, clues, routes, operations, opened, unlocked, common)
-      _ <- check(valid(fixture), "Invalid fixture references / node hierarchy", c)
-    yield fixture).left.map(_ => GameError(ErrorCode.InvalidValue, "最小调查数据格式或引用不合法。"))
+      content = CaseContent(place, placeName, time, origin, position, nodes, points, facts, clues, routes, operations, opened, unlocked, common)
+      record = CaseRevisionRecord(caseId, revision, 1, title, content)
+      _ <- check(valid(record), "Invalid fixture references / node hierarchy", c)
+    yield record).left.map(error => GameError(ErrorCode.InvalidValue, s"案件数据不合法：${error.getMessage}"))
 
-  private def valid(f: InvestigationFixture): Boolean =
+  private[cases] def valid(record: CaseRevisionRecord): Boolean =
+    val f = record.content
     def finite(p: Vec3) = Vector(p.x, p.y, p.z).forall(_.isFinite)
     def unique[A](values: Vector[A]) = values.distinct.size == values.size
     val nodes = f.nodes.map(n => n.id -> n).toMap
     def validChain(id: SceneNodeId, seen: Set[SceneNodeId]): Boolean =
       !seen(id) && nodes.get(id).exists(n => n.place == f.place && n.parent.forall(validChain(_, seen + id)))
-    f.revision.value > 0 && f.reducerVersion.value == "fixture-v1" && finite(f.spawnPosition) &&
+    record.revision.value > 0 && record.contentSchemaVersion == 1 && record.title.trim.nonEmpty && f.placeName.trim.nonEmpty && f.timeOriginLabel.trim.nonEmpty && finite(f.spawnPosition) &&
       unique(f.nodes.map(_.id)) && unique(f.points.map(_.id)) && unique(f.facts.map(_.id)) &&
       unique(f.clues.map(_.id)) && unique(f.routes.map(_.id)) && unique(f.operations.map(_.id)) &&
       f.nodes.forall(n => finite(n.position) && validChain(n.id, Set.empty)) &&

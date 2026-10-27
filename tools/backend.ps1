@@ -1,5 +1,5 @@
 ﻿param(
-    [ValidateSet('doctor', 'test', 'run')]
+    [ValidateSet('doctor', 'test', 'run', 'migrate')]
     [string]$Task = 'doctor'
 )
 $ErrorActionPreference = 'Stop'
@@ -102,7 +102,7 @@ try {
         '-Dsbt.boot.server=false', '-Dsbt.server.autostart=false'
         '-Dsbt.supershell=false', '-Dsbt.log.noformat=true'
         '-Dsbt.override.build.repos=true', "-Dsbt.repository.config=$Repositories"
-        '-jar', $Launcher, $Task
+        '-jar', $Launcher, $(if ($Task -eq 'migrate') { 'runMain services.system.api.MigrateLegacyDemo' } else { $Task })
     )
     Write-Host "[log]   $Log"
     Write-Host '[info] First dependency resolution may take several minutes. sbt output follows.'

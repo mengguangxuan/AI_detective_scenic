@@ -5,7 +5,8 @@ import io.circe.generic.semiauto.*
 import services.system.objects.*
 import services.cases.objects.*
 
-final case class FixtureRoute(id: RouteId, point: PointId, prerequisite: OperationId, clues: Vector[ClueId])
+
+final case class FixtureRoute(id: RouteId, point: PointId, prerequisite: OperationId, clues: Vector[ClueId], label: String)
 
 object FixtureRoute:
   given Encoder[FixtureRoute] = deriveEncoder[FixtureRoute]

@@ -32,7 +32,7 @@ python3 tools/backend_sbt.py run
 ### 验收标准
 
 1. doctor 输出 `[OK] Environment located`（Windows），确认执行的是 Java，而不是无输出的 Python 应用别名。
-2. test 最后包含 `Passed: Total 12, Failed 0, Errors 0, Passed 12` 与 `[OK] test completed`。
+2. test 最后包含 `Passed: Total 15, Failed 0, Errors 0, Passed 15` 与 `[OK] test completed`。
 3. run 显示：提前阅读为 `Left(当前无法访问该调查入口。)`；获得“信上写着：今晚九点见。”；相同请求重试为 `true`；恢复后的 sequence 为 2，含 clue_letter 与 fact_letter_text，最后出现 `[验收通过] 调查、请求去重、关闭数据库后恢复均成功。`。
 
 提前阅读的 Left 是预期的权限拒绝，不是演示失败。当前无网页可打开，验收对象是这条 Scala／数据库流程，不是视觉场景。
@@ -45,11 +45,11 @@ Windows 日志保存在 backend/.build-cache/windows-test.log 与 windows-run.lo
 
 启动器现在记录输出平台；发现未知输出或切换 Windows／Linux 时，将 target/out、target/streams、project/target 移到 backend/.build-cache/output-backups/，不删除源码或 target/fixture-demo 中的数据库，然后重新生成当前平台输出。各平台的归档分开保留；不支持两边同时构建。直接绕过入口在 IDE 里构建前，也应确保当前缓存属于该平台。
 
-已在 Windows 原生 PowerShell 实际完成诊断、旧缓存归档、重新编译、全部 12 项测试和演示。启动 JVM 与 fork 出的演示／测试 JVM 均显式使用 UTF-8，中文信件及错误提示已实际显示正确。
+已在 Windows 原生 PowerShell 实际完成诊断、旧缓存归档、重新编译、全部 15 项测试和演示。启动 JVM 与 fork 出的演示／测试 JVM 均显式使用 UTF-8，中文信件及错误提示已实际显示正确。
 
 当前使用本机已有的 sbt 2.0.9、Scala 3.9.0 及 Java 21；Cats Effect 与 Circe 版本沿用课程样本。H2 是本阶段嵌入式数据库选择，MUnit 用于自动测试；不是把课程后端改为 Python。
 
-演示先拒绝提前阅读信件，随后打开抽屉、阅读固定内容、以相同请求编号重试，最后关闭连接重新恢复会话。输出显示线索内容、序号及恢复状态。数据库使用一次解析后的绝对路径，保存在 backend/target/fixture-demo/windows/db.mv.db（Windows）或 linux/db.mv.db（Linux）。每次演示创建新会话，关闭前后比较完整状态；恢复连接使用 IFEXISTS=TRUE，不允许默默创建新数据库。旧的 backend/target/fixture-demo/db.mv.db 保留，不自动迁移或删除。
+演示先拒绝提前阅读信件，随后打开抽屉、阅读固定内容、以相同请求编号重试，最后关闭连接重新恢复会话。输出显示线索内容、序号及恢复状态。数据库使用一次解析后的绝对路径，保存在 backend/target/fixture-demo/windows/db-v2.mv.db（Windows）或 linux/db-v2.mv.db（Linux）。每次演示创建新会话，关闭前后比较完整状态；恢复连接使用 IFEXISTS=TRUE，不允许默默创建新数据库。旧的 backend/target/fixture-demo/db.mv.db 保留，不自动迁移或删除。
 
 ## 课程规范的落实
 
@@ -58,21 +58,32 @@ Windows 日志保存在 backend/.build-cache/windows-test.log 与 windows-run.lo
 - 纯规则在 games/utils，夹具解析规则在 cases/utils，均使用 private[所属服务] 可见性；不跨服务调用私有 utils。
 - 每个操作独立 Message，构造参数承载输入，入口为 plan(connection: Connection): IO[Response]；响应放 games/objects/apiTypes。没有转发用 Service 层。
 - 每张表有独立目录与 TableInitializer；SQL 私有并与公开 IO 方法相邻。消息不拼 SQL。SessionTable 私有查询辅助方法不对外接受任意 SQL。
-- 消息在外层 DatabaseSession.transaction 中执行。写入先锁会话、校验 owner、检查相同请求回执，再校验预期序号、重放、纯规划，最后同事务写入日志、会话序号和回执。无 AI／网络等待混入事务。
+- 消息在外层 DatabaseSession.transaction 中执行。写入先锁会话、校验 owner、检查相同请求回执，再校验预期序号、纯规划，最后同事务写入日志、会话序号和回执。无 AI／网络等待混入事务。
 
-system/api 中的 DatabaseSession 和 FixtureDemo 是共享事务与应用启动边界，符合课程对基础设施归属的要求；不是领域对象或业务 Service。LoadFixtureMessage 是制作期内部读文件入口，不接受浏览器提交路径。
+system/api 中的 DatabaseSession 和 FixtureDemo 是共享事务与应用启动边界，符合课程对基础设施归属的要求；不是领域对象或业务 Service。ImportCaseMessage 是制作期内部读文件入口，不接受浏览器提交路径。
+
+字段、类型和职责逐项对照见 [table_types.md](table_types.md)。
 
 ## 持久化与恢复
 
-三张表分别保存会话、追加日志、成功请求回执。会话保存被冻结的类型化夹具投影、初始状态和当前序号；不依赖重新读取可修改的 JSON 文件恢复旧会话。日志存自足的检查与获知记录，查询时从序号0状态重放；序号及 reducerVersion 不匹配即拒绝。
+| 表 | 对应类型 | 职责 |
+|---|---|---|
+| case_revisions | CaseRevisionRecord | 冻结案件修订；复合内容 CaseContent 存为类型化 JSON |
+| game_sessions | GameSessionRecord | 当前状态的权威记录，按列存储序号、位置、知识和完成操作 |
+| session_records | SessionRecord | 每次成功动作及该次披露的信息，不重复整份当前状态 |
+| game_receipts | RequestReceiptRecord | 请求摘要与原响应，支持幂等重试 |
+
+案件通过 caseId + revision 关联，会话不复制案件。常规查询直接读取当前状态，不重放历史。纯函数返回 ActionPlan，事务共同保存状态、调查记录与回执。案件修订只有插入和查询接口；修改内容必须创建新修订。
+
+旧演示库保留。可运行 `powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\backend.ps1 migrate`：先备份源库，再以只读方式打开，校验旧日志并迁移到 db-v2；重复运行核对已有结果，不重复插入。旧格式适配器位于 tables/migration 与 objects/migration，只有读取接口，因此不提供建表初始化器。旧日志不进入日常查询路径。
 
 本切片没有长时间操作，因此不持久化 Pending：会话行锁串行化短事务，同一事务保存成功回执；失败完整回滚。若以后接入 AI，必须另行落实短事务登记 Pending／释放连接／调用模型／短事务复核，不得直接沿用此同步事务模型。
 
-同 RequestId 同载荷返回原响应，即使 expectedSequence 已经过期；同 ID 不同载荷拒绝；新 ID 携带旧序号拒绝。不同新请求对同序号竞争只允许一个提交。只记录 Investigated 不授予知识；Acquired 才更新事实和线索。
+同 RequestId 同载荷返回原响应，即使 expectedSequence 已经过期；同 ID 不同载荷拒绝；新 ID 携带旧序号拒绝。不同新请求对同序号竞争只允许一个提交。成功调查通过纯规则计算本次披露的事实和线索，并在同一事务更新当前知识。
 
 ## 范围与限制
 
-这是完整 CasePackage 的**最小调查投影** InvestigationFixture，不宣称已实现整个领域初稿。Fixture* 类型是阶段实现，不替换文档中的通用案件类型。加载器明确拒绝非 InvestigationOnly、未来事件、人物、评分、非 Fixed 路线、不支持条件／效果和带旋转／缩放的节点；当前只有一间房，节点支持父链平移与半径距离检查。不支持跨地点移动或通用矩阵变换。
+这是完整 CasePackage 的**最小调查投影** CaseContent，不宣称已实现整个领域初稿。Fixture* 类型是阶段实现，不替换文档中的通用案件类型。加载器明确拒绝非 InvestigationOnly、未来事件、人物、评分、非 Fixed 路线、不支持条件／效果和带旋转／缩放的节点；当前只有一间房，节点支持父链平移与半径距离检查。不支持跨地点移动或通用矩阵变换。
 
 它校验所消费的运行字段和引用，不是完整案件发布校验器。文档 Python 校验仍检查原始完整 JSON 的形状。占位模型没有被渲染，视觉验收没有完成。
 
@@ -80,7 +91,7 @@ system/api 中的 DatabaseSession 和 FixtureDemo 是共享事务与应用启动
 
 ## 验证结果
 
-12 项集成／规则测试通过：隐藏父链访问、固定线索获知、请求去重、载荷冲突、过期序号、跨用户拒绝、后段失败完整回滚、双连接竞争、相同请求并发重试、日志版本／顺序及编解码、文件数据库关闭后恢复、不支持协议拒绝。部分相关断言归在同一测试中。数据库结果仅针对 H2；未声称验证 PostgreSQL 或真实进程崩溃／断电。
+15 项测试覆盖访问控制、线索获知、去重、载荷冲突、过期序号、事务回滚、双连接竞争、当前状态与本次披露区分、文件恢复、连续20个会话恢复、协议拒绝、案件修订冻结、跨会话记录编号及请求摘要边界。数据库结果仅针对 H2。
 
 ## 恢复失败不是正常验收结果
 

@@ -126,3 +126,10 @@ PlayerCommand／GameRequest 是领域命令／去重输入，不替代独立 API
 已有 LoadFixtureMessage、StartGameMessage、ExecuteOperationMessage、InvestigateMessage、GetGameStateMessage，均是本地 Scala 切片的内部调用，未注册 HTTP 路由，不替代本文未来公开接口方案。StartGame 接受经加载器验证的 InvestigationFixture，执行消息接收可信 UserId、SessionId、RequestId、expectedSequence；具体构造与响应见源码及 [minimal_backend.md](minimal_backend.md)。
 
 这里只落实最小调查路径；不据此扩充其他 API。前端令牌转换、服务路由注册和 AI 短事务仍需在实际使用前设计。
+
+## 5. 前端调查视图的待议补充
+
+[前端类型初稿](../frontend/frontend_types.md) 提议：同一序号的场景／已获线索／公开日志组成一致快照，场景节点增加可登记的 visualPresetId，变更操作先取得回执再刷新快照。首版仅固定操作与检查。此提议不修改现有 Scala 响应或路由，也不自动确认通用姿态绑定的领域实现；相关后端投影在浏览器切片前局部落实。
+
+
+> 2026-10-27 实施同步：最小 Scala 切片已按四张表重构，具体实现及验收命令以 [minimal_backend.md](minimal_backend.md) 为准。当前状态直接存储；旧提交日志重放仅用于离线迁移。导入入口为 ImportCaseMessage，操作和调查直接返回 CommandResult，不再增加 result 包装。本文件中尚未实施的完整领域或接口仍是设计草案。

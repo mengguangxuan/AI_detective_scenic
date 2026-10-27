@@ -5,7 +5,8 @@ import io.circe.generic.semiauto.*
 import services.system.objects.*
 import services.cases.objects.*
 
-final case class FixturePoint(id: PointId, node: SceneNodeId, localPoint: Vec3, radiusMeters: Double)
+
+final case class FixturePoint(id: PointId, node: SceneNodeId, localPoint: Vec3, radiusMeters: Double, label: String)
 
 object FixturePoint:
   given Encoder[FixturePoint] = deriveEncoder[FixturePoint]
