@@ -109,3 +109,10 @@
 
 - 用户希望按老师示例的方式，以数据库表的业务职责为主线组织类型。新的按表方案见 `docs/backend/refactor_plan.md` 第13节：案件修订、当前会话、调查记录、请求回执；先定义记录，再补必要输入、公开视图和复合内容。
 - 这不要求每个场景概念各建一表，也不强制把内部记录返回前端。已按此方案重构最小 Scala 切片：CaseRevisionRecord、GameSessionRecord、SessionRecord、RequestReceiptRecord 分别对应四张表。查询直接读取当前状态；ActionPlan 由纯规则产生，状态、记录和回执共同提交。旧格式只留在隔离的离线迁移适配器，演示新库使用 db-v2，旧库先备份并保留。详见 docs/backend/minimal_backend.md。
+
+## 前端实现与隔离环境
+
+- 已开始 frontend/ 的调查页本地预览；React／TypeScript strict、Tailwind、React Three Fiber。入口显式展示业务区域，本页类型、纯函数、hooks 和组件就近组织。
+- 当前仅本地预览，不含 HTTP、登录、AI 或服务端存档；演示正文可在客户端看到，不得将此实现作为正式案件信息隔离方案。后端接入时移除预览结果来源。
+- 用户要求 E 盘存放前端工具与依赖，并强调不破坏环境。使用 tools/frontend.ps1 的 doctor/install/dev/build/test/browser-test；通过进程局部环境显式选择 E:\dev\nodejs、npm-cache、npm-global，依赖存 E:\dev\project-dependencies 并联接到项目。保留 C 盘安装与缓存，不改系统 PATH／用户配置／其他项目。
+- 详细路径、准备步骤与验收见 docs/frontend/implementation.md。不得直接对联接目录执行普通 npm install；使用脚本在 E 盘安装。

@@ -18,3 +18,10 @@ Thumbs.db
 
 # Platform-specific build caches, compiler-output backups and local logs
 .build-cache/
+
+# Frontend generated artifacts
+frontend/dist/
+frontend/test-results/
+frontend/playwright-report/
+# Windows junctions appear as symlinks to WSL Git
+frontend/node_modules

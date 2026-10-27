@@ -1,6 +1,6 @@
 # 前端类型初稿 v0.2
 
-本文为待讨论的前端契约，不代表已创建前端源码、HTTP 接口或 3D 场景。优先实现现有书房夹具的浏览器闭环，不重新做全量类型评审。
+本文为完整目标的前端契约草案。当前已实现本地预览的前端源码和基础几何书房，范围见 [implementation.md](implementation.md)；本文的后端投影、HTTP 接口与身份边界仍未实现。优先实现现有书房夹具的浏览器闭环，不重新做全量类型评审。
 
 依据：[项目约定](../../AGENTS.md)、[功能规划](../../plan.md)、[课程规范](../../../samples/samples/rules.txt)、[后端领域类型](../backend/case_truth_types.md)、[API 草案](../backend/api_design_draft.md)、[已实现的表与类型](../backend/table_types.md)。前端使用 React／TypeScript，3D 拟采用 Three.js／React Three Fiber；实现时再确定兼容版本。
 
@@ -403,7 +403,7 @@ frontend/src/
 
 页面组件与 hook 就近组织；接口专用 DTO／解码放对应服务 API 附近，不把页面模型都堆进全局 objects。纯计算不直接调用 API；网络请求、资源加载与渲染副作用显式隔离。界面使用课程要求的 Tailwind；Three.js 材质参数属于场景绘制，不是另引 CSS 样式体系。
 
-本轮只调整文档，不实现 HTTP 或前端工程。后续按以下顺序推进，其他必备页面保留在规划中：
+后续实现已进入前端本地预览阶段，完整联网流程仍按以下顺序推进，其他必备页面保留在规划中：
 
 | 步骤 | 具体产物 | 可检查结果 |
 |---|---|---|
