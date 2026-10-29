@@ -14,7 +14,9 @@ object SessionTableInitializer:
  opened_json CLOB NOT NULL, unlocked_json CLOB NOT NULL, visible_nodes_json CLOB NOT NULL,
  completed_operations_json CLOB NOT NULL, clues_json CLOB NOT NULL, facts_json CLOB NOT NULL,
  FOREIGN KEY(case_id,case_revision) REFERENCES case_revisions(case_id,revision))"""
+  private val addChecksSql = "ALTER TABLE game_sessions ADD COLUMN IF NOT EXISTS checks_json CLOB DEFAULT '[]' NOT NULL"
   def initialize(connection: Connection): IO[Unit] = IO.blocking {
     Using.resource(connection.createStatement())(_.execute(createSql))
+    Using.resource(connection.createStatement())(_.execute(addChecksSql))
     ()
   }

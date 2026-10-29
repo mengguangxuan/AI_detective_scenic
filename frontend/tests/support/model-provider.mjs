@@ -43,6 +43,13 @@ const server = http.createServer(async (request, response) => {
     if (context.witness.name === '克莱门特牧师' && context.question.includes('病人是谁')) reply = '下农场的阿博特先生。电话里说他快不行了，我到了才发现不是那么回事。';
     if (context.witness.name === '玛丽' && !['mary_sound', 'mary_fish_time'].includes(id) && /异响|响声/.test(context.question)) reply = '我记得一声砰响，当时以为在树林里，具体几点我没留意。';
     if (context.witness.name === '梅尔切特' && !['police_gun_check', 'police_movement_check', 'police_sound_check'].includes(id) && /怎么看|材料/.test(context.question) && context.shownEvidence.length) reply = '你出示的这份座钟记录写的是18:22。还得问清它平时走得准不准。';
+    if (context.witness.name === '梅尔切特' && /核验结果|核验.*多久|医生到场.*进展/.test(context.question)) {
+      const medical = /医生到场/.test(context.question);
+      const title = medical ? '医生到场与初查记录' : '手枪与弹头核验';
+      const clue = medical ? 'clue_medical_visit_record' : 'clue_gun_verification';
+      reply = context.shownEvidence.find(item => item.id === clue)?.text ?? context.knowledge.find(item => item.startsWith(title + '：')) ?? '这项还未受理。';
+      id = undefined;
+    }
     const decision = context.question.includes('越界测试') ? { disclosureIds: ['future_confession'], reply: 'DO_NOT_RENDER_FUTURE' }
       : context.disclosures ? { reply, disclosureIds: id && allowed.has(id) ? [id] : [] } : { answerIds: id && allowed.has(id) ? [id] : [] };
     response.setHeader('Content-Type', 'application/json');

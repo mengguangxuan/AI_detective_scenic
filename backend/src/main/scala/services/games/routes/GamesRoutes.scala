@@ -5,6 +5,8 @@ import services.system.api.RegisteredAPIMessage
 import services.models.api.ChatCompletionClient
 object GamesRoutes:
   val apiMessages: Vector[RegisteredAPIMessage] = Vector(
+    RegisteredAPIMessage.authenticated[RequestExternalCheckMessage,RequestExternalCheckInput,CommandResult](Set("sessionId","requestId","expectedSequence","check"))((input,user) => RequestExternalCheckMessage(user,input.sessionId,input.requestId,input.expectedSequence,input.check)),
+    RegisteredAPIMessage.authenticated[AdvanceTimeMessage,AdvanceTimeInput,CommandResult](Set("sessionId","requestId","expectedSequence","minutes"))((input,user) => AdvanceTimeMessage(user,input.sessionId,input.requestId,input.expectedSequence,input.minutes)),
     RegisteredAPIMessage.authenticated[ReportCluesMessage,ReportCluesInput,CommandResult](Set("sessionId","requestId","expectedSequence","evidence"))((input,user) => ReportCluesMessage(user,input.sessionId,input.requestId,input.expectedSequence,input.evidence)),
     RegisteredAPIMessage.authenticated[OpenStudyMessage,SessionInput,InvestigationSnapshot](Set("sessionId"))((input,user) => OpenStudyMessage(user,input.sessionId)),
     RegisteredAPIMessage.authenticated[GetInvestigationSnapshotMessage,SessionInput,InvestigationSnapshot](Set("sessionId"))((input,user) => GetInvestigationSnapshotMessage(user,input.sessionId)),

@@ -30,9 +30,23 @@ private[games] object InterviewRules:
       val fixedPresentations = records.filter(_.point == profile.point).flatMap(_.route)
         .flatMap(id => content.routes.find(_.id == id).toVector.flatMap(_.presentedClues))
       val policeEvidence = if content.police.exists(_.point == profile.point) then exchanges.flatMap(_.evidence).toSet else Set.empty[ClueId]
-      val known = evidence ++ history.filter(t => t.mode == InterviewReplyMode.Answered || t.mode == InterviewReplyMode.Unknown).flatMap(_.shownClues) ++ fixedPresentations ++ policeEvidence
-      val available = profile.answers.filter(_.requiredEvidence.subsetOf(known))
-      InterviewContext(profile.copy(answers=available,knowledge=knowledge,privateContext=privateContext,policy=policy),content.clues.filter(c => known(c.id)),history.takeRight(12),state.caseId,state.caseRevision,
+      val checked = if content.police.exists(_.point == profile.point) then
+        content.externalChecks.filter(c => state.externalChecks.exists(p => p.id == c.id && p.completedAtSeconds.nonEmpty)).flatMap(_.resultClues).toSet else Set.empty[ClueId]
+      val known = checked ++ evidence ++ history.filter(t => t.mode == InterviewReplyMode.Answered || t.mode == InterviewReplyMode.Unknown).flatMap(_.shownClues) ++ fixedPresentations ++ policeEvidence
+      val native = profile.answers.filter(_.requiredEvidence.subsetOf(known))
+      // Completed reports are already-held evidence, not new routes the model can execute.
+      val reportIds = content.externalChecks.flatMap(_.resultClues).toSet
+      val reports = content.clues.filter(c => reportIds(c.id) && known(c.id)).map(c =>
+        WitnessAnswer(WitnessAnswerId(c.id.value.stripPrefix("clue_")),c.text.value,Vector.empty,Set.empty))
+      val available = native ++ reports.filterNot(r => native.exists(_.id == r.id))
+      val current = content.clock.toVector.map(_ => s"当前案件时间是${ExternalCheckRules.timeLabel(content,state.storyTimeSeconds)}，日期和时刻以此为准；历史经历不随等待改写。")
+      val mapKnowledge = content.areaMap.toVector.map(m => s"公开地点示意：${m.locations.map(l => s"${l.name}：${l.description}").mkString("；")}。道路路程约数：${m.roads.map(r => s"${m.locations.find(_.id == r.from).map(_.name).getOrElse(r.from.value)}至${m.locations.find(_.id == r.to).map(_.name).getOrElse(r.to.value)} ${r.meters}米").mkString("；")}。${m.note}")
+      val conditions = if content.police.exists(_.point == profile.point) then ExternalCheckRules.views(content,state).map { c =>
+        c.progress.fold(s"${c.title}：尚未受理，可通过登记申请，不能声称已经核验或得到结果。") { p =>
+          p.completedAt.fold(s"${c.title}：${p.requestedAt}受理，预计${p.readyAt}完成，目前仍在办理。") { at => s"${c.title}：$at 已完成，可依据shownEvidence中的实际核查结果回答。" }
+        }
+      } else Vector.empty
+      InterviewContext(profile.copy(answers=available,knowledge=knowledge++current++mapKnowledge++conditions,privateContext=privateContext,policy=policy),content.clues.filter(c => known(c.id)),history.takeRight(12),state.caseId,state.caseRevision,
         if knowledge.nonEmpty then 2 else 1)
 
   private[games] def prompt(request: InterviewRequestRecord): ChatCompletionInput =
@@ -43,7 +57,7 @@ private[games] object InterviewRules:
       |只输出JSON，严格格式为 {"answerIds":["提供的条目ID"]}，最多两个不同ID。
       |无法回答时输出 {"answerIds":[]}。不输出答复正文、解释、Markdown或其他字段。
       |涉及时间依据的追问应选择具体说明时间依据的条目，而不仅是重复一个时刻。""".stripMargin
-    val conversational = """你是1930年圣玛丽米德侦探游戏中的一位人物，正与玩家当面交谈。当前为周五上午的初查。
+    val conversational = """你是1930年圣玛丽米德侦探游戏中的一位人物，正与玩家当面交谈。当前日期与时刻以knowledge中的案件时钟为准；未提供时为周五上午初查。
       |你要扮演输入中这位人物，不是资料检索器、全知旁白或小说结局讲解员。
       |knowledge是本人经历、认识的人、记忆和表达边界；disclosures是当前可披露的调查材料。两者都可用于理解和组织回答，不必照抄标准答案。
       |privateContext是你本人知道但不愿公开的内情；policy规定你此刻选择怎么说，包括隐瞒、撒谎和拒答。必须按policy对外说话，不能把知道的秘密自动说出口，也不能把对外口供当成真实内心。

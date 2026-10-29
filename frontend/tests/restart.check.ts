@@ -63,3 +63,20 @@ test.describe('independent checks recovery', () => {
     expect(state.stage.completed).toBe(false);
   });
 });
+
+test.describe('map and timed check recovery', () => {
+  test.use({ storageState: '.build-cache/map-clock-state.json' });
+  test('completed external checks and exact story time restore after backend restart', async ({ page }) => {
+    await page.goto('/police');
+    await expect(page.getByRole('region', { name: '案件时钟', exact: true })).toContainText('09:29');
+    await expect(page.getByRole('article', { name: '手枪与弹头核验', exact: true })).toContainText('已完成');
+    const saved = await page.evaluate(() => JSON.parse(localStorage.getItem('detective-scenic:server-session:v6')!));
+    const response = await page.request.post('/api/getinvestigationsnapshot', { data: { sessionId: saved.sessionId }, headers: { 'X-Detective-Client': 'web' } });
+    expect(response.status()).toBe(200);
+    const state = await response.json();
+    expect(state.clock.elapsedSeconds).toBe(1740);
+    expect(state.externalChecks.every((check: { progress: { completedAt: string | null } }) => check.progress.completedAt !== null)).toBe(true);
+    expect(state.clues).toHaveLength(2);
+    expect(state.areaMap.locations).toHaveLength(15);
+  });
+});

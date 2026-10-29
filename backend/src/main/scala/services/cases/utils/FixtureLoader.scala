@@ -130,12 +130,13 @@ private[cases] object FixtureLoader:
       _ <- empty(background.hcursor, "openingReports", "openingMaterials")
       publicPersons <- background.hcursor.get[Vector[CasePersonBrief]]("persons")
       places <- world.hcursor.get[Vector[Json]]("places")
-      _ <- check(places.size == 1, "Only one-room fixture supported", c)
-      place <- places.head.hcursor.get[PlaceId]("id")
+      _ <- check(places.nonEmpty, "Missing places", c)
+      place <- c.downField("investigation").downField("initial").get[PlaceId]("spawnPlace")
+      playable <- places.find(_.hcursor.get[PlaceId]("id").contains(place)).toRight(DecodingFailure("Unknown playable place",c.history))
       caseId <- c.get[CaseId]("id")
       revision <- c.get[Revision]("revision")
       title <- c.get[String]("title")
-      placeName <- places.head.hcursor.get[String]("name")
+      placeName <- playable.hcursor.get[String]("name")
       time <- c.downField("initialStoryTime").get[Long]("seconds")
       origin <- c.get[String]("timeOriginLabel")
       rawNodes <- scene.hcursor.get[Vector[Json]]("nodes")
@@ -168,6 +169,11 @@ private[cases] object FixtureLoader:
       stage <- investigation.hcursor.get[Option[InvestigationStage]]("stage")
       witnesses <- investigation.hcursor.get[Option[Vector[WitnessProfile]]]("witnesses").map(_.getOrElse(Vector.empty))
       police <- investigation.hcursor.get[Option[PoliceContact]]("police")
+      areaMap <- background.hcursor.get[Option[AreaMap]]("areaMap")
+      clock <- investigation.hcursor.get[Option[InvestigationClock]]("clock")
+      checks <- investigation.hcursor.get[Option[Vector[ExternalCheckSpec]]]("externalChecks").map(_.getOrElse(Vector.empty))
+      placeIds <- places.traverse(_.hcursor.get[PlaceId]("id"))
+      _ <- check(placeIds.distinct.size == placeIds.size && areaMap.forall(_.locations.forall(l => placeIds.contains(l.id))),"Unknown map place",c)
       entities <- world.hcursor.get[Vector[Json]]("entities")
       entityIds <- entities.traverse(_.hcursor.get[EntityId]("id"))
       _ <- check(sceneObjects.forall(o => entityIds.contains(o.entity)), "Unknown scene object entity", c)
@@ -178,7 +184,7 @@ private[cases] object FixtureLoader:
         case _ => true
       }, "Missing effect entity", c)
       _ <- check(operations.forall(_.openedRequirement.forall(r => entityIds.contains(r.entity))),"Unknown operation condition entity",c)
-      content = CaseContent(place, placeName, time, origin, position, nodes, points, facts, clues, routes, operations, opened, unlocked, common, observations, stage, sceneObjects, witnesses, police, publicPersons)
+      content = CaseContent(place, placeName, time, origin, position, nodes, points, facts, clues, routes, operations, opened, unlocked, common, observations, stage, sceneObjects, witnesses, police, publicPersons, areaMap, clock, checks)
       record = CaseRevisionRecord(caseId, revision, 1, title, content)
       _ <- check(valid(record), "Invalid fixture references / node hierarchy", c)
     yield record).left.map(error => GameError(ErrorCode.InvalidValue, s"案件数据不合法：${error.getMessage}"))
@@ -191,6 +197,15 @@ private[cases] object FixtureLoader:
     def validChain(id: SceneNodeId, seen: Set[SceneNodeId]): Boolean =
       !seen(id) && nodes.get(id).exists(n => n.place == f.place && n.parent.forall(validChain(_, seen + id)))
     record.revision.value > 0 && record.contentSchemaVersion == 1 && record.title.trim.nonEmpty && f.placeName.trim.nonEmpty && f.timeOriginLabel.trim.nonEmpty && finite(f.spawnPosition) &&
+      f.clock.forall(c => c.startMinutesOfDay >= 0 && c.startMinutesOfDay < 1440 && c.actionSeconds >= 60 && c.actionSeconds <= 600 && c.actionSeconds % 60 == 0) &&
+      (f.externalChecks.isEmpty || (f.clock.nonEmpty && f.police.nonEmpty)) && unique(f.externalChecks.map(_.id)) &&
+      f.externalChecks.forall(c => c.title.trim.nonEmpty && c.requestLabel.trim.nonEmpty && c.delaySeconds >= 60 && c.delaySeconds <= 7200 && c.delaySeconds % 60 == 0 &&
+        f.police.exists(_.point == c.point) && c.requiredClues.subsetOf(f.clues.map(_.id).toSet) && c.resultClues.nonEmpty &&
+        c.resultClues.subsetOf(f.clues.map(_.id).toSet) && c.requiredClues.intersect(c.resultClues).isEmpty &&
+        !f.routes.exists(r => r.clues.exists(c.resultClues))) &&
+      f.areaMap.forall(m => m.note.trim.nonEmpty && m.locations.nonEmpty && unique(m.locations.map(_.id)) && unique(m.roads.map(_.id)) &&
+        m.locations.forall(l => l.name.trim.nonEmpty && l.description.trim.nonEmpty && l.x.isFinite && l.y.isFinite && l.x >= 40 && l.x <= 1160 && l.y >= 40 && l.y <= 660) &&
+        m.roads.forall(r => r.id.matches("[a-z][a-z0-9_]{0,63}") && r.from != r.to && m.locations.exists(_.id == r.from) && m.locations.exists(_.id == r.to) && r.meters > 0 && r.meters <= 10000 && r.label.trim.nonEmpty)) &&
       unique(f.nodes.map(_.id)) && unique(f.points.map(_.id)) && unique(f.facts.map(_.id)) &&
       unique(f.clues.map(_.id)) && unique(f.routes.map(_.id)) && unique(f.operations.map(_.id)) &&
       f.nodes.forall(n => finite(n.position) && validChain(n.id, Set.empty)) &&

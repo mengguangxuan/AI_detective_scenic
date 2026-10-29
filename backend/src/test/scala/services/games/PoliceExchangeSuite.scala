@@ -36,7 +36,7 @@ class PoliceExchangeSuite extends FunSuite:
       _ <- DatabaseSession.connection(url).use(c => DatabaseSchema.initialize(c))
       _ <- tx(url) { c => for
         current <- ImportCaseMessage(Paths.get("../docs/fixtures/browser_investigation.json")).plan(c)
-        previous = current.copy(revision=Revision(3),content=current.content.copy(police=None,publicPersons=Vector.empty))
+        previous = current.copy(revision=Revision(3),content=current.content.copy(police=None,publicPersons=Vector.empty,clock=None,externalChecks=Vector.empty,areaMap=None))
         _ <- CaseRevisionTable.insert(c,previous)
         _ <- StartGameMessage(owner,id,previous.caseId,previous.revision).plan(c)
       yield () }
@@ -53,7 +53,7 @@ class PoliceExchangeSuite extends FunSuite:
       _ = assertEquals(restored,saved)
       newId = SessionId(UUID.randomUUID().toString)
       current <- tx(url)(OpenStudyMessage(owner,newId).plan)
-      _ = assertEquals(current.caseRevision,Revision(7))
+      _ = assertEquals(current.caseRevision,Revision(8))
       _ = assert(current.police.nonEmpty)
     yield ()).unsafeRunSync()
   }

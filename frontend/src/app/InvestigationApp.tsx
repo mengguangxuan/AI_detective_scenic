@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
 import { useInvestigation } from '../features/investigation/hooks/useInvestigation';
 import type { SessionId } from '../objects/SessionId';
+import MapPage from '../pages/Map';
+import CaseClockPanel from './components/CaseClockPanel';
 import ScenePage from '../pages/Scene';
 import CluesPage from '../pages/Clues';
 import InterviewsPage from '../pages/Interviews';
@@ -34,17 +36,19 @@ export default function InvestigationApp() {
         <div><p className="text-xs tracking-[0.3em] text-amber-200">AI DETECTIVE THEATRE</p><h1 className="mt-2 text-2xl font-medium tracking-wide sm:text-3xl">AI 侦探剧场</h1></div>
         <button type="button" onClick={reset} disabled={state.kind === 'loading' || (ready !== null && disabled)} className="rounded-lg border border-white/20 px-4 py-2 text-sm text-stone-300 hover:bg-white/10 disabled:opacity-40">新建调查</button>
       </header>
-      {ready ? <div className="mt-6 flex flex-wrap items-end justify-between gap-4"><div><p className="text-xs tracking-widest text-stone-400">周五上午 / 警方初查</p><h2 className="mt-2 text-xl">{ready.snapshot.title}</h2></div><p className="text-sm text-stone-400">材料 {ready.snapshot.clues.length} 份 · 调查记录 {ready.snapshot.sequence} 条</p></div> : null}
+      {ready ? <div className="mt-6 flex flex-wrap items-end justify-between gap-4"><div><p className="text-xs tracking-widest text-stone-400">{ready.snapshot.clock?.label ?? '周五上午'} / 警方初查</p><h2 className="mt-2 text-xl">{ready.snapshot.title}</h2></div><p className="text-sm text-stone-400">材料 {ready.snapshot.clues.length} 份 · 调查记录 {ready.snapshot.sequence} 条</p></div> : null}
       <InvestigationNavigation page={page}/>
       {page === null ? <section className="rounded-xl border border-white/15 p-6"><h2 className="text-xl">找不到这个页面</h2><p className="mt-3 text-sm text-stone-400">请从上方导航选择要进入的调查页面。</p></section> : <>
         {state.kind === 'loading' ? <p role="status" className="py-12 text-stone-300">正在连接后端并恢复调查…</p> : null}
         {state.kind === 'failed' ? <section role="alert" className="rounded-xl border border-amber-200/20 p-6"><p>{state.message}</p><p className="mt-2 text-sm text-stone-400">请确认后端已启动；若刚更新过项目，请先刷新页面，再重新连接。原存档与待处理请求会保留。</p><button type="button" onClick={() => void reconnect()} className="mt-4 rounded-lg border border-amber-200 px-4 py-2">重新连接</button></section> : null}
         {ready ? <>
-          {ready.snapshot.caseId === 'vicarage_study' && ready.snapshot.caseRevision < 7 ? <section role="status" className="mb-5 rounded-xl border border-white/20 p-4 text-sm leading-7 text-stone-300">已恢复原修订的调查，进度与待处理请求保持不变。若要体验枪来源、独立行踪和响声的核查内容，请用右上角“新建调查”进入当前修订；原调查仍保留在服务器。</section> : null}
+          {ready.snapshot.caseId === 'vicarage_study' && ready.snapshot.caseRevision < 8 ? <section role="status" className="mb-5 rounded-xl border border-white/20 p-4 text-sm leading-7 text-stone-300">已恢复原修订的调查，进度与待处理请求保持不变。若要体验地点地图、案件时钟和到时反馈的核查内容，请用右上角“新建调查”进入当前修订；原调查仍保留在服务器。</section> : null}
           {ready.mutation.kind === 'outcomeUnknown' ? <section role="alert" className="mb-5 rounded-xl border border-amber-200/30 p-4"><p>{ready.mutation.problem}</p><button type="button" onClick={retry} className="mt-3 rounded-lg border border-amber-200 px-4 py-2">用原请求重试</button></section> : null}
           {ready.mutation.kind === 'awaitingSnapshot' ? <section role="status" className="mb-5 rounded-xl border border-amber-200/30 p-4"><p>{ready.mutation.problem}</p><button type="button" onClick={() => void reconnect()} className="mt-3 rounded-lg border border-amber-200 px-4 py-2">重新读取视图</button></section> : null}
+          <CaseClockPanel clock={ready.snapshot.clock} disabled={disabled} onWait={investigation.advanceTime}/>
           {page !== '/case' ? <StagePanel stage={ready.snapshot.stage} compact/> : null}
           <div ref={content} tabIndex={-1} className="outline-none">
+            {page === '/map' ? <MapPage key={ready.snapshot.sessionId} map={ready.snapshot.areaMap}/> : null}
             {page === '/case' ? <CasePage snapshot={ready.snapshot} onSelect={investigation.select}/> : null}
             {page === '/people' ? <PeoplePage snapshot={ready.snapshot} onSelect={investigation.select}/> : null}
             {page === '/journal' ? <JournalPage key={ready.snapshot.sessionId} snapshot={ready.snapshot}/> : null}

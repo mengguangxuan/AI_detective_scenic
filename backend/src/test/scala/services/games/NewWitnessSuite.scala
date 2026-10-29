@@ -46,7 +46,7 @@ class NewWitnessSuite extends FunSuite:
         primaryClues = latest.content.routes.filter(r => newPoints(r.point)).flatMap(_.clues).toSet
         newRoutes = latest.content.routes.filter(r => newPoints(r.point) || r.requiredClues.intersect(primaryClues).nonEmpty)
         newClues = newRoutes.flatMap(_.clues).toSet
-        oldContent = latest.content.copy(publicPersons=Vector.empty,
+        oldContent = latest.content.copy(publicPersons=Vector.empty,clock=None,externalChecks=Vector.empty,areaMap=None,
           witnesses=latest.content.witnesses.filterNot(w => newPoints(w.point)),
           points=latest.content.points.filterNot(p => newPoints(p.id)),
           routes=latest.content.routes.filterNot(r => newRoutes.exists(_.id == r.id)),
@@ -75,7 +75,7 @@ class NewWitnessSuite extends FunSuite:
     (for
       _ <- setup(url,id)
       initial <- view(url,id)
-      _ = assertEquals(initial.caseRevision,Revision(7))
+      _ = assertEquals(initial.caseRevision,Revision(8))
       _ = assertEquals(initial.people.size,13)
       _ = assertEquals(initial.witnesses.map(_.id).toSet,Set("clement","mary","redding","marple","melchett").map(WitnessId.apply))
       _ = assert(initial.people.find(_.id == PersonId("anne")).get.victimRelation.contains("妻子"))

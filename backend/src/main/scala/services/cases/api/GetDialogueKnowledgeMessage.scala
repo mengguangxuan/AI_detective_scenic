@@ -15,7 +15,7 @@ import services.system.objects.*
 final case class GetDialogueKnowledgeMessage(caseId: CaseId, revision: Revision, witness: WitnessId)
   extends APIMessage[DialogueDossier]:
   override def plan(connection: Connection): IO[DialogueDossier] =
-    if caseId != CaseId("vicarage_study") || !Set(Revision(3),Revision(4),Revision(5),Revision(6),Revision(7))(revision) then
+    if caseId != CaseId("vicarage_study") || !Set(Revision(3),Revision(4),Revision(5),Revision(6),Revision(7),Revision(8))(revision) then
       IO.pure(DialogueDossier(Vector.empty,Vector.empty,Vector.empty))
     else IO.blocking {
       val json=parse(Files.readString(Paths.get("../docs/fixtures/vicarage_dialogue.json")))

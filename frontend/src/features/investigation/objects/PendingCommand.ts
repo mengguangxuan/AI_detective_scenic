@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { externalCheckIdSchema } from '../../../objects/ExternalCheckId';
 import { witnessIdSchema } from '../../../objects/WitnessId';
 import { sessionIdSchema } from '../../../objects/SessionId';
 import { requestIdSchema } from '../../../objects/RequestId';
@@ -9,6 +10,8 @@ import { clueIdSchema } from '../../../objects/ClueId';
 import { timeAssessmentSchema } from '../../../apis/games/objects/TimeAssessment';
 const meta = { sessionId: sessionIdSchema, requestId: requestIdSchema, expectedSequence: z.number().int().nonnegative().safe() };
 export const pendingCommandSchema = z.discriminatedUnion('kind', [
+  z.object({ kind: z.literal('check'), ...meta, check: externalCheckIdSchema }).strict(),
+  z.object({ kind: z.literal('wait'), ...meta, minutes: z.number().int().min(1).max(30) }).strict(),
   z.object({ kind: z.literal('execute'), ...meta, operation: operationIdSchema }).strict(),
   z.object({ kind: z.literal('investigate'), ...meta, point: pointIdSchema, route: routeIdSchema }).strict(),
   z.object({ kind: z.literal('report'), ...meta, evidence: z.array(clueIdSchema).min(1).max(20) }).strict(),

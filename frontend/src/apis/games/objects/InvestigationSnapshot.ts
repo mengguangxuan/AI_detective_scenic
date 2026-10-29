@@ -1,4 +1,6 @@
 import { z } from 'zod';
+import { areaMapSchema } from './AreaMap';
+import { externalCheckViewSchema } from './ExternalCheckView';
 import { witnessViewSchema } from './WitnessView';
 import { interviewTurnSchema } from './InterviewTurnView';
 import { policeDeskSchema } from './PoliceDeskView';
@@ -11,6 +13,9 @@ import { clueViewSchema } from './ClueView';
 import { investigationLogSchema } from './InvestigationLogEntry';
 import { sceneObjectBindingSchema } from './SceneObjectBinding';
 export const investigationSnapshotSchema = z.object({
+  areaMap: areaMapSchema.nullable().default(null),
+  clock: z.object({ label: z.string(), elapsedSeconds: z.number().int().nonnegative().safe(), actionMinutes: z.number().int().positive() }).strict().nullable().default(null),
+  externalChecks: z.array(externalCheckViewSchema).default([]),
   sessionId: sessionIdSchema, caseId: z.string().min(1), caseRevision: z.object({ value: z.number().int().positive().safe() }).strict().transform(v => v.value),
   sequence: sequenceSchema, title: z.string(),
   scene: z.object({ bundleId: z.literal('study'), revision: z.literal('4'), placeName: z.string(), drawerOpened: z.boolean(), windowOpened: z.boolean(), objects: z.array(sceneObjectBindingSchema) }).strict(),
@@ -20,7 +25,7 @@ export const investigationSnapshotSchema = z.object({
   people: z.array(casePersonBriefSchema),
   stage: z.object({ introduction: z.string(), objective: z.string(), completed: z.boolean(), nextObjective: z.string().nullable() }).strict().nullable(),
 }).strict().superRefine((snapshot, context) => {
-  for (const values of [snapshot.people.map(v => v.id), snapshot.points.map(v => v.id), snapshot.clues.map(v => v.id), snapshot.journal.map(v => v.id), snapshot.observations.map(v => v.node), snapshot.scene.objects.map(v => v.node), snapshot.scene.objects.map(v => v.entity), snapshot.witnesses.map(v => v.id), snapshot.interviews.map(v => v.requestId)])
+  for (const values of [snapshot.externalChecks.map(v => v.id), snapshot.people.map(v => v.id), snapshot.points.map(v => v.id), snapshot.clues.map(v => v.id), snapshot.journal.map(v => v.id), snapshot.observations.map(v => v.node), snapshot.scene.objects.map(v => v.node), snapshot.scene.objects.map(v => v.entity), snapshot.witnesses.map(v => v.id), snapshot.interviews.map(v => v.requestId)])
     if (new Set<string>(values).size !== values.length) context.addIssue({ code: 'custom', message: '响应编号重复' });
   if (snapshot.journal.some(v => v.sequence > snapshot.sequence)) context.addIssue({ code: 'custom', message: '日志超出当前序号' });
   if (snapshot.people.some(person => person.witness !== null && !snapshot.witnesses.some(witness => witness.id === person.witness)))

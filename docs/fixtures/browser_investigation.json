@@ -1,7 +1,7 @@
 {
   "id": "vicarage_study",
   "revision": {
-    "value": 7
+    "value": 8
   },
   "schemaVersion": {
     "value": 2
@@ -44,6 +44,118 @@
             }
           }
         ]
+      },
+      {
+        "id": "old_hall",
+        "name": "老宅",
+        "parent": null,
+        "geography": null,
+        "background": "普罗瑟罗一家住所；田间小路通向寓所后门一带。",
+        "walkable": []
+      },
+      {
+        "id": "marple_home",
+        "name": "马普尔家",
+        "parent": null,
+        "geography": null,
+        "background": "与寓所相邻；花园下方临小巷。",
+        "walkable": []
+      },
+      {
+        "id": "back_gate",
+        "name": "寓所后门",
+        "parent": null,
+        "geography": null,
+        "background": "小巷与寓所花园相通；对面有通往老宅的小路。",
+        "walkable": []
+      },
+      {
+        "id": "studio",
+        "name": "画室",
+        "parent": null,
+        "geography": null,
+        "background": "寓所花园里的棚屋，雷丁借作画室。",
+        "walkable": []
+      },
+      {
+        "id": "haydock_home",
+        "name": "海多克家",
+        "parent": null,
+        "geography": null,
+        "background": "邻近寓所，位于路口一带。",
+        "walkable": []
+      },
+      {
+        "id": "church",
+        "name": "教堂",
+        "parent": null,
+        "geography": null,
+        "background": "村中报时的教堂钟。",
+        "walkable": []
+      },
+      {
+        "id": "post_office",
+        "name": "邮局",
+        "parent": null,
+        "geography": null,
+        "background": "村中公共道路旁，居民常在附近碰面。",
+        "walkable": []
+      },
+      {
+        "id": "blue_boar",
+        "name": "蓝野猪旅店",
+        "parent": null,
+        "geography": null,
+        "background": "村中旅店，斯通与克拉姆在此落脚。",
+        "walkable": []
+      },
+      {
+        "id": "hartnell_home",
+        "name": "哈特内尔家",
+        "parent": null,
+        "geography": null,
+        "background": "海多克家的邻居，住在村中道路旁。",
+        "walkable": []
+      },
+      {
+        "id": "police_station",
+        "name": "警察局",
+        "parent": null,
+        "geography": null,
+        "background": "受理案件、保管送交物品的地点。",
+        "walkable": []
+      },
+      {
+        "id": "redding_cottage",
+        "name": "雷丁住所",
+        "parent": null,
+        "geography": null,
+        "background": "往车站方向的独立小屋，附近没有紧邻住户。",
+        "walkable": []
+      },
+      {
+        "id": "railway_station",
+        "name": "火车站",
+        "parent": null,
+        "geography": null,
+        "background": "村外交通地点，经村道抵达。",
+        "walkable": []
+      },
+      {
+        "id": "woods",
+        "name": "树林",
+        "parent": null,
+        "geography": null,
+        "background": "位于寓所周边的林地，方位仅作示意。",
+        "walkable": []
+      },
+      {
+        "id": "lower_farm",
+        "name": "下农场",
+        "parent": null,
+        "geography": null,
+        "background": "阿博特家，牧师曾被电话召往；距寓所近两英里。",
+        "walkable": []
       }
     ],
     "connections": [],
@@ -813,6 +925,40 @@
           }
         },
         "boundary": "周五独立核查；说明证言来源、时间范围及尚待核实之处"
+      },
+      {
+        "id": "topic_medical_visit_record",
+        "subject": {
+          "kind": "Place",
+          "id": "study"
+        },
+        "question": "固定的初查材料；陈述及推论的归属见正文，不等同于完整案件真相。",
+        "when": {
+          "earliest": {
+            "seconds": 0
+          },
+          "latest": {
+            "seconds": 0
+          }
+        },
+        "boundary": "周五实际受理核实后反馈；大致到场参照与精确分钟分开"
+      },
+      {
+        "id": "topic_gun_verification",
+        "subject": {
+          "kind": "Place",
+          "id": "study"
+        },
+        "question": "固定的初查材料；陈述及推论的归属见正文，不等同于完整案件真相。",
+        "when": {
+          "earliest": {
+            "seconds": 0
+          },
+          "latest": {
+            "seconds": 0
+          }
+        },
+        "boundary": "周五实际受理核实后反馈；大致到场参照与精确分钟分开"
       }
     ],
     "facts": [
@@ -1348,6 +1494,35 @@
           "source_game_interview"
         ],
         "topic": "topic_police_sound_check"
+      },
+      {
+        "id": "fact_medical_visit_record",
+        "value": {
+          "kind": "AuthoredDetail",
+          "detail": "海多克核实：周四由玛丽来请，约七点前后到达寓所，随后立即在书房作现场初查，再打电话报警。约19:00是到场的大致参照，不是精确记录的分钟。当时说“死了半小时左右”是相对这次初查的估计。取弹在当晚后续检查中完成，周五上午已交给警方。"
+        },
+        "requiresOccurred": [],
+        "explanation": "固定的初查材料；陈述及推论的归属见正文，不等同于完整案件真相。",
+        "sources": [
+          "source_ch5",
+          "source_ch7",
+          "source_game_check"
+        ],
+        "topic": "topic_medical_visit_record"
+      },
+      {
+        "id": "fact_gun_verification",
+        "value": {
+          "kind": "AuthoredDetail",
+          "detail": "警方核验已完成：送交登记中的手枪是雷丁前夜自首时交出的那一支，口径为 .25；海多克从死者身上取出的弹头也是 .25。两者口径相符。这份核验记录确认送交对象及口径，不据此认定是谁开枪，也不把同口径当作唯一枪支的个体鉴定。"
+        },
+        "requiresOccurred": [],
+        "explanation": "固定的初查材料；陈述及推论的归属见正文，不等同于完整案件真相。",
+        "sources": [
+          "source_ch7",
+          "source_game_check"
+        ],
+        "topic": "topic_gun_verification"
       }
     ],
     "claims": [],
@@ -1401,6 +1576,16 @@
         "id": "source_ch12",
         "kind": "Original",
         "reference": "https://en.wikisource.org/wiki/The_Murder_at_the_Vicarage/Chapter_12"
+      },
+      {
+        "id": "source_game_map",
+        "kind": "Adapted",
+        "reference": "docs/cases/murder_at_the_vicarage.md#地图与案件时钟"
+      },
+      {
+        "id": "source_game_check",
+        "kind": "Adapted",
+        "reference": "docs/cases/murder_at_the_vicarage.md#地图与案件时钟"
       }
     ]
   },
@@ -1515,7 +1700,238 @@
         }
       ],
       "openingReports": [],
-      "openingMaterials": []
+      "openingMaterials": [],
+      "areaMap": {
+        "note": "地点与道路关系供走访使用，图不按比例、图上方向不代表正北。距离是步行约数；下农场近两英里，其余数值为估算，不能单凭路程认定某人的实际行程。",
+        "locations": [
+          {
+            "id": "old_hall",
+            "name": "老宅",
+            "description": "普罗瑟罗一家住所；田间小路通向寓所后门一带。",
+            "x": 220,
+            "y": 65
+          },
+          {
+            "id": "marple_home",
+            "name": "马普尔家",
+            "description": "与寓所相邻；花园下方临小巷。",
+            "x": 120,
+            "y": 210
+          },
+          {
+            "id": "back_gate",
+            "name": "寓所后门",
+            "description": "小巷与寓所花园相通；对面有通往老宅的小路。",
+            "x": 310,
+            "y": 210
+          },
+          {
+            "id": "studio",
+            "name": "画室",
+            "description": "寓所花园里的棚屋，雷丁借作画室。",
+            "x": 300,
+            "y": 340
+          },
+          {
+            "id": "study",
+            "name": "牧师寓所",
+            "description": "含书房、厨房及花园；前门通向村道。",
+            "x": 145,
+            "y": 430
+          },
+          {
+            "id": "haydock_home",
+            "name": "海多克家",
+            "description": "邻近寓所，位于路口一带。",
+            "x": 385,
+            "y": 460
+          },
+          {
+            "id": "church",
+            "name": "教堂",
+            "description": "村中报时的教堂钟。",
+            "x": 530,
+            "y": 80
+          },
+          {
+            "id": "post_office",
+            "name": "邮局",
+            "description": "村中公共道路旁，居民常在附近碰面。",
+            "x": 590,
+            "y": 210
+          },
+          {
+            "id": "blue_boar",
+            "name": "蓝野猪旅店",
+            "description": "村中旅店，斯通与克拉姆在此落脚。",
+            "x": 830,
+            "y": 210
+          },
+          {
+            "id": "hartnell_home",
+            "name": "哈特内尔家",
+            "description": "海多克家的邻居，住在村中道路旁。",
+            "x": 520,
+            "y": 515
+          },
+          {
+            "id": "police_station",
+            "name": "警察局",
+            "description": "受理案件、保管送交物品的地点。",
+            "x": 835,
+            "y": 420
+          },
+          {
+            "id": "redding_cottage",
+            "name": "雷丁住所",
+            "description": "往车站方向的独立小屋，附近没有紧邻住户。",
+            "x": 1040,
+            "y": 90
+          },
+          {
+            "id": "railway_station",
+            "name": "火车站",
+            "description": "村外交通地点，经村道抵达。",
+            "x": 1060,
+            "y": 340
+          },
+          {
+            "id": "woods",
+            "name": "树林",
+            "description": "位于寓所周边的林地，方位仅作示意。",
+            "x": 125,
+            "y": 625
+          },
+          {
+            "id": "lower_farm",
+            "name": "下农场",
+            "description": "阿博特家，牧师曾被电话召往；距寓所近两英里。",
+            "x": 870,
+            "y": 625
+          }
+        ],
+        "roads": [
+          {
+            "id": "hall_path",
+            "from": "old_hall",
+            "to": "back_gate",
+            "meters": 1000,
+            "label": "田间小路"
+          },
+          {
+            "id": "marple_lane",
+            "from": "marple_home",
+            "to": "back_gate",
+            "meters": 70,
+            "label": "花园外的小巷"
+          },
+          {
+            "id": "garden_studio",
+            "from": "back_gate",
+            "to": "studio",
+            "meters": 40,
+            "label": "花园小径"
+          },
+          {
+            "id": "garden_house",
+            "from": "back_gate",
+            "to": "study",
+            "meters": 60,
+            "label": "花园至屋侧"
+          },
+          {
+            "id": "studio_house",
+            "from": "studio",
+            "to": "study",
+            "meters": 50,
+            "label": "草坪小径"
+          },
+          {
+            "id": "doctor_corner",
+            "from": "study",
+            "to": "haydock_home",
+            "meters": 80,
+            "label": "寓所旁路口"
+          },
+          {
+            "id": "back_lane",
+            "from": "back_gate",
+            "to": "post_office",
+            "meters": 300,
+            "label": "通往村中的小巷"
+          },
+          {
+            "id": "village_inn",
+            "from": "post_office",
+            "to": "blue_boar",
+            "meters": 120,
+            "label": "村中道路"
+          },
+          {
+            "id": "front_road",
+            "from": "study",
+            "to": "blue_boar",
+            "meters": 450,
+            "label": "经前门的村道"
+          },
+          {
+            "id": "church_road",
+            "from": "post_office",
+            "to": "church",
+            "meters": 180,
+            "label": "教堂路"
+          },
+          {
+            "id": "hartnell_road",
+            "from": "post_office",
+            "to": "hartnell_home",
+            "meters": 300,
+            "label": "邮局至住宅一带"
+          },
+          {
+            "id": "station_police",
+            "from": "blue_boar",
+            "to": "police_station",
+            "meters": 200,
+            "label": "村中道路"
+          },
+          {
+            "id": "cottage_road",
+            "from": "blue_boar",
+            "to": "redding_cottage",
+            "meters": 400,
+            "label": "往车站的道路"
+          },
+          {
+            "id": "railway_road",
+            "from": "redding_cottage",
+            "to": "railway_station",
+            "meters": 180,
+            "label": "车站支路"
+          },
+          {
+            "id": "wood_path",
+            "from": "study",
+            "to": "woods",
+            "meters": 250,
+            "label": "林边步道"
+          },
+          {
+            "id": "farm_path",
+            "from": "study",
+            "to": "lower_farm",
+            "meters": 3100,
+            "label": "穿过田野的小路"
+          },
+          {
+            "id": "doctor_neighbor",
+            "from": "haydock_home",
+            "to": "hartnell_home",
+            "meters": 40,
+            "label": "相邻住户门前道路"
+          }
+        ]
+      }
     },
     "reports": []
   },
@@ -2800,6 +3216,34 @@
           "media": []
         },
         "suggests": []
+      },
+      {
+        "id": "clue_medical_visit_record",
+        "title": "医生到场与初查时间记录",
+        "finding": "海多克核实：周四由玛丽来请，约七点前后到达寓所，随后立即在书房作现场初查，再打电话报警。约19:00是到场的大致参照，不是精确记录的分钟。当时说“死了半小时左右”是相对这次初查的估计。取弹在当晚后续检查中完成，周五上午已交给警方。",
+        "facts": [
+          "fact_medical_visit_record"
+        ],
+        "relatedClaims": [],
+        "result": {
+          "text": "海多克核实：周四由玛丽来请，约七点前后到达寓所，随后立即在书房作现场初查，再打电话报警。约19:00是到场的大致参照，不是精确记录的分钟。当时说“死了半小时左右”是相对这次初查的估计。取弹在当晚后续检查中完成，周五上午已交给警方。",
+          "media": []
+        },
+        "suggests": []
+      },
+      {
+        "id": "clue_gun_verification",
+        "title": "手枪与弹头核验结果",
+        "finding": "警方核验已完成：送交登记中的手枪是雷丁前夜自首时交出的那一支，口径为 .25；海多克从死者身上取出的弹头也是 .25。两者口径相符。这份核验记录确认送交对象及口径，不据此认定是谁开枪，也不把同口径当作唯一枪支的个体鉴定。",
+        "facts": [
+          "fact_gun_verification"
+        ],
+        "relatedClaims": [],
+        "result": {
+          "text": "警方核验已完成：送交登记中的手枪是雷丁前夜自首时交出的那一支，口径为 .25；海多克从死者身上取出的弹头也是 .25。两者口径相符。这份核验记录确认送交对象及口径，不据此认定是谁开枪，也不把同口径当作唯一枪支的个体鉴定。",
+          "media": []
+        },
+        "suggests": []
       }
     ],
     "routes": [
@@ -4031,6 +4475,34 @@
       "point": "point_police",
       "name": "梅尔切特",
       "background": "负责本案的警察局长。可以向他询问警方现有记录和医生的初查意见，也可以出示你已取得的材料。"
-    }
+    },
+    "clock": {
+      "startMinutesOfDay": 540,
+      "actionSeconds": 120
+    },
+    "externalChecks": [
+      {
+        "id": "medical_timing",
+        "title": "医生到场与初查记录",
+        "requestLabel": "申请核实医生到场与初查记录",
+        "point": "point_police",
+        "requiredClues": [],
+        "delaySeconds": 600,
+        "resultClues": [
+          "clue_medical_visit_record"
+        ]
+      },
+      {
+        "id": "gun_verification",
+        "title": "手枪与弹头核验",
+        "requestLabel": "申请核验手枪与弹头",
+        "point": "point_police",
+        "requiredClues": [],
+        "delaySeconds": 1200,
+        "resultClues": [
+          "clue_gun_verification"
+        ]
+      }
+    ]
   }
 }

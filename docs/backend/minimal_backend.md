@@ -181,3 +181,17 @@ StudyProjection新建修订7并继续支持3—6，GetDialogueKnowledgeMessage�
 新增10份材料及其出处，警方三种对照需已获且真实出示的材料。模型沿用requiredEvidence与本人物历史；固定途径用requiredClues和presentedClues。InvestigateMessage在合法固定警方出示时写PoliceExchangeTable，与MutationSupport.commit共用原事务；原请求回执直接返回，不重复出示。旧已完成操作和回执不补写或迁移。
 
 IndependentChecksSuite覆盖提前访问／伪造出示、两个安排的前提、响应丢失重试、会面不自动授予、实际证言及文件库恢复、人物知识隔离、实际出示与后续记忆、固定备用及其全事务回滚。公开玩家视图不含私密资料或未获得的证言正文。
+
+
+## 2026-10-29 地图、案件时钟与有限核查
+
+新建修订8，StudyProjection继续支持3—7。CaseContent增加公开AreaMap、可选InvestigationClock与ExternalCheckSpec；加载器允许多个语义地点，但当前可玩场景仍只由spawnPlace绑定书房。地图引用实际PlaceId，校验道路两端、唯一ID、正距离及有限绘图范围。它不暴露完整truth、角色路线或新3D资产。
+
+RequestExternalCheckMessage、AdvanceTimeMessage按既有注册规则经身份边界执行。申请时写当前GameSessionRecord.externalChecks；MutationSupport.commit按作者时钟推进并结算到期项，与状态、材料／事实、记录、成功回执同事务提交。读取不推进；重试只读原回执；时间与完成状态均以当前会话为权威，不用日志恢复。等待每次1—30分钟，前端提供5／15分钟按钮，不在JDBC事务中做现实sleep。
+
+SessionTableInitializer以ADD COLUMN IF NOT EXISTS增加checks_json，默认空数组，保留旧表、旧进度和回执；表方法统一读取／写入该列。旧CaseContent缺externalChecks为空，clock／areaMap缺省None；旧GameSessionRecord解码补空进度。未启用时钟的旧版本不推进时间。新的check／wait前端未决请求保留原session、ID、序号和载荷，浏览器v6键及版本号不变。
+
+核查结果没有普通调查路线，未完成不能猜route或让模型选择披露项绕过。警方新问询仅自动获得本局已完成的核查结果与受理状态，其余人物仍按实际出示；模型原始回复不是核查执行器。报告完成时进入警方点已获正文、线索和日志，完成状态不反复等待。
+
+
+真实模型抽查发现医生完成报告的自然追问曾被拒。现对当前实际已知的完成报告提供无执行路线的合法披露项，仅用于引用已持有正文，不重复授予或启动检查；办理中没有这些项。警方取得本人核查结果，其他人物只有实际收到报告后才具备该项；新增回归覆盖提前引用拒绝、完成后回答、无新授予及人物隔离。

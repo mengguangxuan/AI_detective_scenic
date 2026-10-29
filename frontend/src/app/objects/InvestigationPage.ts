@@ -1,6 +1,7 @@
 // Supported UI destinations; case content and protocol are separate.
 export const investigationPages = [
   { path: '/case', label: '案件简介' },
+  { path: '/map', label: '地点地图' },
   { path: '/scene', label: '现场探索' },
   { path: '/clues', label: '线索整理' },
   { path: '/people', label: '人物档案' },

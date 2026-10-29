@@ -7,6 +7,7 @@ import java.nio.charset.StandardCharsets
 import java.security.MessageDigest
 import java.sql.Connection
 import services.cases.objects.*
+import services.cases.tables.CaseRevisionTable.CaseRevisionTable
 import services.games.objects.*
 import services.games.objects.apiTypes.*
 import services.games.tables.SessionTable.SessionTable
@@ -40,6 +41,12 @@ private[games] object MutationSupport:
     digest(user,session,request,expected,Json.obj("kind" -> Json.fromString("ReportClues"),
       "evidence" -> evidence.toVector.sortBy(_.value).asJson))
 
+  private[games] def externalCheckDigest(user: UserId,session: SessionId,request: RequestId,expected: Sequence,check: ExternalCheckId): String =
+    digest(user,session,request,expected,Json.obj("kind" -> Json.fromString("ExternalCheck"),"check" -> check.asJson))
+
+  private[games] def advanceTimeDigest(user: UserId,session: SessionId,request: RequestId,expected: Sequence,minutes: Int): String =
+    digest(user,session,request,expected,Json.obj("kind" -> Json.fromString("AdvanceTime"),"minutes" -> minutes.asJson))
+
   // Keep the exact original JSON bytes so stored receipt digests remain valid.
   private def digest(user: UserId,session: SessionId,request: RequestId,expected: Sequence,command: Json): String =
     val payload=Json.obj("user" -> user.asJson,"session" -> session.asJson,"request" -> request.asJson,
@@ -58,7 +65,9 @@ private[games] object MutationSupport:
     for
       reserved <- InterviewRequestTable.find(connection,previous.id,request)
       _ <- IO.raiseWhen(reserved.nonEmpty && !pendingInterview)(GameError(ErrorCode.RequestConflict,"该请求编号已用于人物问询。"))
-      _ <- SessionTable.update(connection,previous,plan.session)
-      _ <- SessionRecordTable.insert(connection,plan.record)
-      _ <- ReceiptTable.insert(connection,RequestReceiptRecord(previous.id,request,digest,1,plan.result))
-    yield plan.result
+      revision <- CaseRevisionTable.find(connection,previous.caseId,previous.caseRevision).flatMap(v => IO.fromOption(v)(GameError(ErrorCode.InvalidValue,"案件修订不存在。")))
+      timed = ExternalCheckRules.afterAction(revision.content,previous,plan)
+      _ <- SessionTable.update(connection,previous,timed.session)
+      _ <- SessionRecordTable.insert(connection,timed.record)
+      _ <- ReceiptTable.insert(connection,RequestReceiptRecord(previous.id,request,digest,1,timed.result))
+    yield timed.result
