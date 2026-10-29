@@ -6,7 +6,7 @@ import ConversationPanel from '../../features/investigation/components/Conversat
 import InvestigationLink from '../../app/components/InvestigationLink';
 
 type Props = { ready: Extract<InvestigationPageState, { kind: 'ready' }>;
-  actions: Pick<ReturnType<typeof useInvestigation>, 'investigate' | 'report' | 'ask'> };
+  actions: Pick<ReturnType<typeof useInvestigation>, 'investigate' | 'report' | 'ask' | 'execute'> };
 export default function PolicePage({ ready, actions }: Props) {
   const [selected, setSelected] = useState<readonly ClueId[]>([]);
   const police = ready.snapshot.police;
@@ -23,6 +23,8 @@ export default function PolicePage({ ready, actions }: Props) {
   }
   return <section aria-labelledby="police-page-title" className="space-y-5">
     <div><h2 id="police-page-title" className="text-xl font-medium">警方交流</h2><p className="mt-2 text-sm leading-7 text-stone-400">询问警方掌握的情况，交换你已取得的材料。</p></div>
+    {point.operations.length ? <section aria-label="调查安排" className="rounded-2xl border border-amber-200/25 bg-[#182421] p-5"><h3 className="text-lg font-medium">调查安排</h3><p className="mt-2 text-sm leading-7 text-stone-400">选择要进行的会面，进展会保存到调查记录。</p><div className="mt-4 flex flex-wrap gap-3">{point.operations.map(operation => <button key={operation.id} type="button" disabled={disabled} onClick={() => actions.execute(operation.id, point.id)} className="rounded-lg bg-amber-200 px-5 py-2.5 text-sm font-medium text-stone-950 disabled:opacity-40">{operation.label}</button>)}</div></section> : null}
+    {ready.snapshot.witnesses.some(w => w.id === 'anne') ? <InvestigationLink href="/interviews" className="inline-block text-sm text-amber-200 underline underline-offset-4">前往人物问询，与安妮交谈</InvestigationLink> : null}
     {witness ? <ConversationPanel key={`${ready.snapshot.sessionId}:${witness.id}`} witness={witness} clues={ready.snapshot.clues} turns={ready.snapshot.interviews.filter(t => t.witness === witness.id)} disabled={disabled} onAsk={actions.ask}/> : null}
     <details className="rounded-2xl border border-white/10 bg-[#182421] p-4"><summary className="cursor-pointer text-sm text-stone-300">固定问答与材料登记（备用）</summary><div className="mt-4 space-y-5">
     <section aria-label="向警方了解情况" className="rounded-2xl border border-white/10 bg-[#182421] p-5">

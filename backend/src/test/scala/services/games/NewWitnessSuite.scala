@@ -42,12 +42,15 @@ class NewWitnessSuite extends FunSuite:
       _ <- DatabaseSession.connection(url).use(c => DatabaseSchema.initialize(c))
       _ <- tx(url) { c => for
         latest <- ImportCaseMessage(Paths.get("../docs/fixtures/browser_investigation.json")).plan(c)
-        newPoints = Set(PointId("point_redding"),PointId("point_marple"))
-        newClues = latest.content.routes.filter(r => newPoints(r.point)).flatMap(_.clues).toSet
+        newPoints = Set(PointId("point_redding"),PointId("point_marple"),PointId("point_anne"))
+        primaryClues = latest.content.routes.filter(r => newPoints(r.point)).flatMap(_.clues).toSet
+        newRoutes = latest.content.routes.filter(r => newPoints(r.point) || r.requiredClues.intersect(primaryClues).nonEmpty)
+        newClues = newRoutes.flatMap(_.clues).toSet
         oldContent = latest.content.copy(publicPersons=Vector.empty,
           witnesses=latest.content.witnesses.filterNot(w => newPoints(w.point)),
           points=latest.content.points.filterNot(p => newPoints(p.id)),
-          routes=latest.content.routes.filterNot(r => newPoints(r.point)),
+          routes=latest.content.routes.filterNot(r => newRoutes.exists(_.id == r.id)),
+          operations=latest.content.operations.filterNot(o => o.requiredClues.intersect(newClues).nonEmpty),
           clues=latest.content.clues.filterNot(clue => newClues(clue.id)),
           stage=latest.content.stage.map(_.copy(nextObjective=None)))
         previous = latest.copy(revision=Revision(4),content=oldContent)
@@ -72,7 +75,7 @@ class NewWitnessSuite extends FunSuite:
     (for
       _ <- setup(url,id)
       initial <- view(url,id)
-      _ = assertEquals(initial.caseRevision,Revision(5))
+      _ = assertEquals(initial.caseRevision,Revision(6))
       _ = assertEquals(initial.people.size,10)
       _ = assertEquals(initial.witnesses.map(_.id).toSet,Set("clement","mary","redding","marple","melchett").map(WitnessId.apply))
       _ = assert(initial.people.find(_.id == PersonId("anne")).get.victimRelation.contains("妻子"))

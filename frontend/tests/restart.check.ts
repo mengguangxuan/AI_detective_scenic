@@ -29,3 +29,20 @@ test.describe('free conversation recovery', () => {
     await page.screenshot({ path: 'test-results/free-interview-chat.png', fullPage: true });
   });
 });
+
+test.describe('Anne meeting recovery', () => {
+  test.use({ storageState: '.build-cache/anne-meeting-state.json' });
+  test.skip(process.env.DETECTIVE_TEST_MODEL !== '1', 'Requires the saved meeting fixture state.');
+  test('explicit meeting and actual statement survive backend restart', async ({ page }) => {
+    await page.goto('/interviews');
+    await page.getByRole('button', { name: '与安妮·普罗瑟罗交谈', exact: true }).click();
+    await expect(page.getByRole('log', { name: '自由问询记录', exact: true })).toContainText('是我杀了丈夫');
+    const saved = await page.evaluate(() => JSON.parse(localStorage.getItem('detective-scenic:server-session:v6')!));
+    const response = await page.request.post('/api/getinvestigationsnapshot', { data: { sessionId: saved.sessionId }, headers: { 'X-Detective-Client': 'web' } });
+    expect(response.status()).toBe(200);
+    const state = await response.json();
+    expect(state.sequence.value).toBe(3);
+    expect(state.clues.some((clue: { id: string }) => clue.id === 'clue_anne_statement')).toBe(true);
+    expect(state.people.find((person: { id: string }) => person.id === 'anne').witness).toBe('anne');
+  });
+});

@@ -1,7 +1,7 @@
 {
   "id": "vicarage_study",
   "revision": {
-    "value": 5
+    "value": 6
   },
   "schemaVersion": {
     "value": 2
@@ -507,6 +507,142 @@
           }
         },
         "boundary": "周五初查固定披露材料"
+      },
+      {
+        "id": "topic_anne_statement",
+        "subject": {
+          "kind": "Place",
+          "id": "study"
+        },
+        "question": "固定的初查材料；陈述及推论的归属见正文，不等同于完整案件真相。",
+        "when": {
+          "earliest": {
+            "seconds": 0
+          },
+          "latest": {
+            "seconds": 0
+          }
+        },
+        "boundary": "周五初查固定披露材料"
+      },
+      {
+        "id": "topic_anne_time",
+        "subject": {
+          "kind": "Place",
+          "id": "study"
+        },
+        "question": "固定的初查材料；陈述及推论的归属见正文，不等同于完整案件真相。",
+        "when": {
+          "earliest": {
+            "seconds": 0
+          },
+          "latest": {
+            "seconds": 0
+          }
+        },
+        "boundary": "周五初查固定披露材料"
+      },
+      {
+        "id": "topic_anne_gun",
+        "subject": {
+          "kind": "Place",
+          "id": "study"
+        },
+        "question": "固定的初查材料；陈述及推论的归属见正文，不等同于完整案件真相。",
+        "when": {
+          "earliest": {
+            "seconds": 0
+          },
+          "latest": {
+            "seconds": 0
+          }
+        },
+        "boundary": "周五初查固定披露材料"
+      },
+      {
+        "id": "topic_anne_redding",
+        "subject": {
+          "kind": "Place",
+          "id": "study"
+        },
+        "question": "固定的初查材料；陈述及推论的归属见正文，不等同于完整案件真相。",
+        "when": {
+          "earliest": {
+            "seconds": 0
+          },
+          "latest": {
+            "seconds": 0
+          }
+        },
+        "boundary": "周五初查固定披露材料"
+      },
+      {
+        "id": "topic_anne_marple_reply",
+        "subject": {
+          "kind": "Place",
+          "id": "study"
+        },
+        "question": "固定的初查材料；陈述及推论的归属见正文，不等同于完整案件真相。",
+        "when": {
+          "earliest": {
+            "seconds": 0
+          },
+          "latest": {
+            "seconds": 0
+          }
+        },
+        "boundary": "周五初查固定披露材料"
+      },
+      {
+        "id": "topic_redding_anne_reply",
+        "subject": {
+          "kind": "Place",
+          "id": "study"
+        },
+        "question": "固定的初查材料；陈述及推论的归属见正文，不等同于完整案件真相。",
+        "when": {
+          "earliest": {
+            "seconds": 0
+          },
+          "latest": {
+            "seconds": 0
+          }
+        },
+        "boundary": "周五初查固定披露材料"
+      },
+      {
+        "id": "topic_marple_anne_reply",
+        "subject": {
+          "kind": "Place",
+          "id": "study"
+        },
+        "question": "固定的初查材料；陈述及推论的归属见正文，不等同于完整案件真相。",
+        "when": {
+          "earliest": {
+            "seconds": 0
+          },
+          "latest": {
+            "seconds": 0
+          }
+        },
+        "boundary": "周五初查固定披露材料"
+      },
+      {
+        "id": "topic_police_two_statements",
+        "subject": {
+          "kind": "Place",
+          "id": "study"
+        },
+        "question": "固定的初查材料；陈述及推论的归属见正文，不等同于完整案件真相。",
+        "when": {
+          "earliest": {
+            "seconds": 0
+          },
+          "latest": {
+            "seconds": 0
+          }
+        },
+        "boundary": "周五初查固定披露材料"
       }
     ],
     "facts": [
@@ -808,6 +944,110 @@
           "source_game_interview"
         ],
         "topic": "topic_marple_account_reply"
+      },
+      {
+        "id": "fact_anne_statement",
+        "value": {
+          "kind": "AuthoredDetail",
+          "detail": "安妮在本局正式会面中说：“是我杀了丈夫。我恨他很久了，昨天我开了枪。”这是她的陈述，具体经过仍需核实。"
+        },
+        "requiresOccurred": [],
+        "explanation": "固定的初查材料；陈述及推论的归属见正文，不等同于完整案件真相。",
+        "sources": [
+          "source_ch8"
+        ],
+        "topic": "topic_anne_statement"
+      },
+      {
+        "id": "fact_anne_time",
+        "value": {
+          "kind": "AuthoredDetail",
+          "detail": "安妮说，时间在六点以后，大约六点一刻或六点二十。她带枪去寓所，走到窗边，没有听见说话声，看见丈夫，随后开枪。她说离开后告诉了雷丁。这是她所述经过。"
+        },
+        "requiresOccurred": [],
+        "explanation": "固定的初查材料；陈述及推论的归属见正文，不等同于完整案件真相。",
+        "sources": [
+          "source_ch8"
+        ],
+        "topic": "topic_anne_time"
+      },
+      {
+        "id": "fact_anne_gun",
+        "value": {
+          "kind": "AuthoredDetail",
+          "detail": "安妮说枪是丈夫的，从丈夫梳妆台的抽屉里拿出并带到寓所；她称原先准备留给自己。这是她的说法，尚没有独立核实。"
+        },
+        "requiresOccurred": [],
+        "explanation": "固定的初查材料；陈述及推论的归属见正文，不等同于完整案件真相。",
+        "sources": [
+          "source_ch8"
+        ],
+        "topic": "topic_anne_gun"
+      },
+      {
+        "id": "fact_anne_redding",
+        "value": {
+          "kind": "AuthoredDetail",
+          "detail": "安妮说她知道雷丁已自首，称雷丁爱她、是在替她承担责任；她又说，自己告诉过雷丁杀人的事。她对这部分问题有过迟疑。这是她对雷丁行为的解释。"
+        },
+        "requiresOccurred": [],
+        "explanation": "固定的初查材料；陈述及推论的归属见正文，不等同于完整案件真相。",
+        "sources": [
+          "source_ch8"
+        ],
+        "topic": "topic_anne_redding"
+      },
+      {
+        "id": "fact_anne_marple_reply",
+        "value": {
+          "kind": "AuthoredDetail",
+          "detail": "看过邻居的来访记录，安妮说：“我同马普尔小姐说过几句话，她当时在花园。可丈夫是我杀的，我已经告诉你们了。”"
+        },
+        "requiresOccurred": [],
+        "explanation": "固定的初查材料；陈述及推论的归属见正文，不等同于完整案件真相。",
+        "sources": [
+          "source_game_interview"
+        ],
+        "topic": "topic_anne_marple_reply"
+      },
+      {
+        "id": "fact_redding_anne_reply",
+        "value": {
+          "kind": "AuthoredDetail",
+          "detail": "在本局实际获知安妮的陈述后，雷丁说：“她不可能干这种事。我已经作了供述。”他仍维持原先版本，没有在本轮改口。"
+        },
+        "requiresOccurred": [],
+        "explanation": "固定的初查材料；陈述及推论的归属见正文，不等同于完整案件真相。",
+        "sources": [
+          "source_game_interview"
+        ],
+        "topic": "topic_redding_anne_reply"
+      },
+      {
+        "id": "fact_marple_anne_reply",
+        "value": {
+          "kind": "AuthoredDetail",
+          "detail": "看过安妮的携枪说法，马普尔说明安妮来时没有拿手提包，她也没有看见枪；她同时重申，自己看不见转过屋角后的书房内部。这是她的观察范围。"
+        },
+        "requiresOccurred": [],
+        "explanation": "固定的初查材料；陈述及推论的归属见正文，不等同于完整案件真相。",
+        "sources": [
+          "source_ch9"
+        ],
+        "topic": "topic_marple_anne_reply"
+      },
+      {
+        "id": "fact_police_two_statements",
+        "value": {
+          "kind": "AuthoredDetail",
+          "detail": "在收到本局两份供述后，梅尔切特说明：雷丁声称约六点三刻争执后杀人；安妮则给出了约六点一刻到六点二十的另一版本。警方已保留两份陈述，具体经过、枪的来源与时间仍待独立核查。"
+        },
+        "requiresOccurred": [],
+        "explanation": "固定的初查材料；陈述及推论的归属见正文，不等同于完整案件真相。",
+        "sources": [
+          "source_game_interview"
+        ],
+        "topic": "topic_police_two_statements"
       }
     ],
     "claims": [],
@@ -898,8 +1138,8 @@
           "name": "安妮·普罗瑟罗",
           "identity": "普罗瑟罗夫人",
           "victimRelation": "死者的妻子",
-          "caseRelation": "需要了解丈夫生前的生活及往来；目前仅列公开身份。",
-          "witness": null
+          "caseRelation": "可通过警方安排正式会面，了解她愿意作出的陈述及丈夫生前情况。",
+          "witness": "anne"
         },
         {
           "id": "griselda",
@@ -1116,6 +1356,31 @@
         "represents": "telephone",
         "place": "study",
         "initiallyVisible": true
+      },
+      {
+        "id": "node_anne_meeting",
+        "asset": "model_placeholder",
+        "transform": {
+          "position": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "rotation": {
+            "xRad": 0,
+            "yRad": 0,
+            "zRad": 0
+          },
+          "scale": {
+            "x": 1,
+            "y": 1,
+            "z": 1
+          }
+        },
+        "parent": null,
+        "represents": null,
+        "place": "study",
+        "initiallyVisible": false
       }
     ],
     "cues": [],
@@ -1330,6 +1595,26 @@
         "entry": {
           "kind": "OnNode",
           "node": "node_desk",
+          "localPoint": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "radiusMeters": 4
+        },
+        "topics": [],
+        "fallbackFinding": null
+      },
+      {
+        "id": "point_anne",
+        "subject": {
+          "kind": "Place",
+          "id": "study"
+        },
+        "label": "安妮·普罗瑟罗",
+        "entry": {
+          "kind": "OnNode",
+          "node": "node_anne_meeting",
           "localPoint": {
             "x": 0,
             "y": 0,
@@ -1764,6 +2049,118 @@
           "media": []
         },
         "suggests": []
+      },
+      {
+        "id": "clue_anne_statement",
+        "title": "安妮的认罪陈述",
+        "finding": "安妮在本局正式会面中说：“是我杀了丈夫。我恨他很久了，昨天我开了枪。”这是她的陈述，具体经过仍需核实。",
+        "facts": [
+          "fact_anne_statement"
+        ],
+        "relatedClaims": [],
+        "result": {
+          "text": "安妮在本局正式会面中说：“是我杀了丈夫。我恨他很久了，昨天我开了枪。”这是她的陈述，具体经过仍需核实。",
+          "media": []
+        },
+        "suggests": []
+      },
+      {
+        "id": "clue_anne_time",
+        "title": "安妮所述的时间与经过",
+        "finding": "安妮说，时间在六点以后，大约六点一刻或六点二十。她带枪去寓所，走到窗边，没有听见说话声，看见丈夫，随后开枪。她说离开后告诉了雷丁。这是她所述经过。",
+        "facts": [
+          "fact_anne_time"
+        ],
+        "relatedClaims": [],
+        "result": {
+          "text": "安妮说，时间在六点以后，大约六点一刻或六点二十。她带枪去寓所，走到窗边，没有听见说话声，看见丈夫，随后开枪。她说离开后告诉了雷丁。这是她所述经过。",
+          "media": []
+        },
+        "suggests": []
+      },
+      {
+        "id": "clue_anne_gun",
+        "title": "安妮对枪来源的说法",
+        "finding": "安妮说枪是丈夫的，从丈夫梳妆台的抽屉里拿出并带到寓所；她称原先准备留给自己。这是她的说法，尚没有独立核实。",
+        "facts": [
+          "fact_anne_gun"
+        ],
+        "relatedClaims": [],
+        "result": {
+          "text": "安妮说枪是丈夫的，从丈夫梳妆台的抽屉里拿出并带到寓所；她称原先准备留给自己。这是她的说法，尚没有独立核实。",
+          "media": []
+        },
+        "suggests": []
+      },
+      {
+        "id": "clue_anne_redding",
+        "title": "安妮对雷丁自首的解释",
+        "finding": "安妮说她知道雷丁已自首，称雷丁爱她、是在替她承担责任；她又说，自己告诉过雷丁杀人的事。她对这部分问题有过迟疑。这是她对雷丁行为的解释。",
+        "facts": [
+          "fact_anne_redding"
+        ],
+        "relatedClaims": [],
+        "result": {
+          "text": "安妮说她知道雷丁已自首，称雷丁爱她、是在替她承担责任；她又说，自己告诉过雷丁杀人的事。她对这部分问题有过迟疑。这是她对雷丁行为的解释。",
+          "media": []
+        },
+        "suggests": []
+      },
+      {
+        "id": "clue_anne_marple_reply",
+        "title": "安妮对邻居证词的回应",
+        "finding": "看过邻居的来访记录，安妮说：“我同马普尔小姐说过几句话，她当时在花园。可丈夫是我杀的，我已经告诉你们了。”",
+        "facts": [
+          "fact_anne_marple_reply"
+        ],
+        "relatedClaims": [],
+        "result": {
+          "text": "看过邻居的来访记录，安妮说：“我同马普尔小姐说过几句话，她当时在花园。可丈夫是我杀的，我已经告诉你们了。”",
+          "media": []
+        },
+        "suggests": []
+      },
+      {
+        "id": "clue_redding_anne_reply",
+        "title": "雷丁对安妮陈述的回应",
+        "finding": "在本局实际获知安妮的陈述后，雷丁说：“她不可能干这种事。我已经作了供述。”他仍维持原先版本，没有在本轮改口。",
+        "facts": [
+          "fact_redding_anne_reply"
+        ],
+        "relatedClaims": [],
+        "result": {
+          "text": "在本局实际获知安妮的陈述后，雷丁说：“她不可能干这种事。我已经作了供述。”他仍维持原先版本，没有在本轮改口。",
+          "media": []
+        },
+        "suggests": []
+      },
+      {
+        "id": "clue_marple_anne_reply",
+        "title": "马普尔对携枪说法的回应",
+        "finding": "看过安妮的携枪说法，马普尔说明安妮来时没有拿手提包，她也没有看见枪；她同时重申，自己看不见转过屋角后的书房内部。这是她的观察范围。",
+        "facts": [
+          "fact_marple_anne_reply"
+        ],
+        "relatedClaims": [],
+        "result": {
+          "text": "看过安妮的携枪说法，马普尔说明安妮来时没有拿手提包，她也没有看见枪；她同时重申，自己看不见转过屋角后的书房内部。这是她的观察范围。",
+          "media": []
+        },
+        "suggests": []
+      },
+      {
+        "id": "clue_police_two_statements",
+        "title": "警方收到的两份供述",
+        "finding": "在收到本局两份供述后，梅尔切特说明：雷丁声称约六点三刻争执后杀人；安妮则给出了约六点一刻到六点二十的另一版本。警方已保留两份陈述，具体经过、枪的来源与时间仍待独立核查。",
+        "facts": [
+          "fact_police_two_statements"
+        ],
+        "relatedClaims": [],
+        "result": {
+          "text": "在收到本局两份供述后，梅尔切特说明：雷丁声称约六点三刻争执后杀人；安妮则给出了约六点一刻到六点二十的另一版本。警方已保留两份陈述，具体经过、枪的来源与时间仍待独立核查。",
+          "media": []
+        },
+        "suggests": []
       }
     ],
     "routes": [
@@ -2118,6 +2515,152 @@
         "presentedClues": [
           "clue_redding_account"
         ]
+      },
+      {
+        "id": "route_anne_statement",
+        "point": "point_anne",
+        "condition": {
+          "kind": "Always"
+        },
+        "method": {
+          "kind": "Fixed",
+          "label": "询问：你想向警方说明什么？"
+        },
+        "grants": [
+          "clue_anne_statement"
+        ],
+        "reports": []
+      },
+      {
+        "id": "route_anne_time",
+        "point": "point_anne",
+        "condition": {
+          "kind": "Always"
+        },
+        "method": {
+          "kind": "Fixed",
+          "label": "询问：你说的时间与经过？"
+        },
+        "grants": [
+          "clue_anne_time"
+        ],
+        "reports": []
+      },
+      {
+        "id": "route_anne_gun",
+        "point": "point_anne",
+        "condition": {
+          "kind": "Always"
+        },
+        "method": {
+          "kind": "Fixed",
+          "label": "询问：枪从哪里来？"
+        },
+        "grants": [
+          "clue_anne_gun"
+        ],
+        "reports": []
+      },
+      {
+        "id": "route_anne_redding",
+        "point": "point_anne",
+        "condition": {
+          "kind": "Always"
+        },
+        "method": {
+          "kind": "Fixed",
+          "label": "询问：你如何解释雷丁自首？"
+        },
+        "grants": [
+          "clue_anne_redding"
+        ],
+        "reports": []
+      },
+      {
+        "id": "route_anne_marple_reply",
+        "point": "point_anne",
+        "condition": {
+          "kind": "CluesKnown",
+          "clues": [
+            "clue_marple_visitors"
+          ]
+        },
+        "method": {
+          "kind": "Fixed",
+          "label": "出示马普尔的来访记录"
+        },
+        "grants": [
+          "clue_anne_marple_reply"
+        ],
+        "reports": [],
+        "presentedClues": [
+          "clue_marple_visitors"
+        ]
+      },
+      {
+        "id": "route_redding_anne_reply",
+        "point": "point_redding",
+        "condition": {
+          "kind": "CluesKnown",
+          "clues": [
+            "clue_anne_statement"
+          ]
+        },
+        "method": {
+          "kind": "Fixed",
+          "label": "出示安妮在本局的认罪陈述"
+        },
+        "grants": [
+          "clue_redding_anne_reply"
+        ],
+        "reports": [],
+        "presentedClues": [
+          "clue_anne_statement"
+        ]
+      },
+      {
+        "id": "route_marple_anne_reply",
+        "point": "point_marple",
+        "condition": {
+          "kind": "CluesKnown",
+          "clues": [
+            "clue_anne_gun"
+          ]
+        },
+        "method": {
+          "kind": "Fixed",
+          "label": "出示安妮的携枪说法"
+        },
+        "grants": [
+          "clue_marple_anne_reply"
+        ],
+        "reports": [],
+        "presentedClues": [
+          "clue_anne_gun"
+        ]
+      },
+      {
+        "id": "route_police_two_statements",
+        "point": "point_police",
+        "condition": {
+          "kind": "CluesKnown",
+          "clues": [
+            "clue_anne_statement",
+            "clue_redding_account"
+          ]
+        },
+        "method": {
+          "kind": "Fixed",
+          "label": "出示本局两份供述，交流待查事项"
+        },
+        "grants": [
+          "clue_police_two_statements"
+        ],
+        "reports": [],
+        "presentedClues": [
+          "clue_anne_statement",
+          "clue_redding_account"
+        ]
       }
     ],
     "operations": [
@@ -2204,6 +2747,28 @@
             }
           }
         ]
+      },
+      {
+        "id": "open_anne_meeting",
+        "point": "point_police",
+        "label": "安排与安妮正式会面",
+        "repeatable": false,
+        "condition": {
+          "kind": "CluesKnown",
+          "clues": [
+            "clue_redding_account"
+          ]
+        },
+        "effects": [
+          {
+            "kind": "World",
+            "effect": {
+              "kind": "SetNodeVisible",
+              "node": "node_anne_meeting",
+              "visible": true
+            }
+          }
+        ]
       }
     ],
     "rules": [],
@@ -2247,7 +2812,7 @@
         "assessment": "conflict",
         "route": "comparison_time"
       },
-      "nextObjective": "初轮时间核对已保存。可以继续询问雷丁和马普尔，出示材料核实各自说法；后续认罪、取证与结案尚未开放。"
+      "nextObjective": "初轮时间核对已保存。取得雷丁首供后，可向警方安排与安妮会面，再出示材料核对各人的说法；完整结案尚未开放。"
     },
     "witnesses": [
       {
@@ -2387,6 +2952,16 @@
             "requiredEvidence": [
               "clue_medical_time"
             ]
+          },
+          {
+            "id": "redding_anne_reply",
+            "text": "在本局实际获知安妮的陈述后，雷丁说：“她不可能干这种事。我已经作了供述。”他仍维持原先版本，没有在本轮改口。",
+            "routes": [
+              "route_redding_anne_reply"
+            ],
+            "requiredEvidence": [
+              "clue_anne_statement"
+            ]
           }
         ]
       },
@@ -2429,6 +3004,67 @@
             ],
             "requiredEvidence": [
               "clue_redding_account"
+            ]
+          },
+          {
+            "id": "marple_anne_reply",
+            "text": "看过安妮的携枪说法，马普尔说明安妮来时没有拿手提包，她也没有看见枪；她同时重申，自己看不见转过屋角后的书房内部。这是她的观察范围。",
+            "routes": [
+              "route_marple_anne_reply"
+            ],
+            "requiredEvidence": [
+              "clue_anne_gun"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "anne",
+        "point": "point_anne",
+        "name": "安妮·普罗瑟罗",
+        "background": "普罗瑟罗上校的妻子。已由警方安排在老宅正式会面，可以询问她愿意作出的陈述及其具体说法。",
+        "voice": "克制而坚决，有时迟疑或不耐烦；维持本轮自认和对外版本，不主动讲共谋内情。",
+        "answers": [
+          {
+            "id": "anne_statement",
+            "text": "安妮在本局正式会面中说：“是我杀了丈夫。我恨他很久了，昨天我开了枪。”这是她的陈述，具体经过仍需核实。",
+            "routes": [
+              "route_anne_statement"
+            ],
+            "requiredEvidence": []
+          },
+          {
+            "id": "anne_time",
+            "text": "安妮说，时间在六点以后，大约六点一刻或六点二十。她带枪去寓所，走到窗边，没有听见说话声，看见丈夫，随后开枪。她说离开后告诉了雷丁。这是她所述经过。",
+            "routes": [
+              "route_anne_time"
+            ],
+            "requiredEvidence": []
+          },
+          {
+            "id": "anne_gun",
+            "text": "安妮说枪是丈夫的，从丈夫梳妆台的抽屉里拿出并带到寓所；她称原先准备留给自己。这是她的说法，尚没有独立核实。",
+            "routes": [
+              "route_anne_gun"
+            ],
+            "requiredEvidence": []
+          },
+          {
+            "id": "anne_redding",
+            "text": "安妮说她知道雷丁已自首，称雷丁爱她、是在替她承担责任；她又说，自己告诉过雷丁杀人的事。她对这部分问题有过迟疑。这是她对雷丁行为的解释。",
+            "routes": [
+              "route_anne_redding"
+            ],
+            "requiredEvidence": []
+          },
+          {
+            "id": "anne_marple_reply",
+            "text": "看过邻居的来访记录，安妮说：“我同马普尔小姐说过几句话，她当时在花园。可丈夫是我杀的，我已经告诉你们了。”",
+            "routes": [
+              "route_anne_marple_reply"
+            ],
+            "requiredEvidence": [
+              "clue_marple_visitors"
             ]
           }
         ]

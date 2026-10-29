@@ -6,10 +6,10 @@ import services.system.objects.*
 // Authored presentation binding for the first registered study, not a general action classifier.
 private[games] object StudyProjection:
   private[games] val caseId = CaseId("vicarage_study")
-  private[games] val revision = Revision(5)
+  private[games] val revision = Revision(6)
   // Supported content revisions share study/4. Existing games retain their authored content.
   private[games] def supports(id: CaseId, value: Revision): Boolean =
-    id == caseId && Set(Revision(3), Revision(4), revision)(value)
+    id == caseId && Set(Revision(3), Revision(4), Revision(5), revision)(value)
   private[games] def snapshot(caseRecord: CaseRevisionRecord, state: GameSessionRecord, records: Vector[SessionRecord], turns: Vector[InterviewTurnRecord], exchanges: Vector[PoliceExchangeRecord] = Vector.empty): InvestigationSnapshot =
     if !supports(caseRecord.caseId,caseRecord.revision) then
       throw GameError(ErrorCode.ConflictingContent,"这份调查使用的场景版本暂不支持，请保留原存档；可以另建一次调查使用当前版本。")
@@ -40,4 +40,6 @@ private[games] object StudyProjection:
         val visible = exchanges.filter(_.sequence.value <= state.sequence.value)
         PoliceDeskView(p.point,p.name,p.background,visible.flatMap(_.evidence).toSet,
           visible.map(e => PoliceExchangeView(e.requestId,e.sequence,e.evidence,e.reply)))
-      },content.publicPersons)
+      },content.publicPersons.map(p => p.copy(witness=p.witness.filter(id =>
+        content.witnesses.exists(w => w.id == id && points.exists(_.id == w.point)) ||
+          (id == WitnessId("melchett") && content.police.exists(police => points.exists(_.id == police.point)))))))

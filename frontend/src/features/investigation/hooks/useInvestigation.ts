@@ -118,12 +118,12 @@ export function useInvestigation() {
       }
     } finally { inFlight.current = false; }
   }
-  function execute(operation: OperationId) {
+  function execute(operation: OperationId, target?: PointId) {
     if (state.kind !== 'ready' || state.mutation.kind !== 'idle') return;
-    const point = state.snapshot.points.find(p => state.selected.kind === 'point' && p.id === state.selected.id);
+    const point = state.snapshot.points.find(p => target ? p.id === target : state.selected.kind === 'point' && p.id === state.selected.id);
     if (!point?.operations.some(o => o.id === operation)) return;
     void submit({ kind: 'execute', sessionId: state.snapshot.sessionId, requestId: requestIdSchema.parse(crypto.randomUUID()),
-      expectedSequence: state.snapshot.sequence, operation });
+      expectedSequence: state.snapshot.sequence, operation }, { kind: 'point', id: point.id });
   }
   function investigate(route: RouteId, target?: PointId) {
     if (state.kind !== 'ready' || state.mutation.kind !== 'idle') return;

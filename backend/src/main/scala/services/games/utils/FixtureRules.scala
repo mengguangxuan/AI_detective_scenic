@@ -30,7 +30,8 @@ private[games] object FixtureRules:
 
   private[games] def operationAvailable(state: GameSessionRecord,operation: FixtureOperation): Boolean =
     (operation.repeatable || !state.completedOperations(operation.id)) &&
-      operation.openedRequirement.forall(requirement => state.opened(requirement.entity) == requirement.opened)
+      operation.openedRequirement.forall(requirement => state.opened(requirement.entity) == requirement.opened) &&
+      operation.requiredClues.subsetOf(state.clues)
 
   private[games] def routeAvailable(state: GameSessionRecord, route: FixtureRoute): Boolean =
     route.prerequisite.forall(state.completedOperations.contains) && route.requiredClues.subsetOf(state.clues)

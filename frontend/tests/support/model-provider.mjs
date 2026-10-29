@@ -19,8 +19,12 @@ const server = http.createServer(async (request, response) => {
     else if (/怎么发现/.test(context.question)) id = 'clement_discovery';
     const allowed = new Set((context.disclosures ?? context.answers).map(answer => answer.id));
     if (context.witness.name === '梅尔切特' && /医生|死因|死亡时间/.test(context.question)) id = 'police_medical';
+    if (context.witness.name === '安妮·普罗瑟罗') {
+      id = /枪.*哪|来源/.test(context.question) ? 'anne_gun' : /时间|几点/.test(context.question) ? 'anne_time' : 'anne_statement';
+    }
+    if (context.witness.name === '梅尔切特' && /两份|两人/.test(context.question)) id = 'police_two_statements';
     if (context.witness.name === '劳伦斯·雷丁') {
-      id = /医生|死亡时间/.test(context.question) ? 'redding_medical_reply' : /钟/.test(context.question) ? 'redding_clock' : /枪/.test(context.question) ? 'redding_gun' : 'redding_account';
+      id = /安妮.*陈述|安妮.*认罪/.test(context.question) ? 'redding_anne_reply' : /医生|死亡时间/.test(context.question) ? 'redding_medical_reply' : /钟/.test(context.question) ? 'redding_clock' : /枪/.test(context.question) ? 'redding_gun' : 'redding_account';
     }
     if (context.witness.name === '马普尔小姐') {
       id = /供述|说法/.test(context.question) ? 'marple_account_reply' : /声|响/.test(context.question) ? 'marple_sound' : /离开/.test(context.question) ? 'marple_departure' : 'marple_visitors';

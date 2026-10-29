@@ -92,7 +92,10 @@ private[cases] object FixtureLoader:
         case "All" => condition.hcursor.get[Vector[Json]]("items").flatMap(items => check(items.isEmpty,"Unsupported operation condition",c)).map(_ => Option.empty[EntityOpenRequirement])
         case "EntityOpen" => (condition.hcursor.get[EntityId]("entity"),condition.hcursor.get[Boolean]("opened"))
           .mapN((entity,opened) => Option(EntityOpenRequirement(entity,opened)))
+        case "CluesKnown" => Right(Option.empty[EntityOpenRequirement])
         case _ => Left(DecodingFailure("Unsupported operation condition",c.history))
+      required <- if kind == "CluesKnown" then condition.hcursor.get[Set[ClueId]]("clues").flatMap(xs =>
+        check(xs.nonEmpty,"Empty operation clue prerequisite",c).as(xs)) else Right(Set.empty[ClueId])
       repeatable <- c.get[Option[Boolean]]("repeatable")
       rawEffects <- c.get[Vector[Json]]("effects")
       effects <- rawEffects.traverse { raw =>
@@ -103,7 +106,7 @@ private[cases] object FixtureLoader:
         yield effect
       }
       _ <- check(effects.nonEmpty, "Empty effects", c)
-    yield FixtureOperation(id, point, effects, c.get[String]("label").getOrElse(id.value),repeatable.getOrElse(false),requirement)
+    yield FixtureOperation(id, point, effects, c.get[String]("label").getOrElse(id.value),repeatable.getOrElse(false),requirement,required)
 
   private[cases] def decode(raw: String): Either[GameError, CaseRevisionRecord] =
     (for
@@ -218,7 +221,7 @@ private[cases] object FixtureLoader:
         o.readRoute.forall(r => f.routes.exists(x => x.id == r && o.point.contains(x.point))) &&
         (o.point.nonEmpty || f.observations.exists(_.node == o.node))) &&
       unique(f.observations.map(_.node)) && f.observations.forall(o => nodes.contains(o.node) && o.label.trim.nonEmpty && o.description.trim.nonEmpty) &&
-      f.operations.forall(o => f.points.exists(_.id == o.point) && o.effects.forall {
+      f.operations.forall(o => f.points.exists(_.id == o.point) && o.requiredClues.subsetOf(f.clues.map(_.id).toSet) && o.effects.forall {
         case FixtureEffect.SetNodeVisible(node, _) => nodes.contains(node)
         case _ => true
       })
