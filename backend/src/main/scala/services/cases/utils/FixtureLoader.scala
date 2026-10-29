@@ -75,11 +75,12 @@ private[cases] object FixtureLoader:
         case "CluesKnown" => c.downField("condition").get[Set[ClueId]]("clues").flatMap(xs =>
           check(xs.nonEmpty,"Empty clue prerequisite",c).as(xs))
         case _ => Right(Set.empty[ClueId])
+      disabledAfter <- c.get[Option[OperationId]]("disabledAfter")
       clues <- c.get[Vector[ClueId]]("grants")
       presented <- c.get[Option[Set[ClueId]]]("presentedClues").map(_.getOrElse(Set.empty))
       _ <- check(clues.nonEmpty, "Empty grants", c)
       _ <- empty(c, "reports")
-    yield FixtureRoute(id, point, prerequisite, clues, c.downField("method").get[String]("label").getOrElse(id.value), required, presented)
+    yield FixtureRoute(id, point, prerequisite, clues, c.downField("method").get[String]("label").getOrElse(id.value), required, presented, disabledAfter)
 
   private def operation(raw: Json): Decoder.Result[FixtureOperation] =
     val c = raw.hcursor
@@ -105,7 +106,6 @@ private[cases] object FixtureLoader:
           effect <- raw.hcursor.get[FixtureEffect]("effect")
         yield effect
       }
-      _ <- check(effects.nonEmpty, "Empty effects", c)
     yield FixtureOperation(id, point, effects, c.get[String]("label").getOrElse(id.value),repeatable.getOrElse(false),requirement,required)
 
   private[cases] def decode(raw: String): Either[GameError, CaseRevisionRecord] =
@@ -172,6 +172,8 @@ private[cases] object FixtureLoader:
       areaMap <- background.hcursor.get[Option[AreaMap]]("areaMap")
       clock <- investigation.hcursor.get[Option[InvestigationClock]]("clock")
       checks <- investigation.hcursor.get[Option[Vector[ExternalCheckSpec]]]("externalChecks").map(_.getOrElse(Vector.empty))
+      followUps <- investigation.hcursor.get[Option[Vector[WitnessFollowUpSpec]]]("followUps").map(_.getOrElse(Vector.empty))
+      comparisons <- investigation.hcursor.get[Option[Vector[StatementComparisonSpec]]]("statementComparisons").map(_.getOrElse(Vector.empty))
       placeIds <- places.traverse(_.hcursor.get[PlaceId]("id"))
       _ <- check(placeIds.distinct.size == placeIds.size && areaMap.forall(_.locations.forall(l => placeIds.contains(l.id))),"Unknown map place",c)
       entities <- world.hcursor.get[Vector[Json]]("entities")
@@ -184,7 +186,7 @@ private[cases] object FixtureLoader:
         case _ => true
       }, "Missing effect entity", c)
       _ <- check(operations.forall(_.openedRequirement.forall(r => entityIds.contains(r.entity))),"Unknown operation condition entity",c)
-      content = CaseContent(place, placeName, time, origin, position, nodes, points, facts, clues, routes, operations, opened, unlocked, common, observations, stage, sceneObjects, witnesses, police, publicPersons, areaMap, clock, checks)
+      content = CaseContent(place, placeName, time, origin, position, nodes, points, facts, clues, routes, operations, opened, unlocked, common, observations, stage, sceneObjects, witnesses, police, publicPersons, areaMap, clock, checks, followUps, comparisons)
       record = CaseRevisionRecord(caseId, revision, 1, title, content)
       _ <- check(valid(record), "Invalid fixture references / node hierarchy", c)
     yield record).left.map(error => GameError(ErrorCode.InvalidValue, s"案件数据不合法：${error.getMessage}"))
@@ -224,7 +226,7 @@ private[cases] object FixtureLoader:
           a.requiredEvidence.subsetOf(f.clues.map(_.id).toSet) && a.routes.distinct.size == a.routes.size &&
           a.routes.forall(id => f.routes.exists(r => r.id == id && r.point == w.point)))) &&
       f.routes.forall(r => f.points.exists(_.id == r.point) && r.prerequisite.forall(op => f.operations.exists(_.id == op)) &&
-        r.clues.forall(id => f.clues.exists(_.id == id)) && r.requiredClues.subsetOf(f.clues.map(_.id).toSet) &&
+        r.disabledAfter.forall(op => f.operations.exists(_.id == op)) && r.clues.forall(id => f.clues.exists(_.id == id)) && r.requiredClues.subsetOf(f.clues.map(_.id).toSet) &&
         r.requiredClues.intersect(r.clues.toSet).isEmpty && r.presentedClues.subsetOf(r.requiredClues)) &&
       f.stage.forall(s => s.introduction.trim.nonEmpty && s.objective.trim.nonEmpty && f.clues.exists(_.id == s.completionClue) &&
         s.comparison.forall(c => f.points.exists(_.id == c.point) && !f.routes.exists(_.id == c.route) && c.requiredClues.nonEmpty && c.evidenceClues.nonEmpty &&
@@ -236,7 +238,26 @@ private[cases] object FixtureLoader:
         o.readRoute.forall(r => f.routes.exists(x => x.id == r && o.point.contains(x.point))) &&
         (o.point.nonEmpty || f.observations.exists(_.node == o.node))) &&
       unique(f.observations.map(_.node)) && f.observations.forall(o => nodes.contains(o.node) && o.label.trim.nonEmpty && o.description.trim.nonEmpty) &&
-      f.operations.forall(o => f.points.exists(_.id == o.point) && o.requiredClues.subsetOf(f.clues.map(_.id).toSet) && o.effects.forall {
+      validFollowUps(f) && validStatementComparisons(f) &&
+      f.operations.forall(o => (o.effects.nonEmpty || f.followUps.exists(_.operation == o.id)) && f.points.exists(_.id == o.point) && o.requiredClues.subsetOf(f.clues.map(_.id).toSet) && o.effects.forall {
         case FixtureEffect.SetNodeVisible(node, _) => nodes.contains(node)
         case _ => true
       })
+
+  private def validFollowUps(f: CaseContent): Boolean =
+    def distinct[A](values: Vector[A]) = values.distinct.size == values.size
+    distinct(f.followUps.map(_.operation)) && distinct(f.followUps.map(_.witness)) &&
+      f.followUps.forall(p => p.title.trim.nonEmpty && p.requiredEvidence.nonEmpty && p.requiredRoutes.nonEmpty &&
+        f.witnesses.exists(w => w.id == p.witness && f.operations.exists(o => o.id == p.operation && o.point == w.point && !o.repeatable &&
+          p.requiredEvidence.subsetOf(o.requiredClues))) &&
+        p.requiredRoutes.forall(id => f.routes.exists(r => r.id == id && !r.prerequisite.contains(p.operation) && f.witnesses.exists(w => w.id == p.witness && w.point == r.point) &&
+          f.operations.find(_.id == p.operation).exists(o => r.clues.toSet.subsetOf(o.requiredClues)))) &&
+        Vector(p.knowledge,p.policy).forall(xs => xs.nonEmpty && xs.size <= 30 && xs.forall(s => s.trim.nonEmpty && s.length <= 1200)))
+
+  private def validStatementComparisons(f: CaseContent): Boolean =
+    def distinct[A](values: Vector[A]) = values.distinct.size == values.size
+    distinct(f.statementComparisons.map(_.witness)) && f.statementComparisons.forall(p =>
+        f.witnesses.exists(_.id == p.witness) && p.title.trim.nonEmpty && p.rows.nonEmpty && p.nextObjective.trim.nonEmpty &&
+        distinct(p.rows.map(_.label)) && p.rows.forall(r => r.label.trim.nonEmpty && r.initial != r.revised &&
+          Vector(r.initial,r.revised).forall(id => f.clues.exists(_.id == id) && f.routes.exists(route => route.clues.contains(id) && f.witnesses.exists(w => w.id == p.witness && w.point == route.point))) &&
+          f.followUps.find(_.witness == p.witness).exists(phase => f.routes.filter(_.clues.contains(r.revised)).forall(_.prerequisite.contains(phase.operation)))))

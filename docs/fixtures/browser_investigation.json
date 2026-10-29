@@ -1,7 +1,7 @@
 {
   "id": "vicarage_study",
   "revision": {
-    "value": 8
+    "value": 9
   },
   "schemaVersion": {
     "value": 2
@@ -959,6 +959,176 @@
           }
         },
         "boundary": "周五实际受理核实后反馈；大致到场参照与精确分钟分开"
+      },
+      {
+        "id": "topic_redding_time_challenge",
+        "subject": {
+          "kind": "Place",
+          "id": "study"
+        },
+        "question": "固定的初查材料；陈述及推论的归属见正文，不等同于完整案件真相。",
+        "when": {
+          "earliest": {
+            "seconds": 0
+          },
+          "latest": {
+            "seconds": 0
+          }
+        },
+        "boundary": "本局实际质询／补充供述；人物陈述与客观事实分开"
+      },
+      {
+        "id": "topic_anne_gun_challenge",
+        "subject": {
+          "kind": "Place",
+          "id": "study"
+        },
+        "question": "固定的初查材料；陈述及推论的归属见正文，不等同于完整案件真相。",
+        "when": {
+          "earliest": {
+            "seconds": 0
+          },
+          "latest": {
+            "seconds": 0
+          }
+        },
+        "boundary": "本局实际质询／补充供述；人物陈述与客观事实分开"
+      },
+      {
+        "id": "topic_anne_redding_challenge",
+        "subject": {
+          "kind": "Place",
+          "id": "study"
+        },
+        "question": "固定的初查材料；陈述及推论的归属见正文，不等同于完整案件真相。",
+        "when": {
+          "earliest": {
+            "seconds": 0
+          },
+          "latest": {
+            "seconds": 0
+          }
+        },
+        "boundary": "本局实际质询／补充供述；人物陈述与客观事实分开"
+      },
+      {
+        "id": "topic_redding_revised",
+        "subject": {
+          "kind": "Place",
+          "id": "study"
+        },
+        "question": "固定的初查材料；陈述及推论的归属见正文，不等同于完整案件真相。",
+        "when": {
+          "earliest": {
+            "seconds": 0
+          },
+          "latest": {
+            "seconds": 0
+          }
+        },
+        "boundary": "本局实际质询／补充供述；人物陈述与客观事实分开"
+      },
+      {
+        "id": "topic_redding_gun_revised",
+        "subject": {
+          "kind": "Place",
+          "id": "study"
+        },
+        "question": "固定的初查材料；陈述及推论的归属见正文，不等同于完整案件真相。",
+        "when": {
+          "earliest": {
+            "seconds": 0
+          },
+          "latest": {
+            "seconds": 0
+          }
+        },
+        "boundary": "本局实际质询／补充供述；人物陈述与客观事实分开"
+      },
+      {
+        "id": "topic_redding_scene_revised",
+        "subject": {
+          "kind": "Place",
+          "id": "study"
+        },
+        "question": "固定的初查材料；陈述及推论的归属见正文，不等同于完整案件真相。",
+        "when": {
+          "earliest": {
+            "seconds": 0
+          },
+          "latest": {
+            "seconds": 0
+          }
+        },
+        "boundary": "本局实际质询／补充供述；人物陈述与客观事实分开"
+      },
+      {
+        "id": "topic_anne_revised",
+        "subject": {
+          "kind": "Place",
+          "id": "study"
+        },
+        "question": "固定的初查材料；陈述及推论的归属见正文，不等同于完整案件真相。",
+        "when": {
+          "earliest": {
+            "seconds": 0
+          },
+          "latest": {
+            "seconds": 0
+          }
+        },
+        "boundary": "本局实际质询／补充供述；人物陈述与客观事实分开"
+      },
+      {
+        "id": "topic_anne_visit_revised",
+        "subject": {
+          "kind": "Place",
+          "id": "study"
+        },
+        "question": "固定的初查材料；陈述及推论的归属见正文，不等同于完整案件真相。",
+        "when": {
+          "earliest": {
+            "seconds": 0
+          },
+          "latest": {
+            "seconds": 0
+          }
+        },
+        "boundary": "本局实际质询／补充供述；人物陈述与客观事实分开"
+      },
+      {
+        "id": "topic_anne_gun_revised",
+        "subject": {
+          "kind": "Place",
+          "id": "study"
+        },
+        "question": "固定的初查材料；陈述及推论的归属见正文，不等同于完整案件真相。",
+        "when": {
+          "earliest": {
+            "seconds": 0
+          },
+          "latest": {
+            "seconds": 0
+          }
+        },
+        "boundary": "本局实际质询／补充供述；人物陈述与客观事实分开"
+      },
+      {
+        "id": "topic_police_revised_review",
+        "subject": {
+          "kind": "Place",
+          "id": "study"
+        },
+        "question": "固定的初查材料；陈述及推论的归属见正文，不等同于完整案件真相。",
+        "when": {
+          "earliest": {
+            "seconds": 0
+          },
+          "latest": {
+            "seconds": 0
+          }
+        },
+        "boundary": "本局实际质询／补充供述；人物陈述与客观事实分开"
       }
     ],
     "facts": [
@@ -1523,6 +1693,136 @@
           "source_game_check"
         ],
         "topic": "topic_gun_verification"
+      },
+      {
+        "id": "fact_redding_time_challenge",
+        "value": {
+          "kind": "AuthoredDetail",
+          "detail": "雷丁看过旅店分开时间、医生初查参照和交枪核验，说：“我听见了。可你们也不能光凭这些替我把事情说完。安妮那里，你们究竟问到了什么？”他暂未撤回首供。"
+        },
+        "requiresOccurred": [],
+        "explanation": "固定的初查材料；陈述及推论的归属见正文，不等同于完整案件真相。",
+        "sources": [
+          "source_game_interview"
+        ],
+        "topic": "topic_redding_time_challenge"
+      },
+      {
+        "id": "fact_anne_gun_challenge",
+        "value": {
+          "kind": "AuthoredDetail",
+          "detail": "安妮听完男仆和交枪核验的记录，迟疑道：“我先前说是从丈夫抽屉拿的……你们还要问我什么？劳伦斯现在怎么说？”本次仍保留她的原陈述，尚未形成撤回记录。"
+        },
+        "requiresOccurred": [],
+        "explanation": "固定的初查材料；陈述及推论的归属见正文，不等同于完整案件真相。",
+        "sources": [
+          "source_game_interview"
+        ],
+        "topic": "topic_anne_gun_challenge"
+      },
+      {
+        "id": "fact_anne_redding_challenge",
+        "value": {
+          "kind": "AuthoredDetail",
+          "detail": "看过雷丁已形成的补充供述、邻居所见和哈特内尔的来访记录后，安妮问：“他真是这么说的？我想我也得重新说明那天去寓所的事。”这次是对材料的回应，补充经过尚待实际询问记录。"
+        },
+        "requiresOccurred": [],
+        "explanation": "固定的初查材料；陈述及推论的归属见正文，不等同于完整案件真相。",
+        "sources": [
+          "source_game_interview"
+        ],
+        "topic": "topic_anne_redding_challenge"
+      },
+      {
+        "id": "fact_redding_revised",
+        "value": {
+          "kind": "AuthoredDetail",
+          "detail": "雷丁撤回独自开枪的首供，改称进书房时上校已伏在桌前，枪在地上；他认出是自己的枪便拿走。他声称当时怀疑安妮，后来为替她承担责任而自首。这是他现在的解释。"
+        },
+        "requiresOccurred": [],
+        "explanation": "固定的初查材料；陈述及推论的归属见正文，不等同于完整案件真相。",
+        "sources": [
+          "source_ch12"
+        ],
+        "topic": "topic_redding_revised"
+      },
+      {
+        "id": "fact_redding_gun_revised",
+        "value": {
+          "kind": "AuthoredDetail",
+          "detail": "雷丁改说枪平时放在自己小屋起居室的书架上，房门通常不锁，常有人来往。他记不准最后见枪的日子，只记得曾挪开它拿烟斗；阿彻太太每天来替他料理家务。"
+        },
+        "requiresOccurred": [],
+        "explanation": "固定的初查材料；陈述及推论的归属见正文，不等同于完整案件真相。",
+        "sources": [
+          "source_ch12"
+        ],
+        "topic": "topic_redding_gun_revised"
+      },
+      {
+        "id": "fact_redding_scene_revised",
+        "value": {
+          "kind": "AuthoredDetail",
+          "detail": "雷丁现在否认动过座钟，说只记得钟倒在桌上；他也说没有留意桌上的纸张，没有碰尸体。这是补充问询中的说法，先前已记录的答复仍保留。"
+        },
+        "requiresOccurred": [],
+        "explanation": "固定的初查材料；陈述及推论的归属见正文，不等同于完整案件真相。",
+        "sources": [
+          "source_ch12"
+        ],
+        "topic": "topic_redding_scene_revised"
+      },
+      {
+        "id": "fact_anne_revised",
+        "value": {
+          "kind": "AuthoredDetail",
+          "detail": "安妮撤回自己携枪杀人的陈述，改称原先是想替雷丁承担责任。她承认当晚与雷丁在画室见面，并称去寓所窗边只是想看看丈夫是否还在那里。这是她的补充解释。"
+        },
+        "requiresOccurred": [],
+        "explanation": "固定的初查材料；陈述及推论的归属见正文，不等同于完整案件真相。",
+        "sources": [
+          "source_ch12"
+        ],
+        "topic": "topic_anne_revised"
+      },
+      {
+        "id": "fact_anne_visit_revised",
+        "value": {
+          "kind": "AuthoredDetail",
+          "detail": "安妮说她与雷丁约在六点一刻于画室见面；先与花园里的马普尔说话，再到书房窗边。她改称没有听到说话声，也没有看见丈夫，便去画室，雷丁很快到来。"
+        },
+        "requiresOccurred": [],
+        "explanation": "固定的初查材料；陈述及推论的归属见正文，不等同于完整案件真相。",
+        "sources": [
+          "source_ch12"
+        ],
+        "topic": "topic_anne_visit_revised"
+      },
+      {
+        "id": "fact_anne_gun_revised",
+        "value": {
+          "kind": "AuthoredDetail",
+          "detail": "安妮现在否认拿过雷丁的手枪；她说知道他有枪，似乎见过它放在小屋书架上。她称约三星期前曾和丈夫一同去喝茶，此后未去。这些仍是她本人的说法。"
+        },
+        "requiresOccurred": [],
+        "explanation": "固定的初查材料；陈述及推论的归属见正文，不等同于完整案件真相。",
+        "sources": [
+          "source_ch12"
+        ],
+        "topic": "topic_anne_gun_revised"
+      },
+      {
+        "id": "fact_police_revised_review",
+        "value": {
+          "kind": "AuthoredDetail",
+          "detail": "警方已分别保留雷丁和安妮的首份、补充陈述。两人现在把先前认罪解释成替对方承担责任；雷丁对钟的说法、枪的来路和纸张仍需核实。梅尔切特准备继续查枪的存放与接触者，并复查原件。"
+        },
+        "requiresOccurred": [],
+        "explanation": "固定的初查材料；陈述及推论的归属见正文，不等同于完整案件真相。",
+        "sources": [
+          "source_game_interview"
+        ],
+        "topic": "topic_police_revised_review"
       }
     ],
     "claims": [],
@@ -3244,6 +3544,146 @@
           "media": []
         },
         "suggests": []
+      },
+      {
+        "id": "clue_redding_time_challenge",
+        "title": "雷丁对行踪与医学材料的回应",
+        "finding": "雷丁看过旅店分开时间、医生初查参照和交枪核验，说：“我听见了。可你们也不能光凭这些替我把事情说完。安妮那里，你们究竟问到了什么？”他暂未撤回首供。",
+        "facts": [
+          "fact_redding_time_challenge"
+        ],
+        "relatedClaims": [],
+        "result": {
+          "text": "雷丁看过旅店分开时间、医生初查参照和交枪核验，说：“我听见了。可你们也不能光凭这些替我把事情说完。安妮那里，你们究竟问到了什么？”他暂未撤回首供。",
+          "media": []
+        },
+        "suggests": []
+      },
+      {
+        "id": "clue_anne_gun_challenge",
+        "title": "安妮对男仆与交枪核验的回应",
+        "finding": "安妮听完男仆和交枪核验的记录，迟疑道：“我先前说是从丈夫抽屉拿的……你们还要问我什么？劳伦斯现在怎么说？”本次仍保留她的原陈述，尚未形成撤回记录。",
+        "facts": [
+          "fact_anne_gun_challenge"
+        ],
+        "relatedClaims": [],
+        "result": {
+          "text": "安妮听完男仆和交枪核验的记录，迟疑道：“我先前说是从丈夫抽屉拿的……你们还要问我什么？劳伦斯现在怎么说？”本次仍保留她的原陈述，尚未形成撤回记录。",
+          "media": []
+        },
+        "suggests": []
+      },
+      {
+        "id": "clue_anne_redding_challenge",
+        "title": "安妮对雷丁补充说法与行踪的回应",
+        "finding": "看过雷丁已形成的补充供述、邻居所见和哈特内尔的来访记录后，安妮问：“他真是这么说的？我想我也得重新说明那天去寓所的事。”这次是对材料的回应，补充经过尚待实际询问记录。",
+        "facts": [
+          "fact_anne_redding_challenge"
+        ],
+        "relatedClaims": [],
+        "result": {
+          "text": "看过雷丁已形成的补充供述、邻居所见和哈特内尔的来访记录后，安妮问：“他真是这么说的？我想我也得重新说明那天去寓所的事。”这次是对材料的回应，补充经过尚待实际询问记录。",
+          "media": []
+        },
+        "suggests": []
+      },
+      {
+        "id": "clue_redding_revised",
+        "title": "雷丁的补充供述",
+        "finding": "雷丁撤回独自开枪的首供，改称进书房时上校已伏在桌前，枪在地上；他认出是自己的枪便拿走。他声称当时怀疑安妮，后来为替她承担责任而自首。这是他现在的解释。",
+        "facts": [
+          "fact_redding_revised"
+        ],
+        "relatedClaims": [],
+        "result": {
+          "text": "雷丁撤回独自开枪的首供，改称进书房时上校已伏在桌前，枪在地上；他认出是自己的枪便拿走。他声称当时怀疑安妮，后来为替她承担责任而自首。这是他现在的解释。",
+          "media": []
+        },
+        "suggests": []
+      },
+      {
+        "id": "clue_redding_gun_revised",
+        "title": "雷丁补充：枪的存放与接触",
+        "finding": "雷丁改说枪平时放在自己小屋起居室的书架上，房门通常不锁，常有人来往。他记不准最后见枪的日子，只记得曾挪开它拿烟斗；阿彻太太每天来替他料理家务。",
+        "facts": [
+          "fact_redding_gun_revised"
+        ],
+        "relatedClaims": [],
+        "result": {
+          "text": "雷丁改说枪平时放在自己小屋起居室的书架上，房门通常不锁，常有人来往。他记不准最后见枪的日子，只记得曾挪开它拿烟斗；阿彻太太每天来替他料理家务。",
+          "media": []
+        },
+        "suggests": []
+      },
+      {
+        "id": "clue_redding_scene_revised",
+        "title": "雷丁补充：座钟与纸张",
+        "finding": "雷丁现在否认动过座钟，说只记得钟倒在桌上；他也说没有留意桌上的纸张，没有碰尸体。这是补充问询中的说法，先前已记录的答复仍保留。",
+        "facts": [
+          "fact_redding_scene_revised"
+        ],
+        "relatedClaims": [],
+        "result": {
+          "text": "雷丁现在否认动过座钟，说只记得钟倒在桌上；他也说没有留意桌上的纸张，没有碰尸体。这是补充问询中的说法，先前已记录的答复仍保留。",
+          "media": []
+        },
+        "suggests": []
+      },
+      {
+        "id": "clue_anne_revised",
+        "title": "安妮的补充供述",
+        "finding": "安妮撤回自己携枪杀人的陈述，改称原先是想替雷丁承担责任。她承认当晚与雷丁在画室见面，并称去寓所窗边只是想看看丈夫是否还在那里。这是她的补充解释。",
+        "facts": [
+          "fact_anne_revised"
+        ],
+        "relatedClaims": [],
+        "result": {
+          "text": "安妮撤回自己携枪杀人的陈述，改称原先是想替雷丁承担责任。她承认当晚与雷丁在画室见面，并称去寓所窗边只是想看看丈夫是否还在那里。这是她的补充解释。",
+          "media": []
+        },
+        "suggests": []
+      },
+      {
+        "id": "clue_anne_visit_revised",
+        "title": "安妮补充：窗边与画室",
+        "finding": "安妮说她与雷丁约在六点一刻于画室见面；先与花园里的马普尔说话，再到书房窗边。她改称没有听到说话声，也没有看见丈夫，便去画室，雷丁很快到来。",
+        "facts": [
+          "fact_anne_visit_revised"
+        ],
+        "relatedClaims": [],
+        "result": {
+          "text": "安妮说她与雷丁约在六点一刻于画室见面；先与花园里的马普尔说话，再到书房窗边。她改称没有听到说话声，也没有看见丈夫，便去画室，雷丁很快到来。",
+          "media": []
+        },
+        "suggests": []
+      },
+      {
+        "id": "clue_anne_gun_revised",
+        "title": "安妮补充：对雷丁手枪的说法",
+        "finding": "安妮现在否认拿过雷丁的手枪；她说知道他有枪，似乎见过它放在小屋书架上。她称约三星期前曾和丈夫一同去喝茶，此后未去。这些仍是她本人的说法。",
+        "facts": [
+          "fact_anne_gun_revised"
+        ],
+        "relatedClaims": [],
+        "result": {
+          "text": "安妮现在否认拿过雷丁的手枪；她说知道他有枪，似乎见过它放在小屋书架上。她称约三星期前曾和丈夫一同去喝茶，此后未去。这些仍是她本人的说法。",
+          "media": []
+        },
+        "suggests": []
+      },
+      {
+        "id": "clue_police_revised_review",
+        "title": "警方收到的首供与补充供述",
+        "finding": "警方已分别保留雷丁和安妮的首份、补充陈述。两人现在把先前认罪解释成替对方承担责任；雷丁对钟的说法、枪的来路和纸张仍需核实。梅尔切特准备继续查枪的存放与接触者，并复查原件。",
+        "facts": [
+          "fact_police_revised_review"
+        ],
+        "relatedClaims": [],
+        "result": {
+          "text": "警方已分别保留雷丁和安妮的首份、补充陈述。两人现在把先前认罪解释成替对方承担责任；雷丁对钟的说法、枪的来路和纸张仍需核实。梅尔切特准备继续查枪的存放与接触者，并复查原件。",
+          "media": []
+        },
+        "suggests": []
       }
     ],
     "routes": [
@@ -3473,7 +3913,8 @@
         "grants": [
           "clue_redding_account"
         ],
-        "reports": []
+        "reports": [],
+        "disabledAfter": "begin_redding_followup"
       },
       {
         "id": "route_redding_gun",
@@ -3488,7 +3929,8 @@
         "grants": [
           "clue_redding_gun"
         ],
-        "reports": []
+        "reports": [],
+        "disabledAfter": "begin_redding_followup"
       },
       {
         "id": "route_redding_clock",
@@ -3509,7 +3951,8 @@
         "reports": [],
         "presentedClues": [
           "clue_clock"
-        ]
+        ],
+        "disabledAfter": "begin_redding_followup"
       },
       {
         "id": "route_redding_medical_reply",
@@ -3531,7 +3974,8 @@
         "reports": [],
         "presentedClues": [
           "clue_medical_time"
-        ]
+        ],
+        "disabledAfter": "begin_redding_followup"
       },
       {
         "id": "route_marple_visitors",
@@ -3612,7 +4056,8 @@
         "grants": [
           "clue_anne_statement"
         ],
-        "reports": []
+        "reports": [],
+        "disabledAfter": "begin_anne_followup"
       },
       {
         "id": "route_anne_time",
@@ -3627,7 +4072,8 @@
         "grants": [
           "clue_anne_time"
         ],
-        "reports": []
+        "reports": [],
+        "disabledAfter": "begin_anne_followup"
       },
       {
         "id": "route_anne_gun",
@@ -3642,7 +4088,8 @@
         "grants": [
           "clue_anne_gun"
         ],
-        "reports": []
+        "reports": [],
+        "disabledAfter": "begin_anne_followup"
       },
       {
         "id": "route_anne_redding",
@@ -3657,7 +4104,8 @@
         "grants": [
           "clue_anne_redding"
         ],
-        "reports": []
+        "reports": [],
+        "disabledAfter": "begin_anne_followup"
       },
       {
         "id": "route_anne_marple_reply",
@@ -3678,7 +4126,8 @@
         "reports": [],
         "presentedClues": [
           "clue_marple_visitors"
-        ]
+        ],
+        "disabledAfter": "begin_anne_followup"
       },
       {
         "id": "route_redding_anne_reply",
@@ -3699,7 +4148,8 @@
         "reports": [],
         "presentedClues": [
           "clue_anne_statement"
-        ]
+        ],
+        "disabledAfter": "begin_redding_followup"
       },
       {
         "id": "route_marple_anne_reply",
@@ -3926,6 +4376,211 @@
           "clue_mary_fish_time",
           "clue_marple_sound"
         ]
+      },
+      {
+        "id": "route_redding_time_challenge",
+        "point": "point_redding",
+        "condition": {
+          "kind": "CluesKnown",
+          "clues": [
+            "clue_stone_inn",
+            "clue_medical_time",
+            "clue_medical_visit_record",
+            "clue_gun_verification",
+            "clue_redding_account"
+          ]
+        },
+        "method": {
+          "kind": "Fixed",
+          "label": "出示行踪与检查材料，追问六点三刻的说法"
+        },
+        "grants": [
+          "clue_redding_time_challenge"
+        ],
+        "reports": [],
+        "presentedClues": [
+          "clue_stone_inn",
+          "clue_medical_time",
+          "clue_medical_visit_record",
+          "clue_gun_verification"
+        ],
+        "disabledAfter": "begin_redding_followup"
+      },
+      {
+        "id": "route_anne_gun_challenge",
+        "point": "point_anne",
+        "condition": {
+          "kind": "CluesKnown",
+          "clues": [
+            "clue_valet_gun",
+            "clue_gun_verification",
+            "clue_anne_gun",
+            "clue_anne_statement"
+          ]
+        },
+        "method": {
+          "kind": "Fixed",
+          "label": "出示男仆证言与核验，追问枪的来源"
+        },
+        "grants": [
+          "clue_anne_gun_challenge"
+        ],
+        "reports": [],
+        "presentedClues": [
+          "clue_valet_gun",
+          "clue_gun_verification"
+        ],
+        "disabledAfter": "begin_anne_followup"
+      },
+      {
+        "id": "route_anne_redding_challenge",
+        "point": "point_anne",
+        "condition": {
+          "kind": "CluesKnown",
+          "clues": [
+            "clue_redding_revised",
+            "clue_marple_visitors",
+            "clue_hartnell_visit",
+            "clue_anne_statement"
+          ]
+        },
+        "method": {
+          "kind": "Fixed",
+          "label": "出示雷丁补充供述与行踪，追问当晚经过"
+        },
+        "grants": [
+          "clue_anne_redding_challenge"
+        ],
+        "reports": [],
+        "presentedClues": [
+          "clue_redding_revised",
+          "clue_marple_visitors",
+          "clue_hartnell_visit"
+        ],
+        "disabledAfter": "begin_anne_followup"
+      },
+      {
+        "id": "route_redding_revised",
+        "point": "point_redding",
+        "condition": {
+          "kind": "OperationDone",
+          "operation": "begin_redding_followup"
+        },
+        "method": {
+          "kind": "Fixed",
+          "label": "记录补充供述：你在书房看见了什么？"
+        },
+        "grants": [
+          "clue_redding_revised"
+        ],
+        "reports": []
+      },
+      {
+        "id": "route_redding_gun_revised",
+        "point": "point_redding",
+        "condition": {
+          "kind": "OperationDone",
+          "operation": "begin_redding_followup"
+        },
+        "method": {
+          "kind": "Fixed",
+          "label": "追问补充：枪平时放在哪里？"
+        },
+        "grants": [
+          "clue_redding_gun_revised"
+        ],
+        "reports": []
+      },
+      {
+        "id": "route_redding_scene_revised",
+        "point": "point_redding",
+        "condition": {
+          "kind": "OperationDone",
+          "operation": "begin_redding_followup"
+        },
+        "method": {
+          "kind": "Fixed",
+          "label": "追问补充：你动过钟、纸张或尸体吗？"
+        },
+        "grants": [
+          "clue_redding_scene_revised"
+        ],
+        "reports": []
+      },
+      {
+        "id": "route_anne_revised",
+        "point": "point_anne",
+        "condition": {
+          "kind": "OperationDone",
+          "operation": "begin_anne_followup"
+        },
+        "method": {
+          "kind": "Fixed",
+          "label": "记录补充供述：你现在怎样说明先前的认罪？"
+        },
+        "grants": [
+          "clue_anne_revised"
+        ],
+        "reports": []
+      },
+      {
+        "id": "route_anne_visit_revised",
+        "point": "point_anne",
+        "condition": {
+          "kind": "OperationDone",
+          "operation": "begin_anne_followup"
+        },
+        "method": {
+          "kind": "Fixed",
+          "label": "追问补充：你从花园到画室的经过？"
+        },
+        "grants": [
+          "clue_anne_visit_revised"
+        ],
+        "reports": []
+      },
+      {
+        "id": "route_anne_gun_revised",
+        "point": "point_anne",
+        "condition": {
+          "kind": "OperationDone",
+          "operation": "begin_anne_followup"
+        },
+        "method": {
+          "kind": "Fixed",
+          "label": "追问补充：你接触过雷丁的枪吗？"
+        },
+        "grants": [
+          "clue_anne_gun_revised"
+        ],
+        "reports": []
+      },
+      {
+        "id": "route_police_revised_review",
+        "point": "point_police",
+        "condition": {
+          "kind": "CluesKnown",
+          "clues": [
+            "clue_redding_account",
+            "clue_anne_statement",
+            "clue_redding_revised",
+            "clue_anne_revised"
+          ]
+        },
+        "method": {
+          "kind": "Fixed",
+          "label": "出示四份供述，登记补充调查方向"
+        },
+        "grants": [
+          "clue_police_revised_review"
+        ],
+        "reports": [],
+        "presentedClues": [
+          "clue_redding_account",
+          "clue_anne_statement",
+          "clue_redding_revised",
+          "clue_anne_revised"
+        ]
       }
     ],
     "operations": [
@@ -4087,6 +4742,47 @@
             }
           }
         ]
+      },
+      {
+        "id": "begin_redding_followup",
+        "point": "point_redding",
+        "label": "开始雷丁的补充问询",
+        "repeatable": false,
+        "condition": {
+          "kind": "CluesKnown",
+          "clues": [
+            "clue_redding_account",
+            "clue_redding_time_challenge",
+            "clue_redding_anne_reply",
+            "clue_stone_inn",
+            "clue_medical_time",
+            "clue_medical_visit_record",
+            "clue_gun_verification",
+            "clue_anne_statement"
+          ]
+        },
+        "effects": []
+      },
+      {
+        "id": "begin_anne_followup",
+        "point": "point_anne",
+        "label": "开始安妮的补充问询",
+        "repeatable": false,
+        "condition": {
+          "kind": "CluesKnown",
+          "clues": [
+            "clue_anne_statement",
+            "clue_anne_gun",
+            "clue_anne_gun_challenge",
+            "clue_anne_redding_challenge",
+            "clue_valet_gun",
+            "clue_gun_verification",
+            "clue_redding_revised",
+            "clue_marple_visitors",
+            "clue_hartnell_visit"
+          ]
+        },
+        "effects": []
       }
     ],
     "rules": [],
@@ -4130,7 +4826,7 @@
         "assessment": "conflict",
         "route": "comparison_time"
       },
-      "nextObjective": "初轮时间核对已保存。可向警方安排安妮会面，继续核查枪来源、行踪与响声，再出示所得证言交流；后续取证与完整结案尚未开放。"
+      "nextObjective": "初轮时间核对已保存。继续核查供述，向本人出示所得材料并完成关键追问，可进入补充问询；在线索整理对照已记录版本，再核实枪、纸张与现场视线。"
     },
     "witnesses": [
       {
@@ -4296,6 +4992,43 @@
             "requiredEvidence": [
               "clue_anne_statement"
             ]
+          },
+          {
+            "id": "redding_time_challenge",
+            "text": "雷丁看过旅店分开时间、医生初查参照和交枪核验，说：“我听见了。可你们也不能光凭这些替我把事情说完。安妮那里，你们究竟问到了什么？”他暂未撤回首供。",
+            "routes": [
+              "route_redding_time_challenge"
+            ],
+            "requiredEvidence": [
+              "clue_stone_inn",
+              "clue_medical_time",
+              "clue_medical_visit_record",
+              "clue_gun_verification"
+            ]
+          },
+          {
+            "id": "redding_revised",
+            "text": "雷丁撤回独自开枪的首供，改称进书房时上校已伏在桌前，枪在地上；他认出是自己的枪便拿走。他声称当时怀疑安妮，后来为替她承担责任而自首。这是他现在的解释。",
+            "routes": [
+              "route_redding_revised"
+            ],
+            "requiredEvidence": []
+          },
+          {
+            "id": "redding_gun_revised",
+            "text": "雷丁改说枪平时放在自己小屋起居室的书架上，房门通常不锁，常有人来往。他记不准最后见枪的日子，只记得曾挪开它拿烟斗；阿彻太太每天来替他料理家务。",
+            "routes": [
+              "route_redding_gun_revised"
+            ],
+            "requiredEvidence": []
+          },
+          {
+            "id": "redding_scene_revised",
+            "text": "雷丁现在否认动过座钟，说只记得钟倒在桌上；他也说没有留意桌上的纸张，没有碰尸体。这是补充问询中的说法，先前已记录的答复仍保留。",
+            "routes": [
+              "route_redding_scene_revised"
+            ],
+            "requiredEvidence": []
           }
         ]
       },
@@ -4400,6 +5133,53 @@
             "requiredEvidence": [
               "clue_marple_visitors"
             ]
+          },
+          {
+            "id": "anne_gun_challenge",
+            "text": "安妮听完男仆和交枪核验的记录，迟疑道：“我先前说是从丈夫抽屉拿的……你们还要问我什么？劳伦斯现在怎么说？”本次仍保留她的原陈述，尚未形成撤回记录。",
+            "routes": [
+              "route_anne_gun_challenge"
+            ],
+            "requiredEvidence": [
+              "clue_valet_gun",
+              "clue_gun_verification"
+            ]
+          },
+          {
+            "id": "anne_redding_challenge",
+            "text": "看过雷丁已形成的补充供述、邻居所见和哈特内尔的来访记录后，安妮问：“他真是这么说的？我想我也得重新说明那天去寓所的事。”这次是对材料的回应，补充经过尚待实际询问记录。",
+            "routes": [
+              "route_anne_redding_challenge"
+            ],
+            "requiredEvidence": [
+              "clue_redding_revised",
+              "clue_marple_visitors",
+              "clue_hartnell_visit"
+            ]
+          },
+          {
+            "id": "anne_revised",
+            "text": "安妮撤回自己携枪杀人的陈述，改称原先是想替雷丁承担责任。她承认当晚与雷丁在画室见面，并称去寓所窗边只是想看看丈夫是否还在那里。这是她的补充解释。",
+            "routes": [
+              "route_anne_revised"
+            ],
+            "requiredEvidence": []
+          },
+          {
+            "id": "anne_visit_revised",
+            "text": "安妮说她与雷丁约在六点一刻于画室见面；先与花园里的马普尔说话，再到书房窗边。她改称没有听到说话声，也没有看见丈夫，便去画室，雷丁很快到来。",
+            "routes": [
+              "route_anne_visit_revised"
+            ],
+            "requiredEvidence": []
+          },
+          {
+            "id": "anne_gun_revised",
+            "text": "安妮现在否认拿过雷丁的手枪；她说知道他有枪，似乎见过它放在小屋书架上。她称约三星期前曾和丈夫一同去喝茶，此后未去。这些仍是她本人的说法。",
+            "routes": [
+              "route_anne_gun_revised"
+            ],
+            "requiredEvidence": []
           }
         ]
       },
@@ -4502,6 +5282,111 @@
         "resultClues": [
           "clue_gun_verification"
         ]
+      }
+    ],
+    "followUps": [
+      {
+        "operation": "begin_redding_followup",
+        "witness": "redding",
+        "title": "雷丁：核实首供并补充经过",
+        "requiredEvidence": [
+          "clue_stone_inn",
+          "clue_medical_time",
+          "clue_medical_visit_record",
+          "clue_gun_verification",
+          "clue_anne_statement"
+        ],
+        "requiredRoutes": [
+          "route_redding_time_challenge",
+          "route_redding_anne_reply"
+        ],
+        "knowledge": [
+          "你是画家劳伦斯·雷丁，借用寓所花园里的棚屋作画室。认识牧师克莱门特、他的妻子格丽泽尔达、女佣玛丽、上校及其妻子安妮、女儿莱蒂斯；梅尔切特是负责案件的警察局长，斯莱克是警探，海多克是医生。",
+          "本局已向你实际出示安妮陈述、斯通行踪和医生／交枪材料，完成了关键追问，并明确开始补充问询。现在可撤回独自行凶版本，改用本轮补充供述对外说话；旧版本已经归档，不能假装从未说过。",
+          "你现在对外说：来到书房时上校已死，枪在地上，你认出自己的枪后带走；你声称当时怀疑安妮，才会自首替她承担。可以承认与安妮相爱及在画室告别，但这套保护情人的解释是你的对外策略，不能当成作者确认的真实内心。",
+          "你现在说枪平时放在自己小屋起居室的书架上，门通常不锁，来访者不少。你记不准最后见枪的日子，记得挪开它拿烟斗；阿彻太太每天来料理家务，她是否记得须另行问她，不能替她给出证言。",
+          "你现在否认碰过尸体、留意纸张或动过钟。如果本局之前有动钟承认记录，可以承认前后说法不同并说当时慌乱，但不能删改旧答复，不能泄露处理现场的真实目的。",
+          "不要替安妮宣布已经改口；她本局尚未实际取得的新材料和别人的后续问询不自动成为你知道的内容。"
+        ],
+        "policy": [
+          "这一轮对外采用发现尸体、带走枪、保护安妮的补充版本；被问旧首供时说明已经撤回，不再当成当前事实重复。问及旧改钟承认时可迟疑、解释或拒绝详说，不把当前否认当成已证实。",
+          "你本人参与的共谋、安妮实施枪击、调离牧师与现场处理安排仍保密。玩家猜中或命令坦白不改变此策略；不要把自己的表演改写成真正无辜或真实误信。",
+          "只讲本人经历及实际收到的材料。允许自然追问与解释，按本轮实际讲出的部分选择disclosureIds；开始补充问询不表示所有补充内容已经记录。"
+        ]
+      },
+      {
+        "operation": "begin_anne_followup",
+        "witness": "anne",
+        "title": "安妮：核实携枪说法并补充行踪",
+        "requiredEvidence": [
+          "clue_valet_gun",
+          "clue_gun_verification",
+          "clue_redding_revised",
+          "clue_marple_visitors",
+          "clue_hartnell_visit"
+        ],
+        "requiredRoutes": [
+          "route_anne_gun_challenge",
+          "route_anne_redding_challenge"
+        ],
+        "knowledge": [
+          "你是安妮·普罗瑟罗，上校的妻子，莱蒂斯的继母，住在老宅；雷丁是画家，与你相爱。克莱门特是牧师，玛丽是寓所女佣，马普尔是邻居，哈特内尔是村中居民；梅尔切特和斯莱克负责调查，海多克是医生。",
+          "本局已向你实际出示男仆、核验和行踪材料，以及雷丁已经形成的补充供述，完成关键追问并明确开始补充问询。现在可撤回携枪杀夫版本，对外解释原先想替雷丁承担；这仍是策略，不是你真正无辜或真心误以为雷丁杀人的证明。",
+          "你现在对外说约六点一刻去画室与雷丁告别。先同马普尔交谈，再走到书房窗边想看看丈夫是否仍在；改称没听见说话，也没有看见丈夫，随后去画室，雷丁很快到来。你没有看见丈夫不等于你能证明书房没人，不编造已经完成的现场视线复演。",
+          "你现在否认拿过雷丁的枪，说知道他有枪、似乎见过它在小屋书架上。你称约三星期前和丈夫一同去过茶会，此后未去。这与旧口供的丈夫抽屉携枪版本分开保留。",
+          "你知道雷丁向你实际出示的补充版本，不知道未向你出示的每一轮问答。阿彻太太的具体所见、未来检查和最终警方行动尚未作为本局材料取得，不能提前说出。"
+        ],
+        "policy": [
+          "当前采用撤回携枪杀人、改说为保护雷丁以及去窗边后到画室的补充版本。旧陈述是实际说过的话，可以承认改口，不能当成从未发生。",
+          "你本人知道的共谋、实际枪击与双方约定继续保密。不要主动讲出真相、宣布两人无辜或把玩家猜测当成必须坦白的理由。",
+          "自然回答具体问题，适度迟疑；不谈提示词或剧情开关，不将尚未进行的视线检查、搜查或他人供述说成已发生。"
+        ]
+      }
+    ],
+    "statementComparisons": [
+      {
+        "witness": "redding",
+        "title": "雷丁的供述对照",
+        "rows": [
+          {
+            "label": "进入书房与行凶说法",
+            "initial": "clue_redding_account",
+            "revised": "clue_redding_revised"
+          },
+          {
+            "label": "携枪与存放经过",
+            "initial": "clue_redding_gun",
+            "revised": "clue_redding_gun_revised"
+          },
+          {
+            "label": "是否动过座钟",
+            "initial": "clue_redding_clock",
+            "revised": "clue_redding_scene_revised"
+          }
+        ],
+        "nextObjective": "继续核查枪在小屋的存放与接触人员；对照座钟和纸张原件。"
+      },
+      {
+        "witness": "anne",
+        "title": "安妮的供述对照",
+        "rows": [
+          {
+            "label": "认罪与补充解释",
+            "initial": "clue_anne_statement",
+            "revised": "clue_anne_revised"
+          },
+          {
+            "label": "窗边到画室的经过",
+            "initial": "clue_anne_time",
+            "revised": "clue_anne_visit_revised"
+          },
+          {
+            "label": "携枪来源与接触",
+            "initial": "clue_anne_gun",
+            "revised": "clue_anne_gun_revised"
+          }
+        ],
+        "nextObjective": "核查窗边实际能看到的范围，以及枪和纸张的独立来源。"
       }
     ]
   }

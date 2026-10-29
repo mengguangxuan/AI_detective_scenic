@@ -80,3 +80,21 @@ test.describe('map and timed check recovery', () => {
     expect(state.areaMap.locations).toHaveLength(15);
   });
 });
+
+test.describe('supplementary statement recovery', () => {
+  test.use({ storageState: '.build-cache/followup-state.json' });
+  test.skip(process.env.DETECTIVE_TEST_MODEL !== '1', 'Requires saved follow-up state.');
+  test('both archived versions and completed follow-ups restore after a real backend restart', async ({ page }) => {
+    await page.goto('/clues');
+    const comparison = page.getByRole('region', { name: '供述版本对照', exact: true });
+    await expect(comparison).toContainText('第 1 条记录');
+    await expect(comparison).toContainText('没有碰尸体');
+    const saved = await page.evaluate(() => JSON.parse(localStorage.getItem('detective-scenic:server-session:v6')!));
+    const response = await page.request.post('/api/getinvestigationsnapshot', { data: { sessionId: saved.sessionId }, headers: { 'X-Detective-Client': 'web' } });
+    expect(response.status()).toBe(200);
+    const state = await response.json();
+    expect(state.followUps.every((item: { started: boolean }) => item.started)).toBe(true);
+    expect(state.statementComparisons.every((item: { rows: { initial: unknown; revised: unknown }[] }) => item.rows.every(row => row.initial && row.revised))).toBe(true);
+    expect(state.clues.some((clue: { id: string }) => clue.id === 'clue_police_revised_review')).toBe(true);
+  });
+});

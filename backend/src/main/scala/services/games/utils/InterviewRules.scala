@@ -33,7 +33,14 @@ private[games] object InterviewRules:
       val checked = if content.police.exists(_.point == profile.point) then
         content.externalChecks.filter(c => state.externalChecks.exists(p => p.id == c.id && p.completedAtSeconds.nonEmpty)).flatMap(_.resultClues).toSet else Set.empty[ClueId]
       val known = checked ++ evidence ++ history.filter(t => t.mode == InterviewReplyMode.Answered || t.mode == InterviewReplyMode.Unknown).flatMap(_.shownClues) ++ fixedPresentations ++ policeEvidence
-      val native = profile.answers.filter(_.requiredEvidence.subsetOf(known))
+      // Composite answers may establish a prerequisite for their own later route.
+      val native = profile.answers.filter(a => a.requiredEvidence.subsetOf(known) &&
+        a.routes.foldLeft(Option(state)) { (candidate,id) => candidate.flatMap(s =>
+          content.routes.find(r => r.id == id && r.point == profile.point).filter(FixtureRules.routeAvailable(s,_))
+            .map(r => s.copy(clues=s.clues++r.clues))) }.nonEmpty)
+      val phase = content.followUps.find(p => p.witness == witness && state.completedOperations(p.operation))
+      val phaseKnowledge = phase.map(_.knowledge).getOrElse(knowledge)
+      val phasePolicy = phase.map(_.policy).getOrElse(policy)
       // Completed reports are already-held evidence, not new routes the model can execute.
       val reportIds = content.externalChecks.flatMap(_.resultClues).toSet
       val reports = content.clues.filter(c => reportIds(c.id) && known(c.id)).map(c =>
@@ -46,7 +53,7 @@ private[games] object InterviewRules:
           p.completedAt.fold(s"${c.title}：${p.requestedAt}受理，预计${p.readyAt}完成，目前仍在办理。") { at => s"${c.title}：$at 已完成，可依据shownEvidence中的实际核查结果回答。" }
         }
       } else Vector.empty
-      InterviewContext(profile.copy(answers=available,knowledge=knowledge++current++mapKnowledge++conditions,privateContext=privateContext,policy=policy),content.clues.filter(c => known(c.id)),history.takeRight(12),state.caseId,state.caseRevision,
+      InterviewContext(profile.copy(answers=available,knowledge=phaseKnowledge++current++mapKnowledge++conditions,privateContext=privateContext,policy=phasePolicy),content.clues.filter(c => known(c.id)),history.takeRight(12),state.caseId,state.caseRevision,
         if knowledge.nonEmpty then 2 else 1)
 
   private[games] def prompt(request: InterviewRequestRecord): ChatCompletionInput =

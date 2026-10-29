@@ -106,7 +106,9 @@ try {
     $Repositories = Join-Path $BuildCache 'repositories'
     @('[repositories]', 'local', 'maven-central: https://repo.maven.apache.org/maven2/') |
         Set-Content -LiteralPath $Repositories -Encoding ASCII
+    # Circe derivation for case projections needs a deeper compiler stack; process-local only.
     $JavaArgs = @(
+        '-Xss4m'
         '-Dfile.encoding=UTF-8', '-Dstdout.encoding=UTF-8', '-Dstderr.encoding=UTF-8'
         '-Dsbt.boot.server=false', '-Dsbt.server.autostart=false'
         '-Dsbt.supershell=false', '-Dsbt.log.noformat=true'

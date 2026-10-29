@@ -6,16 +6,16 @@ import services.system.objects.*
 // Authored presentation binding for the first registered study, not a general action classifier.
 private[games] object StudyProjection:
   private[games] val caseId = CaseId("vicarage_study")
-  private[games] val revision = Revision(8)
+  private[games] val revision = Revision(9)
   // Supported content revisions share study/4. Existing games retain their authored content.
   private[games] def supports(id: CaseId, value: Revision): Boolean =
-    id == caseId && Set(Revision(3), Revision(4), Revision(5), Revision(6), Revision(7), revision)(value)
+    id == caseId && Set(Revision(3), Revision(4), Revision(5), Revision(6), Revision(7), Revision(8), revision)(value)
   private[games] def snapshot(caseRecord: CaseRevisionRecord, state: GameSessionRecord, records: Vector[SessionRecord], turns: Vector[InterviewTurnRecord], exchanges: Vector[PoliceExchangeRecord] = Vector.empty): InvestigationSnapshot =
     if !supports(caseRecord.caseId,caseRecord.revision) then
       throw GameError(ErrorCode.ConflictingContent,"这份调查使用的场景版本暂不支持，请保留原存档；可以另建一次调查使用当前版本。")
     val content = caseRecord.content
     val points = content.points.filter(FixtureRules.accessible(content,state,_)).map { point =>
-      val operations = content.operations.filter(o => o.point == point.id && FixtureRules.operationAvailable(state,o))
+      val operations = content.operations.filter(o => o.point == point.id && FixtureRules.operationAvailable(state,o) && FollowUpRules.permitted(content,state,o.id,records,turns))
         .map(o => OperationChoiceView(o.id,o.label))
       val routes = content.routes.filter(r => r.point == point.id && FixtureRules.routeAvailable(state,r) && !r.clues.forall(state.clues.contains))
         .map(r => RouteChoiceView(r.id,r.label))
@@ -45,4 +45,4 @@ private[games] object StudyProjection:
           visible.map(e => PoliceExchangeView(e.requestId,e.sequence,e.evidence,e.reply)))
       },people,content.areaMap,
       content.clock.map(c => ClockView(ExternalCheckRules.timeLabel(content,state.storyTimeSeconds),state.storyTimeSeconds-content.initialStoryTimeSeconds,c.actionSeconds/60)),
-      ExternalCheckRules.views(content,state))
+      ExternalCheckRules.views(content,state),FollowUpRules.views(content,state,records,turns),FollowUpRules.comparisons(content,state,records))

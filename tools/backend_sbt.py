@@ -66,7 +66,7 @@ def main() -> int:
     repositories = cache / 'repositories'
     repositories.write_text('[repositories]\nlocal\nmaven-central: https://repo.maven.apache.org/maven2/\n')
     env = dict(os.environ, COURSIER_CACHE=str(cache / 'coursier'))
-    command = [java, '-Dfile.encoding=UTF-8', '-Dsbt.supershell=false', '-Dsbt.log.noformat=true',
+    command = [java, '-Xss4m', '-Dfile.encoding=UTF-8', '-Dsbt.supershell=false', '-Dsbt.log.noformat=true',
                '-Dsbt.boot.server=false', '-Dsbt.server.autostart=false',
                f'-Dsbt.boot.directory={cache / "boot"}',
                f'-Dsbt.global.base={cache / "global"}', f'-Dsbt.ivy.home={cache / "ivy"}',

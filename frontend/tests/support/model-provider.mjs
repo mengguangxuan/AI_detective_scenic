@@ -37,6 +37,16 @@ const server = http.createServer(async (request, response) => {
     if (context.witness.name === '梅尔切特' && /对照枪/.test(context.question)) id = 'police_gun_check';
     if (context.witness.name === '梅尔切特' && /对照行踪/.test(context.question)) id = 'police_movement_check';
     if (context.witness.name === '梅尔切特' && /对照响声/.test(context.question)) id = 'police_sound_check';
+    if (context.witness.name === '劳伦斯·雷丁') {
+      if (allowed.has('redding_revised')) id = /钟|纸|尸体/.test(context.question) ? 'redding_scene_revised' : /枪/.test(context.question) ? 'redding_gun_revised' : 'redding_revised';
+      else if (/行踪.*检查|六点三刻/.test(context.question)) id = 'redding_time_challenge';
+    }
+    if (context.witness.name === '安妮·普罗瑟罗') {
+      if (allowed.has('anne_revised')) id = /窗|行踪/.test(context.question) ? 'anne_visit_revised' : /枪/.test(context.question) ? 'anne_gun_revised' : 'anne_revised';
+      else if (/男仆|核验/.test(context.question)) id = 'anne_gun_challenge';
+      else if (/雷丁.*补充/.test(context.question)) id = 'anne_redding_challenge';
+    }
+    if (context.witness.name === '梅尔切特' && /四份供述/.test(context.question)) id = 'police_revised_review';
     let reply = (context.disclosures ?? context.answers).find(answer => answer.id === id)?.text ?? '这件事我也不清楚。';
     if (context.witness.name === '克莱门特牧师' && context.question.includes('斯莱克是谁')) reply = '斯莱克是调查本案的警探，昨晚来过这里。我跟他说话时，他很不耐烦。';
     if (context.witness.name === '克莱门特牧师' && context.question.includes('什么时候离开')) reply = '五点半接到电话，打完给上校家的电话后我就离开了。原本争取六点半回来，实际快七点才到家。';

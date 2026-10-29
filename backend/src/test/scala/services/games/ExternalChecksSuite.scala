@@ -145,7 +145,7 @@ class ExternalChecksSuite extends FunSuite:
       _ <- DatabaseSession.connection(url).use(DatabaseSchema.initialize)
       _ <- tx(url) { c => for
         latest <- ImportCaseMessage(Paths.get("../docs/fixtures/browser_investigation.json")).plan(c)
-        old=latest.copy(revision=Revision(7),content=latest.content.copy(clock=None,areaMap=None,externalChecks=Vector.empty))
+        old=latest.copy(revision=Revision(7),content=LegacyFixture.withoutFollowUps(latest.content).copy(clock=None,areaMap=None,externalChecks=Vector.empty))
         _ <- CaseRevisionTable.insert(c,old)
         _ <- StartGameMessage(owner,id,old.caseId,old.revision).plan(c)
       yield () }

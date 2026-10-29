@@ -195,3 +195,12 @@ SessionTableInitializer以ADD COLUMN IF NOT EXISTS增加checks_json，默认空�
 
 
 真实模型抽查发现医生完成报告的自然追问曾被拒。现对当前实际已知的完成报告提供无执行路线的合法披露项，仅用于引用已持有正文，不重复授予或启动检查；办理中没有这些项。警方取得本人核查结果，其他人物只有实际收到报告后才具备该项；新增回归覆盖提前引用拒绝、完成后回答、无新授予及人物隔离。
+
+
+## 修订9：补充问询和供述对照
+
+CaseContent新增可缺省followUps／statementComparisons，FixtureRoute新增可缺省disabledAfter。开始操作可无实体effects，仅限配置注册的非重复补充操作；完成令牌复用completedOperations。ExecuteOperationMessage在原会话锁内读取记录和问询轮次，FollowUpRules核验本人实际出示与关键答复；操作还受原requiredClues约束。成功自然答复的合法answerIds映射到配置路线；普通答复可记出示但不充当关键回应，失败／越界回复不计。
+
+InterviewRules按已完成阶段替换本人的公开知识与对外策略，保持privateContext；披露能力按当前路线前提检查，复合答复在不可变候选状态上依序检验。旧阶段路线退休，但旧记录／回执不重写。开始、时钟推进、日志和成功回执沿原MutationSupport事务提交，不自动授予补充供述。快照只映射实际已取得版本与首次披露记录，未取得无正文／ID；不向前端投影私密知识。DB无新表列，旧3—8会话保持原内容及规则。
+
+后端新增配置与事务／隔离／重开测试，完整84项通过。Circe编译栈溢出经拆分配置校验并为tools/backend.ps1和backend_sbt.py自身Java进程设置-Xss4m解决；无全局环境或依赖变更。浏览器和真实模型验收记录见前端实现说明及验收准备第16节。

@@ -1,4 +1,6 @@
 import { z } from 'zod';
+import { witnessFollowUpSchema } from './WitnessFollowUpView';
+import { statementComparisonSchema } from './StatementComparisonView';
 import { areaMapSchema } from './AreaMap';
 import { externalCheckViewSchema } from './ExternalCheckView';
 import { witnessViewSchema } from './WitnessView';
@@ -13,6 +15,8 @@ import { clueViewSchema } from './ClueView';
 import { investigationLogSchema } from './InvestigationLogEntry';
 import { sceneObjectBindingSchema } from './SceneObjectBinding';
 export const investigationSnapshotSchema = z.object({
+  followUps: z.array(witnessFollowUpSchema).default([]),
+  statementComparisons: z.array(statementComparisonSchema).default([]),
   areaMap: areaMapSchema.nullable().default(null),
   clock: z.object({ label: z.string(), elapsedSeconds: z.number().int().nonnegative().safe(), actionMinutes: z.number().int().positive() }).strict().nullable().default(null),
   externalChecks: z.array(externalCheckViewSchema).default([]),
@@ -25,8 +29,18 @@ export const investigationSnapshotSchema = z.object({
   people: z.array(casePersonBriefSchema),
   stage: z.object({ introduction: z.string(), objective: z.string(), completed: z.boolean(), nextObjective: z.string().nullable() }).strict().nullable(),
 }).strict().superRefine((snapshot, context) => {
-  for (const values of [snapshot.externalChecks.map(v => v.id), snapshot.people.map(v => v.id), snapshot.points.map(v => v.id), snapshot.clues.map(v => v.id), snapshot.journal.map(v => v.id), snapshot.observations.map(v => v.node), snapshot.scene.objects.map(v => v.node), snapshot.scene.objects.map(v => v.entity), snapshot.witnesses.map(v => v.id), snapshot.interviews.map(v => v.requestId)])
+  for (const values of [snapshot.followUps.map(v => v.operation), snapshot.statementComparisons.map(v => v.witness), snapshot.externalChecks.map(v => v.id), snapshot.people.map(v => v.id), snapshot.points.map(v => v.id), snapshot.clues.map(v => v.id), snapshot.journal.map(v => v.id), snapshot.observations.map(v => v.node), snapshot.scene.objects.map(v => v.node), snapshot.scene.objects.map(v => v.entity), snapshot.witnesses.map(v => v.id), snapshot.interviews.map(v => v.requestId)])
     if (new Set<string>(values).size !== values.length) context.addIssue({ code: 'custom', message: '响应编号重复' });
+  for (const followUp of snapshot.followUps) {
+    const witness = snapshot.witnesses.find(item => item.id === followUp.witness);
+    const point = snapshot.points.find(item => item.id === witness?.point);
+    if (!point || (followUp.started && followUp.ready) || (followUp.ready && !point.operations.some(item => item.id === followUp.operation)) || followUp.questions.some(question => !point.routes.some(route => route.id === question.id)))
+      context.addIssue({ code: 'custom', message: '补充问询状态与当前入口不一致' });
+  }
+  for (const comparison of snapshot.statementComparisons) {
+    if (!snapshot.witnesses.some(witness => witness.id === comparison.witness) || comparison.rows.some(row => [row.initial, row.revised].some(version => version && (version.sequence > snapshot.sequence || !snapshot.clues.some(clue => clue.id === version.clue.id && clue.text === version.clue.text && clue.title === version.clue.title)))))
+      context.addIssue({ code: 'custom', message: '供述对照超出实际已获记录' });
+  }
   if (snapshot.journal.some(v => v.sequence > snapshot.sequence)) context.addIssue({ code: 'custom', message: '日志超出当前序号' });
   if (snapshot.people.some(person => person.witness !== null && !snapshot.witnesses.some(witness => witness.id === person.witness)))
     context.addIssue({ code: 'custom', message: '公开人物绑定的问询对象不可用' });

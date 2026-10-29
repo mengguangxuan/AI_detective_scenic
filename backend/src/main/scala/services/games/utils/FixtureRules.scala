@@ -34,13 +34,13 @@ private[games] object FixtureRules:
       operation.requiredClues.subsetOf(state.clues)
 
   private[games] def routeAvailable(state: GameSessionRecord, route: FixtureRoute): Boolean =
-    route.prerequisite.forall(state.completedOperations.contains) && route.requiredClues.subsetOf(state.clues)
+    route.prerequisite.forall(state.completedOperations.contains) && route.disabledAfter.forall(op => !state.completedOperations(op)) && route.requiredClues.subsetOf(state.clues)
 
-  private[games] def execute(f: CaseContent,state: GameSessionRecord,request: RequestId,operation: OperationId): Either[GameError,ActionPlan] =
+  private[games] def execute(f: CaseContent,state: GameSessionRecord,request: RequestId,operation: OperationId, records: Vector[SessionRecord] = Vector.empty, turns: Vector[InterviewTurnRecord] = Vector.empty): Either[GameError,ActionPlan] =
     for
       op <- f.operations.find(_.id==operation).toRight(denied)
       _ <- f.points.find(_.id==op.point).filter(accessible(f,state,_)).toRight(denied)
-      _ <- Either.cond(operationAvailable(state,op),(),GameError(ErrorCode.ConditionFailed,"当前状态不允许执行该操作。"))
+      _ <- Either.cond(operationAvailable(state,op) && FollowUpRules.permitted(f,state,operation,records,turns),(),GameError(ErrorCode.ConditionFailed,"当前状态不允许执行该操作。"))
     yield
       val changed=op.effects.foldLeft(state) { (s,effect) => effect match
         case FixtureEffect.Open(entity) => s.copy(opened=s.opened+entity)

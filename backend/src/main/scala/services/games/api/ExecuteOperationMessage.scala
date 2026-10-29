@@ -9,6 +9,8 @@ import services.cases.tables.CaseRevisionTable.CaseRevisionTable
 import services.games.objects.apiTypes.CommandResult
 import services.games.tables.SessionTable.SessionTable
 import services.games.tables.ReceiptTable.ReceiptTable
+import services.games.tables.SessionRecordTable.SessionRecordTable
+import services.games.tables.InterviewTurnTable.InterviewTurnTable
 import services.games.utils.{FixtureRules,MutationSupport}
 import services.system.api.APIMessage
 import services.system.objects.*
@@ -26,7 +28,9 @@ final case class ExecuteOperationMessage(userId: UserId,sessionId: SessionId,req
           for
             _ <- MutationSupport.checkSequence(session,expectedSequence)
             revision <- CaseRevisionTable.find(connection,session.caseId,session.caseRevision).flatMap(value => IO.fromOption(value)(GameError(ErrorCode.InvalidValue,"案件修订不存在。")))
-            plan <- IO.fromEither(FixtureRules.execute(revision.content,session,requestId,operation))
+            records <- SessionRecordTable.list(connection,sessionId)
+            turns <- InterviewTurnTable.list(connection,sessionId)
+            plan <- IO.fromEither(FixtureRules.execute(revision.content,session,requestId,operation,records,turns))
             result <- MutationSupport.commit(connection,session,requestId,digest,plan)
           yield result
     yield result
