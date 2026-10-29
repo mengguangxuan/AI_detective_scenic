@@ -6,10 +6,10 @@ import services.system.objects.*
 // Authored presentation binding for the first registered study, not a general action classifier.
 private[games] object StudyProjection:
   private[games] val caseId = CaseId("vicarage_study")
-  private[games] val revision = Revision(4)
-  // Revisions 3 and 4 share study/4. Existing games retain their authored content.
+  private[games] val revision = Revision(5)
+  // Supported content revisions share study/4. Existing games retain their authored content.
   private[games] def supports(id: CaseId, value: Revision): Boolean =
-    id == caseId && Set(Revision(3), revision)(value)
+    id == caseId && Set(Revision(3), Revision(4), revision)(value)
   private[games] def snapshot(caseRecord: CaseRevisionRecord, state: GameSessionRecord, records: Vector[SessionRecord], turns: Vector[InterviewTurnRecord], exchanges: Vector[PoliceExchangeRecord] = Vector.empty): InvestigationSnapshot =
     if !supports(caseRecord.caseId,caseRecord.revision) then
       throw GameError(ErrorCode.ConflictingContent,"这份调查使用的场景版本暂不支持，请保留原存档；可以另建一次调查使用当前版本。")
@@ -32,7 +32,7 @@ private[games] object StudyProjection:
     InvestigationSnapshot(state.id,state.caseId,state.caseRevision,state.sequence,caseRecord.title,
       StudySceneView("study","4",content.placeName,state.opened(EntityId("drawer")),state.opened(EntityId("window")),
         content.sceneObjects.filter(o => visible(o.node) && o.point.forall(p => points.exists(_.id == p)))),points,clues,journal,observations,
-      content.stage.map(s => InvestigationStageView(s.introduction,s.objective,state.clues(s.completionClue))),
+      content.stage.map(s => InvestigationStageView(s.introduction,s.objective,state.clues(s.completionClue),s.nextObjective)),
       content.witnesses.filter(w => points.exists(_.id == w.point)).map(w => WitnessView(w.id,w.point,w.name,w.background)) ++
         content.police.filter(p => points.exists(_.id == p.point)).map(p => WitnessView(WitnessId("melchett"),p.point,p.name,p.background)),
       turns.filter(_.sequence.value <= state.sequence.value).map(t => InterviewTurnView(t.requestId,t.sequence,t.witness,t.question,t.shownClues,t.reply,t.mode)),
@@ -40,4 +40,4 @@ private[games] object StudyProjection:
         val visible = exchanges.filter(_.sequence.value <= state.sequence.value)
         PoliceDeskView(p.point,p.name,p.background,visible.flatMap(_.evidence).toSet,
           visible.map(e => PoliceExchangeView(e.requestId,e.sequence,e.evidence,e.reply)))
-      })
+      },content.publicPersons)

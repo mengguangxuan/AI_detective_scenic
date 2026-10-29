@@ -2,6 +2,7 @@ import { z } from 'zod';
 import { witnessViewSchema } from './WitnessView';
 import { interviewTurnSchema } from './InterviewTurnView';
 import { policeDeskSchema } from './PoliceDeskView';
+import { casePersonBriefSchema } from './CasePersonBrief';
 import { sessionIdSchema } from '../../../objects/SessionId';
 import { sequenceSchema } from '../../../objects/Sequence';
 import { sceneObservationSchema } from './SceneObservation';
@@ -16,11 +17,14 @@ export const investigationSnapshotSchema = z.object({
   points: z.array(inquiryPointSchema), clues: z.array(clueViewSchema), journal: z.array(investigationLogSchema), observations: z.array(sceneObservationSchema),
   witnesses: z.array(witnessViewSchema), interviews: z.array(interviewTurnSchema),
   police: policeDeskSchema.nullable(),
-  stage: z.object({ introduction: z.string(), objective: z.string(), completed: z.boolean() }).strict().nullable(),
+  people: z.array(casePersonBriefSchema),
+  stage: z.object({ introduction: z.string(), objective: z.string(), completed: z.boolean(), nextObjective: z.string().nullable() }).strict().nullable(),
 }).strict().superRefine((snapshot, context) => {
-  for (const values of [snapshot.points.map(v => v.id), snapshot.clues.map(v => v.id), snapshot.journal.map(v => v.id), snapshot.observations.map(v => v.node), snapshot.scene.objects.map(v => v.node), snapshot.scene.objects.map(v => v.entity), snapshot.witnesses.map(v => v.id), snapshot.interviews.map(v => v.requestId)])
+  for (const values of [snapshot.people.map(v => v.id), snapshot.points.map(v => v.id), snapshot.clues.map(v => v.id), snapshot.journal.map(v => v.id), snapshot.observations.map(v => v.node), snapshot.scene.objects.map(v => v.node), snapshot.scene.objects.map(v => v.entity), snapshot.witnesses.map(v => v.id), snapshot.interviews.map(v => v.requestId)])
     if (new Set<string>(values).size !== values.length) context.addIssue({ code: 'custom', message: '响应编号重复' });
   if (snapshot.journal.some(v => v.sequence > snapshot.sequence)) context.addIssue({ code: 'custom', message: '日志超出当前序号' });
+  if (snapshot.people.some(person => person.witness !== null && !snapshot.witnesses.some(witness => witness.id === person.witness)))
+    context.addIssue({ code: 'custom', message: '公开人物绑定的问询对象不可用' });
   if (snapshot.interviews.some(t => t.sequence > snapshot.sequence || !snapshot.witnesses.some(w => w.id === t.witness) || t.shownClues.some(id => !snapshot.clues.some(c => c.id === id))))
     context.addIssue({ code: 'custom', message: '对话引用超出当前视图' });
   if (snapshot.police) {

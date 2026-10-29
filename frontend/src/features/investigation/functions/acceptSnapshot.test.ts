@@ -6,7 +6,7 @@ import { retainSelection } from './retainSelection';
 import type { SceneSelection } from '../objects/SceneSelection';
 import { acceptSnapshot } from './acceptSnapshot';
 const wire = { sessionId: 'session-one', caseId: 'study', caseRevision: { value: 1 }, sequence: { value: 1 }, title: '测试',
-  scene: { bundleId: 'study', revision: '4', placeName: '书房', drawerOpened: true, windowOpened: false, objects: [] }, points: [], clues: [], journal: [], observations: [], witnesses: [], interviews: [], police: null, stage: null };
+  scene: { bundleId: 'study', revision: '4', placeName: '书房', drawerOpened: true, windowOpened: false, objects: [] }, points: [], clues: [], journal: [], observations: [], witnesses: [], interviews: [], police: null, people: [], stage: null };
 describe('server-view mapping', () => {
   it('decodes Scala value wrappers and rejects unsafe sequence numbers', () => {
     expect(investigationSnapshotSchema.parse(wire).sequence).toBe(1);

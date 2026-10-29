@@ -40,12 +40,12 @@ export default function InvestigationApp() {
         {state.kind === 'loading' ? <p role="status" className="py-12 text-stone-300">正在连接后端并恢复调查…</p> : null}
         {state.kind === 'failed' ? <section role="alert" className="rounded-xl border border-amber-200/20 p-6"><p>{state.message}</p><p className="mt-2 text-sm text-stone-400">请确认后端已启动；若刚更新过项目，请先刷新页面，再重新连接。原存档与待处理请求会保留。</p><button type="button" onClick={() => void reconnect()} className="mt-4 rounded-lg border border-amber-200 px-4 py-2">重新连接</button></section> : null}
         {ready ? <>
-          {ready.snapshot.caseId === 'vicarage_study' && ready.snapshot.caseRevision === 3 ? <section role="status" className="mb-5 rounded-xl border border-white/20 p-4 text-sm leading-7 text-stone-300">已恢复上一修订的调查，原进度与待处理请求保持不变。若要体验新增的警方交流，请用右上角“新建调查”进入当前修订；原调查仍保留在服务器。</section> : null}
+          {ready.snapshot.caseId === 'vicarage_study' && ready.snapshot.caseRevision < 5 ? <section role="status" className="mb-5 rounded-xl border border-white/20 p-4 text-sm leading-7 text-stone-300">已恢复原修订的调查，进度与待处理请求保持不变。若要体验新增的雷丁、马普尔问询和案中人物介绍，请用右上角“新建调查”进入当前修订；原调查仍保留在服务器。</section> : null}
           {ready.mutation.kind === 'outcomeUnknown' ? <section role="alert" className="mb-5 rounded-xl border border-amber-200/30 p-4"><p>{ready.mutation.problem}</p><button type="button" onClick={retry} className="mt-3 rounded-lg border border-amber-200 px-4 py-2">用原请求重试</button></section> : null}
           {ready.mutation.kind === 'awaitingSnapshot' ? <section role="status" className="mb-5 rounded-xl border border-amber-200/30 p-4"><p>{ready.mutation.problem}</p><button type="button" onClick={() => void reconnect()} className="mt-3 rounded-lg border border-amber-200 px-4 py-2">重新读取视图</button></section> : null}
           {page !== '/case' ? <StagePanel stage={ready.snapshot.stage} compact/> : null}
           <div ref={content} tabIndex={-1} className="outline-none">
-            {page === '/case' ? <CasePage snapshot={ready.snapshot}/> : null}
+            {page === '/case' ? <CasePage snapshot={ready.snapshot} onSelect={investigation.select}/> : null}
             {page === '/people' ? <PeoplePage snapshot={ready.snapshot} onSelect={investigation.select}/> : null}
             {page === '/journal' ? <JournalPage key={ready.snapshot.sessionId} snapshot={ready.snapshot}/> : null}
             {page === '/police' ? <PolicePage key={ready.snapshot.sessionId} ready={ready} actions={investigation}/> : null}

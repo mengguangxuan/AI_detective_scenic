@@ -30,7 +30,7 @@ test('case briefing and public profiles lead into the same investigation without
   await expect(page.getByRole('heading', { name: '人物档案', exact: true })).toBeVisible();
   await expect(page.getByRole('heading', { name: '克莱门特牧师', exact: true })).toBeVisible();
   await expect(page.getByRole('heading', { name: '玛丽', exact: true })).toBeVisible();
-  await expect(page.getByText('还没有记录这位人物的证词。可以先与其交谈。', { exact: true })).toHaveCount(3);
+  await expect(page.getByText('还没有记录这位人物的证词。可以先与其交谈。', { exact: true })).toHaveCount(5);
   await expect(page.getByText('拨快一刻钟', { exact: false })).toHaveCount(0);
   await page.getByRole('link', { name: '询问玛丽', exact: true }).click();
   await expect(page.getByRole('region', { name: '自由问询', exact: true })).toContainText('向玛丽提问');

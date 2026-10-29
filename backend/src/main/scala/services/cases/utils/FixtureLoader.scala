@@ -124,7 +124,8 @@ private[cases] object FixtureLoader:
       publicInfo <- c.get[Json]("publicInfo")
       _ <- empty(publicInfo.hcursor, "reports")
       background <- c.downField("publicInfo").get[Json]("background")
-      _ <- empty(background.hcursor, "persons", "openingReports", "openingMaterials")
+      _ <- empty(background.hcursor, "openingReports", "openingMaterials")
+      publicPersons <- background.hcursor.get[Vector[CasePersonBrief]]("persons")
       places <- world.hcursor.get[Vector[Json]]("places")
       _ <- check(places.size == 1, "Only one-room fixture supported", c)
       place <- places.head.hcursor.get[PlaceId]("id")
@@ -174,7 +175,7 @@ private[cases] object FixtureLoader:
         case _ => true
       }, "Missing effect entity", c)
       _ <- check(operations.forall(_.openedRequirement.forall(r => entityIds.contains(r.entity))),"Unknown operation condition entity",c)
-      content = CaseContent(place, placeName, time, origin, position, nodes, points, facts, clues, routes, operations, opened, unlocked, common, observations, stage, sceneObjects, witnesses, police)
+      content = CaseContent(place, placeName, time, origin, position, nodes, points, facts, clues, routes, operations, opened, unlocked, common, observations, stage, sceneObjects, witnesses, police, publicPersons)
       record = CaseRevisionRecord(caseId, revision, 1, title, content)
       _ <- check(valid(record), "Invalid fixture references / node hierarchy", c)
     yield record).left.map(error => GameError(ErrorCode.InvalidValue, s"案件数据不合法：${error.getMessage}"))
@@ -193,6 +194,9 @@ private[cases] object FixtureLoader:
       f.points.forall(p => nodes.contains(p.node) && finite(p.localPoint) && p.radiusMeters.isFinite && p.radiusMeters > 0) &&
       f.clues.forall(c => c.facts.subsetOf(f.facts.map(_.id).toSet)) &&
       f.commonFacts.subsetOf(f.facts.map(_.id).toSet) &&
+      unique(f.publicPersons.map(_.id)) && f.publicPersons.forall(p => p.id.value.matches("[a-z][a-z0-9_]{0,63}") &&
+        Vector(p.name,p.identity,p.victimRelation,p.caseRelation).forall(_.trim.nonEmpty) &&
+        p.witness.forall(id => f.witnesses.exists(_.id == id) || (id == WitnessId("melchett") && f.police.nonEmpty))) &&
       f.police.forall(p => p.name.trim.nonEmpty && p.background.trim.nonEmpty &&
         f.points.exists(_.id == p.point) && !f.witnesses.exists(_.point == p.point)) &&
       unique(f.witnesses.map(_.id)) && unique(f.witnesses.map(_.point)) && f.witnesses.forall(w =>

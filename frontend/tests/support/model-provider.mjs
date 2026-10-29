@@ -19,6 +19,12 @@ const server = http.createServer(async (request, response) => {
     else if (/怎么发现/.test(context.question)) id = 'clement_discovery';
     const allowed = new Set((context.disclosures ?? context.answers).map(answer => answer.id));
     if (context.witness.name === '梅尔切特' && /医生|死因|死亡时间/.test(context.question)) id = 'police_medical';
+    if (context.witness.name === '劳伦斯·雷丁') {
+      id = /医生|死亡时间/.test(context.question) ? 'redding_medical_reply' : /钟/.test(context.question) ? 'redding_clock' : /枪/.test(context.question) ? 'redding_gun' : 'redding_account';
+    }
+    if (context.witness.name === '马普尔小姐') {
+      id = /供述|说法/.test(context.question) ? 'marple_account_reply' : /声|响/.test(context.question) ? 'marple_sound' : /离开/.test(context.question) ? 'marple_departure' : 'marple_visitors';
+    }
     let reply = (context.disclosures ?? context.answers).find(answer => answer.id === id)?.text ?? '这件事我也不清楚。';
     if (context.question.includes('斯莱克是谁')) reply = '斯莱克是调查本案的警探，昨晚来过这里。我跟他说话时，他很不耐烦。';
     if (context.question.includes('什么时候离开')) reply = '五点半接到电话，打完给上校家的电话后我就离开了。原本争取六点半回来，实际快七点才到家。';
