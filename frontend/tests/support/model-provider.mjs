@@ -29,12 +29,20 @@ const server = http.createServer(async (request, response) => {
     if (context.witness.name === '马普尔小姐') {
       id = /供述|说法/.test(context.question) ? 'marple_account_reply' : /声|响/.test(context.question) ? 'marple_sound' : /离开/.test(context.question) ? 'marple_departure' : 'marple_visitors';
     }
+    if (context.witness.name === '上校的贴身男仆') id = 'valet_gun';
+    if (context.witness.name === '斯通博士') id = /四十|离开|喝酒/.test(context.question) ? 'stone_inn' : 'stone_walk';
+    if (context.witness.name === '哈特内尔小姐') id = /神情|样子|怎么样/.test(context.question) ? 'hartnell_manner' : 'hartnell_visit';
+    if (context.witness.name === '玛丽' && /送鱼/.test(context.question)) id = 'mary_fish_time';
+    else if (context.witness.name === '玛丽' && /树林.*响|响声.*什么时候/.test(context.question)) id = 'mary_sound';
+    if (context.witness.name === '梅尔切特' && /对照枪/.test(context.question)) id = 'police_gun_check';
+    if (context.witness.name === '梅尔切特' && /对照行踪/.test(context.question)) id = 'police_movement_check';
+    if (context.witness.name === '梅尔切特' && /对照响声/.test(context.question)) id = 'police_sound_check';
     let reply = (context.disclosures ?? context.answers).find(answer => answer.id === id)?.text ?? '这件事我也不清楚。';
-    if (context.question.includes('斯莱克是谁')) reply = '斯莱克是调查本案的警探，昨晚来过这里。我跟他说话时，他很不耐烦。';
-    if (context.question.includes('什么时候离开')) reply = '五点半接到电话，打完给上校家的电话后我就离开了。原本争取六点半回来，实际快七点才到家。';
-    if (context.question.includes('病人是谁')) reply = '下农场的阿博特先生。电话里说他快不行了，我到了才发现不是那么回事。';
-    if (context.witness.name === '玛丽' && /异响|响声/.test(context.question)) reply = '我记得一声砰响，当时以为在树林里，具体几点我没留意。';
-    if (context.witness.name === '梅尔切特' && /怎么看|材料/.test(context.question) && context.shownEvidence.length) reply = '你出示的这份座钟记录写的是18:22。还得问清它平时走得准不准。';
+    if (context.witness.name === '克莱门特牧师' && context.question.includes('斯莱克是谁')) reply = '斯莱克是调查本案的警探，昨晚来过这里。我跟他说话时，他很不耐烦。';
+    if (context.witness.name === '克莱门特牧师' && context.question.includes('什么时候离开')) reply = '五点半接到电话，打完给上校家的电话后我就离开了。原本争取六点半回来，实际快七点才到家。';
+    if (context.witness.name === '克莱门特牧师' && context.question.includes('病人是谁')) reply = '下农场的阿博特先生。电话里说他快不行了，我到了才发现不是那么回事。';
+    if (context.witness.name === '玛丽' && !['mary_sound', 'mary_fish_time'].includes(id) && /异响|响声/.test(context.question)) reply = '我记得一声砰响，当时以为在树林里，具体几点我没留意。';
+    if (context.witness.name === '梅尔切特' && !['police_gun_check', 'police_movement_check', 'police_sound_check'].includes(id) && /怎么看|材料/.test(context.question) && context.shownEvidence.length) reply = '你出示的这份座钟记录写的是18:22。还得问清它平时走得准不准。';
     const decision = context.question.includes('越界测试') ? { disclosureIds: ['future_confession'], reply: 'DO_NOT_RENDER_FUTURE' }
       : context.disclosures ? { reply, disclosureIds: id && allowed.has(id) ? [id] : [] } : { answerIds: id && allowed.has(id) ? [id] : [] };
     response.setHeader('Content-Type', 'application/json');

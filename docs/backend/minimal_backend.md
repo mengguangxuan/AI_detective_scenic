@@ -172,3 +172,12 @@ FixtureOperation增加requiredClues，持久化解码缺省为空；有限CluesK
 点访问使用现有祖先可见性检查，因此隐藏期间快照、Investigate和AskWitness都不能取得安妮的陈述或模型上下文。公开人物摘要的可选WitnessId在投影时按实际可接触目录过滤；身份关系一直公开，不提前提供会面入口或认罪材料。开放节点与取得陈述是两个独立状态变化，不能把一次进入页面当成已经认罪。
 
 本局安妮陈述通过既有模型披露ID或固定路线保存。警方两份供述能力要求真正出示两个材料，雷丁／马普尔的回应同样绑定实际材料。开局前的历史仍固定，后续改口、正式报告、警方执行结果或结案没有自动发生。旧修订5及3／4受支持，不覆盖其案件内容。
+
+
+## 2026-10-29 独立核查阶段
+
+StudyProjection新建修订7并继续支持3—6，GetDialogueKnowledgeMessage增加男仆／斯通／哈特内尔的隔离资料。复用CluesKnown、SetNodeVisible和已持久化completedOperations／visibleNodes提供两个明确联系操作；不新增数据库表、自由动作协议或3D节点模型。未联系时猜测人物／路线ID被拒，模型不调用；已联系但未问询时没有证言。
+
+新增10份材料及其出处，警方三种对照需已获且真实出示的材料。模型沿用requiredEvidence与本人物历史；固定途径用requiredClues和presentedClues。InvestigateMessage在合法固定警方出示时写PoliceExchangeTable，与MutationSupport.commit共用原事务；原请求回执直接返回，不重复出示。旧已完成操作和回执不补写或迁移。
+
+IndependentChecksSuite覆盖提前访问／伪造出示、两个安排的前提、响应丢失重试、会面不自动授予、实际证言及文件库恢复、人物知识隔离、实际出示与后续记忆、固定备用及其全事务回滚。公开玩家视图不含私密资料或未获得的证言正文。

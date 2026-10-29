@@ -15,7 +15,7 @@ import services.system.objects.*
 final case class GetDialogueKnowledgeMessage(caseId: CaseId, revision: Revision, witness: WitnessId)
   extends APIMessage[DialogueDossier]:
   override def plan(connection: Connection): IO[DialogueDossier] =
-    if caseId != CaseId("vicarage_study") || !Set(Revision(3),Revision(4),Revision(5),Revision(6))(revision) then
+    if caseId != CaseId("vicarage_study") || !Set(Revision(3),Revision(4),Revision(5),Revision(6),Revision(7))(revision) then
       IO.pure(DialogueDossier(Vector.empty,Vector.empty,Vector.empty))
     else IO.blocking {
       val json=parse(Files.readString(Paths.get("../docs/fixtures/vicarage_dialogue.json")))
@@ -23,7 +23,7 @@ final case class GetDialogueKnowledgeMessage(caseId: CaseId, revision: Revision,
       require(json.hcursor.get[Int]("version").contains(2),"Unsupported dialogue version")
       val entries=json.hcursor.get[Map[String,DialogueDossier]]("characters")
         .fold(_ => throw GameError(ErrorCode.InvalidValue,"人物对话资料格式不正确。"),identity)
-      require(entries.keySet == Set("clement","mary","melchett","redding","marple","anne"),"Invalid dialogue characters")
+      require(entries.keySet == Set("clement","mary","melchett","redding","marple","anne","valet","stone","hartnell"),"Invalid dialogue characters")
       require(entries.values.forall(d => d.knowledge.nonEmpty && Vector(d.knowledge,d.privateContext,d.policy).forall(xs =>
         xs.size <= 30 && xs.forall(s => s.trim.nonEmpty && s.length <= 1200))),"Invalid dialogue knowledge")
       entries.getOrElse(witness.value,DialogueDossier(Vector.empty,Vector.empty,Vector.empty))

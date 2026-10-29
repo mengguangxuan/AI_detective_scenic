@@ -1,7 +1,7 @@
 {
   "id": "vicarage_study",
   "revision": {
-    "value": 6
+    "value": 7
   },
   "schemaVersion": {
     "value": 2
@@ -643,6 +643,176 @@
           }
         },
         "boundary": "周五初查固定披露材料"
+      },
+      {
+        "id": "topic_valet_gun",
+        "subject": {
+          "kind": "Place",
+          "id": "study"
+        },
+        "question": "固定的初查材料；陈述及推论的归属见正文，不等同于完整案件真相。",
+        "when": {
+          "earliest": {
+            "seconds": 0
+          },
+          "latest": {
+            "seconds": 0
+          }
+        },
+        "boundary": "周五独立核查；说明证言来源、时间范围及尚待核实之处"
+      },
+      {
+        "id": "topic_stone_walk",
+        "subject": {
+          "kind": "Place",
+          "id": "study"
+        },
+        "question": "固定的初查材料；陈述及推论的归属见正文，不等同于完整案件真相。",
+        "when": {
+          "earliest": {
+            "seconds": 0
+          },
+          "latest": {
+            "seconds": 0
+          }
+        },
+        "boundary": "周五独立核查；说明证言来源、时间范围及尚待核实之处"
+      },
+      {
+        "id": "topic_stone_inn",
+        "subject": {
+          "kind": "Place",
+          "id": "study"
+        },
+        "question": "固定的初查材料；陈述及推论的归属见正文，不等同于完整案件真相。",
+        "when": {
+          "earliest": {
+            "seconds": 0
+          },
+          "latest": {
+            "seconds": 0
+          }
+        },
+        "boundary": "周五独立核查；说明证言来源、时间范围及尚待核实之处"
+      },
+      {
+        "id": "topic_hartnell_visit",
+        "subject": {
+          "kind": "Place",
+          "id": "study"
+        },
+        "question": "固定的初查材料；陈述及推论的归属见正文，不等同于完整案件真相。",
+        "when": {
+          "earliest": {
+            "seconds": 0
+          },
+          "latest": {
+            "seconds": 0
+          }
+        },
+        "boundary": "周五独立核查；说明证言来源、时间范围及尚待核实之处"
+      },
+      {
+        "id": "topic_hartnell_manner",
+        "subject": {
+          "kind": "Place",
+          "id": "study"
+        },
+        "question": "固定的初查材料；陈述及推论的归属见正文，不等同于完整案件真相。",
+        "when": {
+          "earliest": {
+            "seconds": 0
+          },
+          "latest": {
+            "seconds": 0
+          }
+        },
+        "boundary": "周五独立核查；说明证言来源、时间范围及尚待核实之处"
+      },
+      {
+        "id": "topic_mary_sound",
+        "subject": {
+          "kind": "Place",
+          "id": "study"
+        },
+        "question": "固定的初查材料；陈述及推论的归属见正文，不等同于完整案件真相。",
+        "when": {
+          "earliest": {
+            "seconds": 0
+          },
+          "latest": {
+            "seconds": 0
+          }
+        },
+        "boundary": "周五独立核查；说明证言来源、时间范围及尚待核实之处"
+      },
+      {
+        "id": "topic_mary_fish_time",
+        "subject": {
+          "kind": "Place",
+          "id": "study"
+        },
+        "question": "固定的初查材料；陈述及推论的归属见正文，不等同于完整案件真相。",
+        "when": {
+          "earliest": {
+            "seconds": 0
+          },
+          "latest": {
+            "seconds": 0
+          }
+        },
+        "boundary": "周五独立核查；说明证言来源、时间范围及尚待核实之处"
+      },
+      {
+        "id": "topic_police_gun_check",
+        "subject": {
+          "kind": "Place",
+          "id": "study"
+        },
+        "question": "固定的初查材料；陈述及推论的归属见正文，不等同于完整案件真相。",
+        "when": {
+          "earliest": {
+            "seconds": 0
+          },
+          "latest": {
+            "seconds": 0
+          }
+        },
+        "boundary": "周五独立核查；说明证言来源、时间范围及尚待核实之处"
+      },
+      {
+        "id": "topic_police_movement_check",
+        "subject": {
+          "kind": "Place",
+          "id": "study"
+        },
+        "question": "固定的初查材料；陈述及推论的归属见正文，不等同于完整案件真相。",
+        "when": {
+          "earliest": {
+            "seconds": 0
+          },
+          "latest": {
+            "seconds": 0
+          }
+        },
+        "boundary": "周五独立核查；说明证言来源、时间范围及尚待核实之处"
+      },
+      {
+        "id": "topic_police_sound_check",
+        "subject": {
+          "kind": "Place",
+          "id": "study"
+        },
+        "question": "固定的初查材料；陈述及推论的归属见正文，不等同于完整案件真相。",
+        "when": {
+          "earliest": {
+            "seconds": 0
+          },
+          "latest": {
+            "seconds": 0
+          }
+        },
+        "boundary": "周五独立核查；说明证言来源、时间范围及尚待核实之处"
       }
     ],
     "facts": [
@@ -1048,6 +1218,136 @@
           "source_game_interview"
         ],
         "topic": "topic_police_two_statements"
+      },
+      {
+        "id": "fact_valet_gun",
+        "value": {
+          "kind": "AuthoredDetail",
+          "detail": "男仆说：“我不知道上校有什么手枪。梳妆台抽屉里肯定没有，那里有的话我会看见的。”这是他根据日常照料作出的证言，本轮没有进行抽屉搜查。"
+        },
+        "requiresOccurred": [],
+        "explanation": "固定的初查材料；陈述及推论的归属见正文，不等同于完整案件真相。",
+        "sources": [
+          "source_ch8"
+        ],
+        "topic": "topic_valet_gun"
+      },
+      {
+        "id": "fact_stone_walk",
+        "value": {
+          "kind": "AuthoredDetail",
+          "detail": "斯通回忆，周四六点半过后，他在小路上遇到安妮和雷丁，同他们一起走向村里，在邮局旁谈了一会儿。后来安妮离开，他与雷丁去了蓝野猪。会面前两人在做什么，他没有亲眼看见。"
+        },
+        "requiresOccurred": [],
+        "explanation": "固定的初查材料；陈述及推论的归属见正文，不等同于完整案件真相。",
+        "sources": [
+          "source_ch11"
+        ],
+        "topic": "topic_stone_walk"
+      },
+      {
+        "id": "fact_stone_inn",
+        "value": {
+          "kind": "AuthoredDetail",
+          "detail": "斯通说：“我们在蓝野猪一起喝了一杯，雷丁大约六点四十离开。分开以后他去了哪儿，我没跟着看。”时间为其回忆，并非连续覆盖雷丁当天活动的记录。"
+        },
+        "requiresOccurred": [],
+        "explanation": "固定的初查材料；陈述及推论的归属见正文，不等同于完整案件真相。",
+        "sources": [
+          "source_ch11"
+        ],
+        "topic": "topic_stone_inn"
+      },
+      {
+        "id": "fact_hartnell_visit",
+        "value": {
+          "kind": "AuthoredDetail",
+          "detail": "哈特内尔说，周四傍晚安妮来借一本园艺杂志，留在她那里聊天，快七点时说时间晚了，得回家。她的证言只涉及这次来访。"
+        },
+        "requiresOccurred": [],
+        "explanation": "固定的初查材料；陈述及推论的归属见正文，不等同于完整案件真相。",
+        "sources": [
+          "source_ch11"
+        ],
+        "topic": "topic_hartnell_visit"
+      },
+      {
+        "id": "fact_hartnell_manner",
+        "value": {
+          "kind": "AuthoredDetail",
+          "detail": "哈特内尔记得安妮聊天时轻松、愉快，看不出有什么烦心事。这是她对来访时神情的印象；她没有看见寓所书房内的事。"
+        },
+        "requiresOccurred": [],
+        "explanation": "固定的初查材料；陈述及推论的归属见正文，不等同于完整案件真相。",
+        "sources": [
+          "source_ch11"
+        ],
+        "topic": "topic_hartnell_manner"
+      },
+      {
+        "id": "fact_mary_sound",
+        "value": {
+          "kind": "AuthoredDetail",
+          "detail": "玛丽：“说树林那声砰响？想起来是有一声。我忙着做饭，也没看钟。大概在雷丁来之前十分钟、一刻钟吧。”她当时以为声音来自树林，没有看见声源。"
+        },
+        "requiresOccurred": [],
+        "explanation": "固定的初查材料；陈述及推论的归属见正文，不等同于完整案件真相。",
+        "sources": [
+          "source_ch10"
+        ],
+        "topic": "topic_mary_sound"
+      },
+      {
+        "id": "fact_mary_fish_time",
+        "value": {
+          "kind": "AuthoredDetail",
+          "detail": "玛丽：“鱼送晚了，我埋怨那孩子，他说才刚到六点半。那之后不久我听见那声响。”这是她借送鱼经过回忆的大致先后；她没有为响声记下准确钟点。"
+        },
+        "requiresOccurred": [],
+        "explanation": "固定的初查材料；陈述及推论的归属见正文，不等同于完整案件真相。",
+        "sources": [
+          "source_ch12"
+        ],
+        "topic": "topic_mary_fish_time"
+      },
+      {
+        "id": "fact_police_gun_check",
+        "value": {
+          "kind": "AuthoredDetail",
+          "detail": "安妮说枪来自丈夫梳妆台抽屉，男仆却说那里没有枪。两人的说法已分别保留；男仆提供的是日常所见，尚未取得枪如何到达现场的独立记录。"
+        },
+        "requiresOccurred": [],
+        "explanation": "固定的初查材料；陈述及推论的归属见正文，不等同于完整案件真相。",
+        "sources": [
+          "source_game_interview"
+        ],
+        "topic": "topic_police_gun_check"
+      },
+      {
+        "id": "fact_police_movement_check",
+        "value": {
+          "kind": "AuthoredDetail",
+          "detail": "斯通的两段见闻和哈特内尔的来访记录已收到。它们涉及六点半过后的同行、喝酒和借杂志，不能填补之前所有时段；雷丁六点三刻的首供和安妮的陈述仍分别留存。"
+        },
+        "requiresOccurred": [],
+        "explanation": "固定的初查材料；陈述及推论的归属见正文，不等同于完整案件真相。",
+        "sources": [
+          "source_game_interview"
+        ],
+        "topic": "topic_police_movement_check"
+      },
+      {
+        "id": "fact_police_sound_check",
+        "value": {
+          "kind": "AuthoredDetail",
+          "detail": "玛丽借送鱼经过记起约半点后的响声，马普尔也提到听过一声、以为在树林方向。两人都没有看见声源，所述时间均有误差；还需查清这声响从哪里来。"
+        },
+        "requiresOccurred": [],
+        "explanation": "固定的初查材料；陈述及推论的归属见正文，不等同于完整案件真相。",
+        "sources": [
+          "source_game_interview"
+        ],
+        "topic": "topic_police_sound_check"
       }
     ],
     "claims": [],
@@ -1061,6 +1361,46 @@
         "id": "source_ch18",
         "kind": "Original",
         "reference": "https://en.wikisource.org/wiki/The_Murder_at_the_Vicarage/Chapter_18"
+      },
+      {
+        "id": "source_ch7",
+        "kind": "Original",
+        "reference": "https://en.wikisource.org/wiki/The_Murder_at_the_Vicarage/Chapter_7"
+      },
+      {
+        "id": "source_ch8",
+        "kind": "Original",
+        "reference": "https://en.wikisource.org/wiki/The_Murder_at_the_Vicarage/Chapter_8"
+      },
+      {
+        "id": "source_ch9",
+        "kind": "Original",
+        "reference": "https://en.wikisource.org/wiki/The_Murder_at_the_Vicarage/Chapter_9"
+      },
+      {
+        "id": "source_ch10",
+        "kind": "Original",
+        "reference": "https://en.wikisource.org/wiki/The_Murder_at_the_Vicarage/Chapter_10"
+      },
+      {
+        "id": "source_ch11",
+        "kind": "Original",
+        "reference": "https://en.wikisource.org/wiki/The_Murder_at_the_Vicarage/Chapter_11"
+      },
+      {
+        "id": "source_game_interview",
+        "kind": "Adapted",
+        "reference": "docs/cases/murder_at_the_vicarage.md#独立核查"
+      },
+      {
+        "id": "source_game_scene",
+        "kind": "Adapted",
+        "reference": "docs/cases/murder_at_the_vicarage.md#9-3d与最小实现交付"
+      },
+      {
+        "id": "source_ch12",
+        "kind": "Original",
+        "reference": "https://en.wikisource.org/wiki/The_Murder_at_the_Vicarage/Chapter_12"
       }
     ]
   },
@@ -1148,6 +1488,30 @@
           "victimRelation": "与上校因寓所和教区生活有来往",
           "caseRelation": "了解家中日常情况；本轮尚未安排单独问询。",
           "witness": null
+        },
+        {
+          "id": "valet",
+          "name": "上校的贴身男仆",
+          "identity": "老宅雇员，照料上校的起居",
+          "victimRelation": "死者生前的贴身男仆",
+          "caseRelation": "可通过警方联系，询问上校日常物品与梳妆台抽屉的情况。",
+          "witness": "valet"
+        },
+        {
+          "id": "stone",
+          "name": "斯通博士",
+          "identity": "来村中主持古坟发掘的考古学者",
+          "victimRelation": "与上校因当地发掘事务有来往",
+          "caseRelation": "周四在村中活动，可通过警方联系，询问他与雷丁等人碰面的经过。",
+          "witness": "stone"
+        },
+        {
+          "id": "hartnell",
+          "name": "哈特内尔小姐",
+          "identity": "圣玛丽米德村居民，热心园艺",
+          "victimRelation": "与上校一家相识",
+          "caseRelation": "可通过警方联系，询问周四傍晚来访者的情况。",
+          "witness": "hartnell"
         }
       ],
       "openingReports": [],
@@ -1359,6 +1723,81 @@
       },
       {
         "id": "node_anne_meeting",
+        "asset": "model_placeholder",
+        "transform": {
+          "position": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "rotation": {
+            "xRad": 0,
+            "yRad": 0,
+            "zRad": 0
+          },
+          "scale": {
+            "x": 1,
+            "y": 1,
+            "z": 1
+          }
+        },
+        "parent": null,
+        "represents": null,
+        "place": "study",
+        "initiallyVisible": false
+      },
+      {
+        "id": "node_valet_meeting",
+        "asset": "model_placeholder",
+        "transform": {
+          "position": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "rotation": {
+            "xRad": 0,
+            "yRad": 0,
+            "zRad": 0
+          },
+          "scale": {
+            "x": 1,
+            "y": 1,
+            "z": 1
+          }
+        },
+        "parent": null,
+        "represents": null,
+        "place": "study",
+        "initiallyVisible": false
+      },
+      {
+        "id": "node_stone_meeting",
+        "asset": "model_placeholder",
+        "transform": {
+          "position": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "rotation": {
+            "xRad": 0,
+            "yRad": 0,
+            "zRad": 0
+          },
+          "scale": {
+            "x": 1,
+            "y": 1,
+            "z": 1
+          }
+        },
+        "parent": null,
+        "represents": null,
+        "place": "study",
+        "initiallyVisible": false
+      },
+      {
+        "id": "node_hartnell_meeting",
         "asset": "model_placeholder",
         "transform": {
           "position": {
@@ -1615,6 +2054,66 @@
         "entry": {
           "kind": "OnNode",
           "node": "node_anne_meeting",
+          "localPoint": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "radiusMeters": 4
+        },
+        "topics": [],
+        "fallbackFinding": null
+      },
+      {
+        "id": "point_valet",
+        "subject": {
+          "kind": "Place",
+          "id": "study"
+        },
+        "label": "上校的贴身男仆",
+        "entry": {
+          "kind": "OnNode",
+          "node": "node_valet_meeting",
+          "localPoint": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "radiusMeters": 4
+        },
+        "topics": [],
+        "fallbackFinding": null
+      },
+      {
+        "id": "point_stone",
+        "subject": {
+          "kind": "Place",
+          "id": "study"
+        },
+        "label": "斯通博士",
+        "entry": {
+          "kind": "OnNode",
+          "node": "node_stone_meeting",
+          "localPoint": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "radiusMeters": 4
+        },
+        "topics": [],
+        "fallbackFinding": null
+      },
+      {
+        "id": "point_hartnell",
+        "subject": {
+          "kind": "Place",
+          "id": "study"
+        },
+        "label": "哈特内尔小姐",
+        "entry": {
+          "kind": "OnNode",
+          "node": "node_hartnell_meeting",
           "localPoint": {
             "x": 0,
             "y": 0,
@@ -2161,6 +2660,146 @@
           "media": []
         },
         "suggests": []
+      },
+      {
+        "id": "clue_valet_gun",
+        "title": "男仆对梳妆台抽屉的证言",
+        "finding": "男仆说：“我不知道上校有什么手枪。梳妆台抽屉里肯定没有，那里有的话我会看见的。”这是他根据日常照料作出的证言，本轮没有进行抽屉搜查。",
+        "facts": [
+          "fact_valet_gun"
+        ],
+        "relatedClaims": [],
+        "result": {
+          "text": "男仆说：“我不知道上校有什么手枪。梳妆台抽屉里肯定没有，那里有的话我会看见的。”这是他根据日常照料作出的证言，本轮没有进行抽屉搜查。",
+          "media": []
+        },
+        "suggests": []
+      },
+      {
+        "id": "clue_stone_walk",
+        "title": "斯通所见：小巷与邮局旁",
+        "finding": "斯通回忆，周四六点半过后，他在小路上遇到安妮和雷丁，同他们一起走向村里，在邮局旁谈了一会儿。后来安妮离开，他与雷丁去了蓝野猪。会面前两人在做什么，他没有亲眼看见。",
+        "facts": [
+          "fact_stone_walk"
+        ],
+        "relatedClaims": [],
+        "result": {
+          "text": "斯通回忆，周四六点半过后，他在小路上遇到安妮和雷丁，同他们一起走向村里，在邮局旁谈了一会儿。后来安妮离开，他与雷丁去了蓝野猪。会面前两人在做什么，他没有亲眼看见。",
+          "media": []
+        },
+        "suggests": []
+      },
+      {
+        "id": "clue_stone_inn",
+        "title": "斯通所见：雷丁离开蓝野猪",
+        "finding": "斯通说：“我们在蓝野猪一起喝了一杯，雷丁大约六点四十离开。分开以后他去了哪儿，我没跟着看。”时间为其回忆，并非连续覆盖雷丁当天活动的记录。",
+        "facts": [
+          "fact_stone_inn"
+        ],
+        "relatedClaims": [],
+        "result": {
+          "text": "斯通说：“我们在蓝野猪一起喝了一杯，雷丁大约六点四十离开。分开以后他去了哪儿，我没跟着看。”时间为其回忆，并非连续覆盖雷丁当天活动的记录。",
+          "media": []
+        },
+        "suggests": []
+      },
+      {
+        "id": "clue_hartnell_visit",
+        "title": "哈特内尔所见：安妮来访",
+        "finding": "哈特内尔说，周四傍晚安妮来借一本园艺杂志，留在她那里聊天，快七点时说时间晚了，得回家。她的证言只涉及这次来访。",
+        "facts": [
+          "fact_hartnell_visit"
+        ],
+        "relatedClaims": [],
+        "result": {
+          "text": "哈特内尔说，周四傍晚安妮来借一本园艺杂志，留在她那里聊天，快七点时说时间晚了，得回家。她的证言只涉及这次来访。",
+          "media": []
+        },
+        "suggests": []
+      },
+      {
+        "id": "clue_hartnell_manner",
+        "title": "哈特内尔所见：谈话时的安妮",
+        "finding": "哈特内尔记得安妮聊天时轻松、愉快，看不出有什么烦心事。这是她对来访时神情的印象；她没有看见寓所书房内的事。",
+        "facts": [
+          "fact_hartnell_manner"
+        ],
+        "relatedClaims": [],
+        "result": {
+          "text": "哈特内尔记得安妮聊天时轻松、愉快，看不出有什么烦心事。这是她对来访时神情的印象；她没有看见寓所书房内的事。",
+          "media": []
+        },
+        "suggests": []
+      },
+      {
+        "id": "clue_mary_sound",
+        "title": "玛丽回忆的一声异响",
+        "finding": "玛丽：“说树林那声砰响？想起来是有一声。我忙着做饭，也没看钟。大概在雷丁来之前十分钟、一刻钟吧。”她当时以为声音来自树林，没有看见声源。",
+        "facts": [
+          "fact_mary_sound"
+        ],
+        "relatedClaims": [],
+        "result": {
+          "text": "玛丽：“说树林那声砰响？想起来是有一声。我忙着做饭，也没看钟。大概在雷丁来之前十分钟、一刻钟吧。”她当时以为声音来自树林，没有看见声源。",
+          "media": []
+        },
+        "suggests": []
+      },
+      {
+        "id": "clue_mary_fish_time",
+        "title": "玛丽用送鱼经过回忆时间",
+        "finding": "玛丽：“鱼送晚了，我埋怨那孩子，他说才刚到六点半。那之后不久我听见那声响。”这是她借送鱼经过回忆的大致先后；她没有为响声记下准确钟点。",
+        "facts": [
+          "fact_mary_fish_time"
+        ],
+        "relatedClaims": [],
+        "result": {
+          "text": "玛丽：“鱼送晚了，我埋怨那孩子，他说才刚到六点半。那之后不久我听见那声响。”这是她借送鱼经过回忆的大致先后；她没有为响声记下准确钟点。",
+          "media": []
+        },
+        "suggests": []
+      },
+      {
+        "id": "clue_police_gun_check",
+        "title": "警方对照：枪的来源",
+        "finding": "安妮说枪来自丈夫梳妆台抽屉，男仆却说那里没有枪。两人的说法已分别保留；男仆提供的是日常所见，尚未取得枪如何到达现场的独立记录。",
+        "facts": [
+          "fact_police_gun_check"
+        ],
+        "relatedClaims": [],
+        "result": {
+          "text": "安妮说枪来自丈夫梳妆台抽屉，男仆却说那里没有枪。两人的说法已分别保留；男仆提供的是日常所见，尚未取得枪如何到达现场的独立记录。",
+          "media": []
+        },
+        "suggests": []
+      },
+      {
+        "id": "clue_police_movement_check",
+        "title": "警方对照：行踪覆盖范围",
+        "finding": "斯通的两段见闻和哈特内尔的来访记录已收到。它们涉及六点半过后的同行、喝酒和借杂志，不能填补之前所有时段；雷丁六点三刻的首供和安妮的陈述仍分别留存。",
+        "facts": [
+          "fact_police_movement_check"
+        ],
+        "relatedClaims": [],
+        "result": {
+          "text": "斯通的两段见闻和哈特内尔的来访记录已收到。它们涉及六点半过后的同行、喝酒和借杂志，不能填补之前所有时段；雷丁六点三刻的首供和安妮的陈述仍分别留存。",
+          "media": []
+        },
+        "suggests": []
+      },
+      {
+        "id": "clue_police_sound_check",
+        "title": "警方对照：两处听到的响声",
+        "finding": "玛丽借送鱼经过记起约半点后的响声，马普尔也提到听过一声、以为在树林方向。两人都没有看见声源，所述时间均有误差；还需查清这声响从哪里来。",
+        "facts": [
+          "fact_police_sound_check"
+        ],
+        "relatedClaims": [],
+        "result": {
+          "text": "玛丽借送鱼经过记起约半点后的响声，马普尔也提到听过一声、以为在树林方向。两人都没有看见声源，所述时间均有误差；还需查清这声响从哪里来。",
+          "media": []
+        },
+        "suggests": []
       }
     ],
     "routes": [
@@ -2661,6 +3300,188 @@
           "clue_anne_statement",
           "clue_redding_account"
         ]
+      },
+      {
+        "id": "route_valet_gun",
+        "point": "point_valet",
+        "condition": {
+          "kind": "Always"
+        },
+        "method": {
+          "kind": "Fixed",
+          "label": "询问：上校的梳妆台抽屉里有枪吗？"
+        },
+        "grants": [
+          "clue_valet_gun"
+        ],
+        "reports": []
+      },
+      {
+        "id": "route_stone_walk",
+        "point": "point_stone",
+        "condition": {
+          "kind": "Always"
+        },
+        "method": {
+          "kind": "Fixed",
+          "label": "询问：你何时遇见安妮和雷丁？"
+        },
+        "grants": [
+          "clue_stone_walk"
+        ],
+        "reports": []
+      },
+      {
+        "id": "route_stone_inn",
+        "point": "point_stone",
+        "condition": {
+          "kind": "Always"
+        },
+        "method": {
+          "kind": "Fixed",
+          "label": "询问：雷丁什么时候离开蓝野猪？"
+        },
+        "grants": [
+          "clue_stone_inn"
+        ],
+        "reports": []
+      },
+      {
+        "id": "route_hartnell_visit",
+        "point": "point_hartnell",
+        "condition": {
+          "kind": "Always"
+        },
+        "method": {
+          "kind": "Fixed",
+          "label": "询问：安妮昨天傍晚来过吗？"
+        },
+        "grants": [
+          "clue_hartnell_visit"
+        ],
+        "reports": []
+      },
+      {
+        "id": "route_hartnell_manner",
+        "point": "point_hartnell",
+        "condition": {
+          "kind": "Always"
+        },
+        "method": {
+          "kind": "Fixed",
+          "label": "询问：她当时看起来怎么样？"
+        },
+        "grants": [
+          "clue_hartnell_manner"
+        ],
+        "reports": []
+      },
+      {
+        "id": "route_mary_sound",
+        "point": "point_mary",
+        "condition": {
+          "kind": "Always"
+        },
+        "method": {
+          "kind": "Fixed",
+          "label": "询问：树林方向那声响是什么时候？"
+        },
+        "grants": [
+          "clue_mary_sound"
+        ],
+        "reports": []
+      },
+      {
+        "id": "route_mary_fish_time",
+        "point": "point_mary",
+        "condition": {
+          "kind": "Always"
+        },
+        "method": {
+          "kind": "Fixed",
+          "label": "追问：当时还有什么事帮你记得时间？"
+        },
+        "grants": [
+          "clue_mary_fish_time"
+        ],
+        "reports": []
+      },
+      {
+        "id": "route_police_gun_check",
+        "point": "point_police",
+        "condition": {
+          "kind": "CluesKnown",
+          "clues": [
+            "clue_anne_gun",
+            "clue_valet_gun"
+          ]
+        },
+        "method": {
+          "kind": "Fixed",
+          "label": "出示安妮与男仆的枪来源说法"
+        },
+        "grants": [
+          "clue_police_gun_check"
+        ],
+        "reports": [],
+        "presentedClues": [
+          "clue_anne_gun",
+          "clue_valet_gun"
+        ]
+      },
+      {
+        "id": "route_police_movement_check",
+        "point": "point_police",
+        "condition": {
+          "kind": "CluesKnown",
+          "clues": [
+            "clue_redding_account",
+            "clue_anne_statement",
+            "clue_stone_walk",
+            "clue_stone_inn",
+            "clue_hartnell_visit"
+          ]
+        },
+        "method": {
+          "kind": "Fixed",
+          "label": "出示两份供述与独立行踪证言"
+        },
+        "grants": [
+          "clue_police_movement_check"
+        ],
+        "reports": [],
+        "presentedClues": [
+          "clue_redding_account",
+          "clue_anne_statement",
+          "clue_stone_walk",
+          "clue_stone_inn",
+          "clue_hartnell_visit"
+        ]
+      },
+      {
+        "id": "route_police_sound_check",
+        "point": "point_police",
+        "condition": {
+          "kind": "CluesKnown",
+          "clues": [
+            "clue_mary_sound",
+            "clue_mary_fish_time",
+            "clue_marple_sound"
+          ]
+        },
+        "method": {
+          "kind": "Fixed",
+          "label": "出示玛丽与马普尔的响声回忆"
+        },
+        "grants": [
+          "clue_police_sound_check"
+        ],
+        "reports": [],
+        "presentedClues": [
+          "clue_mary_sound",
+          "clue_mary_fish_time",
+          "clue_marple_sound"
+        ]
       }
     ],
     "operations": [
@@ -2769,6 +3590,59 @@
             }
           }
         ]
+      },
+      {
+        "id": "open_valet_meeting",
+        "point": "point_police",
+        "label": "联系男仆，核查枪的来源",
+        "repeatable": false,
+        "condition": {
+          "kind": "CluesKnown",
+          "clues": [
+            "clue_anne_gun"
+          ]
+        },
+        "effects": [
+          {
+            "kind": "World",
+            "effect": {
+              "kind": "SetNodeVisible",
+              "node": "node_valet_meeting",
+              "visible": true
+            }
+          }
+        ]
+      },
+      {
+        "id": "open_movement_meetings",
+        "point": "point_police",
+        "label": "联系斯通和哈特内尔，核实行踪",
+        "repeatable": false,
+        "condition": {
+          "kind": "CluesKnown",
+          "clues": [
+            "clue_redding_account",
+            "clue_anne_statement"
+          ]
+        },
+        "effects": [
+          {
+            "kind": "World",
+            "effect": {
+              "kind": "SetNodeVisible",
+              "node": "node_stone_meeting",
+              "visible": true
+            }
+          },
+          {
+            "kind": "World",
+            "effect": {
+              "kind": "SetNodeVisible",
+              "node": "node_hartnell_meeting",
+              "visible": true
+            }
+          }
+        ]
       }
     ],
     "rules": [],
@@ -2812,7 +3686,7 @@
         "assessment": "conflict",
         "route": "comparison_time"
       },
-      "nextObjective": "初轮时间核对已保存。取得雷丁首供后，可向警方安排与安妮会面，再出示材料核对各人的说法；完整结案尚未开放。"
+      "nextObjective": "初轮时间核对已保存。可向警方安排安妮会面，继续核查枪来源、行踪与响声，再出示所得证言交流；后续取证与完整结案尚未开放。"
     },
     "witnesses": [
       {
@@ -2906,6 +3780,22 @@
             "requiredEvidence": [
               "clue_paper"
             ]
+          },
+          {
+            "id": "mary_sound",
+            "text": "玛丽：“说树林那声砰响？想起来是有一声。我忙着做饭，也没看钟。大概在雷丁来之前十分钟、一刻钟吧。”她当时以为声音来自树林，没有看见声源。",
+            "routes": [
+              "route_mary_sound"
+            ],
+            "requiredEvidence": []
+          },
+          {
+            "id": "mary_fish_time",
+            "text": "玛丽：“鱼送晚了，我埋怨那孩子，他说才刚到六点半。那之后不久我听见那声响。”这是她借送鱼经过回忆的大致先后；她没有为响声记下准确钟点。",
+            "routes": [
+              "route_mary_fish_time"
+            ],
+            "requiredEvidence": []
           }
         ]
       },
@@ -3066,6 +3956,73 @@
             "requiredEvidence": [
               "clue_marple_visitors"
             ]
+          }
+        ]
+      },
+      {
+        "id": "valet",
+        "point": "point_valet",
+        "name": "上校的贴身男仆",
+        "background": "可通过警方联系，询问上校日常物品与梳妆台抽屉的情况。",
+        "voice": "自然地说明亲历，分清大约时间和亲眼所见，不替玩家判断凶手。",
+        "answers": [
+          {
+            "id": "valet_gun",
+            "text": "男仆说：“我不知道上校有什么手枪。梳妆台抽屉里肯定没有，那里有的话我会看见的。”这是他根据日常照料作出的证言，本轮没有进行抽屉搜查。",
+            "routes": [
+              "route_valet_gun"
+            ],
+            "requiredEvidence": []
+          }
+        ]
+      },
+      {
+        "id": "stone",
+        "point": "point_stone",
+        "name": "斯通博士",
+        "background": "周四在村中活动，可通过警方联系，询问他与雷丁等人碰面的经过。",
+        "voice": "自然地说明亲历，分清大约时间和亲眼所见，不替玩家判断凶手。",
+        "answers": [
+          {
+            "id": "stone_walk",
+            "text": "斯通回忆，周四六点半过后，他在小路上遇到安妮和雷丁，同他们一起走向村里，在邮局旁谈了一会儿。后来安妮离开，他与雷丁去了蓝野猪。会面前两人在做什么，他没有亲眼看见。",
+            "routes": [
+              "route_stone_walk"
+            ],
+            "requiredEvidence": []
+          },
+          {
+            "id": "stone_inn",
+            "text": "斯通说：“我们在蓝野猪一起喝了一杯，雷丁大约六点四十离开。分开以后他去了哪儿，我没跟着看。”时间为其回忆，并非连续覆盖雷丁当天活动的记录。",
+            "routes": [
+              "route_stone_inn"
+            ],
+            "requiredEvidence": []
+          }
+        ]
+      },
+      {
+        "id": "hartnell",
+        "point": "point_hartnell",
+        "name": "哈特内尔小姐",
+        "background": "可通过警方联系，询问周四傍晚来访者的情况。",
+        "voice": "自然地说明亲历，分清大约时间和亲眼所见，不替玩家判断凶手。",
+        "answers": [
+          {
+            "id": "hartnell_visit",
+            "text": "哈特内尔说，周四傍晚安妮来借一本园艺杂志，留在她那里聊天，快七点时说时间晚了，得回家。她的证言只涉及这次来访。",
+            "routes": [
+              "route_hartnell_visit"
+            ],
+            "requiredEvidence": []
+          },
+          {
+            "id": "hartnell_manner",
+            "text": "哈特内尔记得安妮聊天时轻松、愉快，看不出有什么烦心事。这是她对来访时神情的印象；她没有看见寓所书房内的事。",
+            "routes": [
+              "route_hartnell_manner"
+            ],
+            "requiredEvidence": []
           }
         ]
       }

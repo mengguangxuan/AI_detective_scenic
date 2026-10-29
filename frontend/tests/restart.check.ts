@@ -46,3 +46,20 @@ test.describe('Anne meeting recovery', () => {
     expect(state.people.find((person: { id: string }) => person.id === 'anne').witness).toBe('anne');
   });
 });
+
+test.describe('independent checks recovery', () => {
+  test.use({ storageState: '.build-cache/independent-checks-state.json' });
+  test.skip(process.env.DETECTIVE_TEST_MODEL !== '1', 'Requires saved independent checks state.');
+  test('contacted witnesses, their actual statements and police comparisons survive backend restart', async ({ page }) => {
+    await page.goto('/police');
+    await expect(page.getByRole('region', { name: '已联系的核查对象', exact: true })).toContainText('哈特内尔小姐');
+    await expect(page.getByRole('log', { name: '自由问询记录', exact: true })).toContainText('不能填补之前所有时段');
+    const saved = await page.evaluate(() => JSON.parse(localStorage.getItem('detective-scenic:server-session:v6')!));
+    const response = await page.request.post('/api/getinvestigationsnapshot', { data: { sessionId: saved.sessionId }, headers: { 'X-Detective-Client': 'web' } });
+    expect(response.status()).toBe(200);
+    const state = await response.json();
+    for (const id of ['valet', 'stone', 'hartnell']) expect(state.witnesses.some((w: { id: string }) => w.id === id)).toBe(true);
+    for (const id of ['clue_valet_gun', 'clue_stone_inn', 'clue_hartnell_visit', 'clue_police_gun_check', 'clue_police_movement_check']) expect(state.clues.some((c: { id: string }) => c.id === id)).toBe(true);
+    expect(state.stage.completed).toBe(false);
+  });
+});

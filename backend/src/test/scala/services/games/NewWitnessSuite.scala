@@ -42,7 +42,7 @@ class NewWitnessSuite extends FunSuite:
       _ <- DatabaseSession.connection(url).use(c => DatabaseSchema.initialize(c))
       _ <- tx(url) { c => for
         latest <- ImportCaseMessage(Paths.get("../docs/fixtures/browser_investigation.json")).plan(c)
-        newPoints = Set(PointId("point_redding"),PointId("point_marple"),PointId("point_anne"))
+        newPoints = Set(PointId("point_redding"),PointId("point_marple"),PointId("point_anne"),PointId("point_valet"),PointId("point_stone"),PointId("point_hartnell"))
         primaryClues = latest.content.routes.filter(r => newPoints(r.point)).flatMap(_.clues).toSet
         newRoutes = latest.content.routes.filter(r => newPoints(r.point) || r.requiredClues.intersect(primaryClues).nonEmpty)
         newClues = newRoutes.flatMap(_.clues).toSet
@@ -75,8 +75,8 @@ class NewWitnessSuite extends FunSuite:
     (for
       _ <- setup(url,id)
       initial <- view(url,id)
-      _ = assertEquals(initial.caseRevision,Revision(6))
-      _ = assertEquals(initial.people.size,10)
+      _ = assertEquals(initial.caseRevision,Revision(7))
+      _ = assertEquals(initial.people.size,13)
       _ = assertEquals(initial.witnesses.map(_.id).toSet,Set("clement","mary","redding","marple","melchett").map(WitnessId.apply))
       _ = assert(initial.people.find(_.id == PersonId("anne")).get.victimRelation.contains("妻子"))
       _ = assert(initial.people.find(_.id == PersonId("redding")).get.caseRelation.contains("自首"))
