@@ -2,11 +2,11 @@ import { z } from 'zod';
 import { apiName } from './apiName';
 import { APIError } from './APIError';
 const errorSchema = z.object({ code: z.string(), publicMessage: z.string() }).strict();
-export async function sendMessage<S extends z.ZodTypeAny>(className: string, input: unknown, schema: S): Promise<z.output<S>> {
+export async function sendMessage<S extends z.ZodTypeAny>(className: string, input: unknown, schema: S, timeoutMs = 12000): Promise<z.output<S>> {
   let response: Response;
   try {
     response = await fetch(`/api/${apiName(className)}`, { method: 'POST', credentials: 'same-origin',
-      headers: { 'Content-Type': 'application/json', 'X-Detective-Client': 'web' }, body: JSON.stringify(input), signal: AbortSignal.timeout(12000) });
+      headers: { 'Content-Type': 'application/json', 'X-Detective-Client': 'web' }, body: JSON.stringify(input), signal: AbortSignal.timeout(timeoutMs) });
   } catch { throw new APIError(null, 'NetworkFailure', '无法确认服务器结果，请检查后端连接。'); }
   let raw: unknown;
   try { raw = await response.json(); }

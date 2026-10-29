@@ -33,10 +33,10 @@ object APIMessageRouter:
             if bytes.length > 8192 then throw GameError(ErrorCode.InvalidValue,"请求内容过长。")
             parser.parse(new String(bytes,StandardCharsets.UTF_8)).fold(_ => throw GameError(ErrorCode.InvalidValue,"请求不是合法 JSON。"),identity)
           }
-          _ <- IO.blocking(validate(payload,route.fields))
+          _ <- IO.blocking(validate(payload,route.fields,route.longTextFields))
           token = Option(exchange.getRequestHeaders.getFirst("Cookie")).toVector.flatMap(_.split(';')).map(_.trim)
             .find(_.startsWith("detective_local=")).map(_.stripPrefix("detective_local="))
-          reply <- DatabaseSession.connection(databaseUrl).use(c => DatabaseSession.transaction(c)(route.run(payload,token,c)))
+          reply <- route.run(payload,token,databaseUrl)
           _ <- IO.blocking(send(exchange,200,reply))
         yield ()
         action.handleErrorWith { error =>
@@ -47,16 +47,18 @@ object APIMessageRouter:
             case ErrorCode.Unauthenticated => 401
             case ErrorCode.AccessDenied => 403
             case ErrorCode.StaleState | ErrorCode.RequestConflict | ErrorCode.ConflictingContent | ErrorCode.ConditionFailed => 409
+            case ErrorCode.RequestPending => 503
             case ErrorCode.ServerFailure => 500
             case _ => 400
           (if status == 500 then IO.println(s"[HTTP failure] ${error.getClass.getSimpleName}") else IO.unit) *>
             IO.blocking(send(exchange,status,HttpReply(publicError.asJson)))
         }.guarantee(IO.blocking(exchange.close())).unsafeRunSync()
 
-  private def validate(payload: Json,fields: Set[String]): Unit =
+  private def validate(payload: Json,fields: Set[String],longTextFields: Set[String]): Unit =
     val obj = payload.asObject.getOrElse(throw GameError(ErrorCode.InvalidValue,"请求必须是 JSON 对象。"))
     if obj.keys.toSet != fields then throw GameError(ErrorCode.InvalidValue,"请求字段缺失或包含不允许的字段。")
-    if obj.values.exists(_.asString.exists(_.length > 200)) then throw GameError(ErrorCode.InvalidValue,"请求编号过长。")
+    if obj.toVector.exists { case (key,value) => value.asString.exists(_.length > (if longTextFields(key) then 1000 else 200)) } then
+      throw GameError(ErrorCode.InvalidValue,"请求文本或编号过长。")
     obj("expectedSequence").foreach { json =>
       val valid = json.asObject.exists(o => o.keys.toSet == Set("value")) &&
         json.hcursor.get[Long]("value").exists(n => n >= 0 && n <= 9007199254740991L)

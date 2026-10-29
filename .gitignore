@@ -4,6 +4,7 @@
 !.env.example
 *.pem
 *.key
+backend/config/model-api.local.json
 # Tool and build output
 __pycache__/
 *.py[cod]

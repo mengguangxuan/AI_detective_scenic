@@ -5,6 +5,7 @@ import java.nio.file.{Files,Paths}
 import scala.concurrent.duration.*
 import services.accounts.tables.LocalIdentityTable.LocalIdentityTableInitializer
 import services.cases.api.ImportCaseMessage
+import services.models.api.ChatCompletionClient
 object WebDemo extends IOApp.Simple:
   override def run: IO[Unit] =
     val platform = if System.getProperty("os.name").toLowerCase(java.util.Locale.ROOT).contains("windows") then "windows" else "linux"
@@ -20,6 +21,9 @@ object WebDemo extends IOApp.Simple:
         _ <- LocalIdentityTableInitializer.initialize(c)
         _ <- DatabaseSession.transaction(c)(ImportCaseMessage(Paths.get("../docs/fixtures/browser_investigation.json")).plan(c))
       yield () }
-      _ <- LocalHttpServer.resource(url,8080).use(_ =>
+      modelPath = Option(System.getenv("DETECTIVE_MODEL_CONFIG")).filter(_.trim.nonEmpty)
+        .map(Paths.get(_)).getOrElse(Paths.get("config","model-api.local.json"))
+      modelClient <- ChatCompletionClient.configured(modelPath)
+      _ <- LocalHttpServer.resource(url,8080,modelClient).use(_ =>
         IO.println(s"[HTTP ready] http://127.0.0.1:8080/api/ (local demo only); database: $database.mv.db") *> waitForStop).guarantee(IO.blocking(Files.deleteIfExists(stopFile)).void)
     yield ()

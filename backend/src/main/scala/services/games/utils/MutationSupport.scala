@@ -12,6 +12,7 @@ import services.games.objects.apiTypes.*
 import services.games.tables.SessionTable.SessionTable
 import services.games.tables.SessionRecordTable.SessionRecordTable
 import services.games.tables.ReceiptTable.ReceiptTable
+import services.games.tables.InterviewRequestTable.InterviewRequestTable
 import services.system.objects.*
 
 private[games] object MutationSupport:
@@ -24,6 +25,20 @@ private[games] object MutationSupport:
 
   private[games] def investigationDigest(user: UserId,session: SessionId,request: RequestId,expected: Sequence,point: PointId,route: RouteId): String =
     digest(user,session,request,expected,Json.obj("kind" -> Json.fromString("Investigate"),"point" -> point.asJson,"route" -> route.asJson))
+
+  private[games] def comparisonDigest(user: UserId,session: SessionId,request: RequestId,expected: Sequence,
+      evidence: Set[ClueId],minutes: Int,assessment: TimeAssessment): String =
+    digest(user,session,request,expected,Json.obj("kind" -> Json.fromString("CompareTimes"),
+      "evidence" -> evidence.toVector.sortBy(_.value).asJson,"minutes" -> minutes.asJson,"assessment" -> assessment.asJson))
+
+  private[games] def interviewDigest(user: UserId,session: SessionId,request: RequestId,expected: Sequence,
+      witness: WitnessId,question: String,evidence: Set[ClueId]): String =
+    digest(user,session,request,expected,Json.obj("kind" -> Json.fromString("AskWitness"), "witness" -> witness.asJson,
+      "question" -> question.asJson,"evidence" -> evidence.toVector.sortBy(_.value).asJson))
+
+  private[games] def reportDigest(user: UserId,session: SessionId,request: RequestId,expected: Sequence,evidence: Set[ClueId]): String =
+    digest(user,session,request,expected,Json.obj("kind" -> Json.fromString("ReportClues"),
+      "evidence" -> evidence.toVector.sortBy(_.value).asJson))
 
   // Keep the exact original JSON bytes so stored receipt digests remain valid.
   private def digest(user: UserId,session: SessionId,request: RequestId,expected: Sequence,command: Json): String =
@@ -38,8 +53,11 @@ private[games] object MutationSupport:
   private[games] def checkSequence(row: GameSessionRecord,expected: Sequence): IO[Unit] =
     IO.raiseUnless(row.sequence==expected)(GameError(ErrorCode.StaleState,"会话已发生变化，请刷新。"))
 
-  private[games] def commit(connection: Connection,previous: GameSessionRecord,request: RequestId,digest: String,plan: ActionPlan): IO[CommandResult] =
+  private[games] def commit(connection: Connection,previous: GameSessionRecord,request: RequestId,digest: String,plan: ActionPlan,
+      pendingInterview: Boolean = false): IO[CommandResult] =
     for
+      reserved <- InterviewRequestTable.find(connection,previous.id,request)
+      _ <- IO.raiseWhen(reserved.nonEmpty && !pendingInterview)(GameError(ErrorCode.RequestConflict,"该请求编号已用于人物问询。"))
       _ <- SessionTable.update(connection,previous,plan.session)
       _ <- SessionRecordTable.insert(connection,plan.record)
       _ <- ReceiptTable.insert(connection,RequestReceiptRecord(previous.id,request,digest,1,plan.result))

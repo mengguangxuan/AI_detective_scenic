@@ -3,7 +3,7 @@ import io.circe.{Decoder, Encoder}
 import io.circe.generic.semiauto.*
 import services.system.objects.*
 import services.cases.objects.*
-final case class InquiryPointView(id: PointId, label: String, operations: Vector[OperationChoiceView], routes: Vector[RouteChoiceView])
+final case class InquiryPointView(id: PointId, label: String, operations: Vector[OperationChoiceView], routes: Vector[RouteChoiceView], findings: Vector[ClueView])
 object InquiryPointView:
   given Encoder[InquiryPointView] = deriveEncoder[InquiryPointView]
   given Decoder[InquiryPointView] = deriveDecoder[InquiryPointView]

@@ -32,6 +32,9 @@ private[games] object FixtureRules:
     (operation.repeatable || !state.completedOperations(operation.id)) &&
       operation.openedRequirement.forall(requirement => state.opened(requirement.entity) == requirement.opened)
 
+  private[games] def routeAvailable(state: GameSessionRecord, route: FixtureRoute): Boolean =
+    route.prerequisite.forall(state.completedOperations.contains) && route.requiredClues.subsetOf(state.clues)
+
   private[games] def execute(f: CaseContent,state: GameSessionRecord,request: RequestId,operation: OperationId): Either[GameError,ActionPlan] =
     for
       op <- f.operations.find(_.id==operation).toRight(denied)
@@ -54,7 +57,7 @@ private[games] object FixtureRules:
     for
       _ <- f.points.find(_.id==pointId).filter(accessible(f,state,_)).toRight(denied)
       route <- f.routes.find(r => r.id==routeId && r.point==pointId).toRight(denied)
-      _ <- Either.cond(state.completedOperations(route.prerequisite),(),GameError(ErrorCode.ConditionFailed,"需要先完成前置操作。"))
+      _ <- Either.cond(routeAvailable(state,route),(),GameError(ErrorCode.ConditionFailed,"需要先取得所需材料或完成前置操作。"))
       _ <- Either.cond(!route.clues.forall(state.clues.contains),(),GameError(ErrorCode.ConditionFailed,"该途径的信息已经记录。"))
     yield
       val disclosed=f.clues.filter(c => route.clues.contains(c.id) && !state.clues(c.id))
@@ -68,3 +71,22 @@ private[games] object FixtureRules:
 
   private[games] def view(f: CaseContent,state: GameSessionRecord): GetGameStateResponse =
     GetGameStateResponse(state.sequence,f.points.filter(accessible(f,state,_)).map(_.id),state.clues,state.facts)
+
+  private[games] def compareTimes(f: CaseContent,state: GameSessionRecord,request: RequestId,evidence: Set[ClueId],
+      minutes: Int,assessment: TimeAssessment): Either[GameError,ActionPlan] =
+    val incomplete = GameError(ErrorCode.ConditionFailed,"这份核对还未完成，请重新检查所选材料、换算时间和判断。")
+    for
+      stage <- f.stage.toRight(denied)
+      spec <- stage.comparison.toRight(denied)
+      _ <- f.points.find(_.id == spec.point).filter(accessible(f,state,_)).toRight(denied)
+      _ <- Either.cond(!state.clues(stage.completionClue),(),GameError(ErrorCode.ConditionFailed,"这份核对已经记录。"))
+      _ <- Either.cond(evidence.subsetOf(state.clues),(),denied)
+      _ <- Either.cond(spec.requiredClues.subsetOf(state.clues) && spec.evidenceClues.subsetOf(evidence) &&
+        minutes == spec.convertedTimeMinutes && assessment == spec.assessment,(),incomplete)
+      clue <- f.clues.find(_.id == stage.completionClue).toRight(denied)
+    yield
+      val next = state.copy(sequence=Sequence(state.sequence.value+1),clues=state.clues+clue.id,facts=state.facts++clue.facts)
+      val cited = evidence.toVector.sortBy(_.value).flatMap(id => f.clues.find(_.id == id).map(_.title.value)).mkString("、")
+      val record = SessionRecord(RecordId(s"${request.value}:comparison"),state.id,request,next.sequence,next.storyTimeSeconds,
+        spec.point,Some(spec.route),None,s"${clue.text.value}\n引用材料：$cited",Set(clue.id),clue.facts)
+      ActionPlan(next,record,CommandResult(next.sequence,Vector(clue.text),Set(clue.id)))

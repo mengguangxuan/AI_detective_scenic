@@ -66,12 +66,20 @@ private[cases] object FixtureLoader:
       point <- c.get[PointId]("point")
       method <- c.downField("method").get[String]("kind")
       condition <- c.downField("condition").get[String]("kind")
-      _ <- check(method == "Fixed" && condition == "OperationDone", "Unsupported route protocol", c)
-      prerequisite <- c.downField("condition").get[OperationId]("operation")
+      _ <- check(method == "Fixed", "Unsupported route method", c)
+      prerequisite <- condition match
+        case "OperationDone" => c.downField("condition").get[OperationId]("operation").map(Some(_))
+        case "Always" | "CluesKnown" => Right(None)
+        case _ => Left(DecodingFailure("Unsupported route condition",c.history))
+      required <- condition match
+        case "CluesKnown" => c.downField("condition").get[Set[ClueId]]("clues").flatMap(xs =>
+          check(xs.nonEmpty,"Empty clue prerequisite",c).as(xs))
+        case _ => Right(Set.empty[ClueId])
       clues <- c.get[Vector[ClueId]]("grants")
+      presented <- c.get[Option[Set[ClueId]]]("presentedClues").map(_.getOrElse(Set.empty))
       _ <- check(clues.nonEmpty, "Empty grants", c)
       _ <- empty(c, "reports")
-    yield FixtureRoute(id, point, prerequisite, clues, c.downField("method").get[String]("label").getOrElse(id.value))
+    yield FixtureRoute(id, point, prerequisite, clues, c.downField("method").get[String]("label").getOrElse(id.value), required, presented)
 
   private def operation(raw: Json): Decoder.Result[FixtureOperation] =
     val c = raw.hcursor
@@ -129,6 +137,10 @@ private[cases] object FixtureLoader:
       rawNodes <- scene.hcursor.get[Vector[Json]]("nodes")
       nodes <- rawNodes.traverse(node)
       observations <- scene.hcursor.get[Option[Vector[SceneObservation]]]("observations").map(_.getOrElse(Vector.empty))
+      sceneObjects <- scene.hcursor.get[Option[Vector[SceneObjectBinding]]]("objects").map(_.getOrElse(Vector.empty))
+      represented <- rawNodes.traverse(raw => (raw.hcursor.get[SceneNodeId]("id"), raw.hcursor.get[Option[EntityId]]("represents")).tupled)
+      _ <- check(sceneObjects.isEmpty || represented.collect { case (node, Some(entity)) => node -> entity }.toSet ==
+        sceneObjects.map(o => o.node -> o.entity).toSet, "Scene object registration does not cover the represented models", c)
       rawPoints <- scene.hcursor.get[Vector[Json]]("points")
       points <- rawPoints.traverse(point)
       rawFacts <- truth.hcursor.get[Vector[Json]]("facts")
@@ -149,8 +161,12 @@ private[cases] object FixtureLoader:
       occurred <- initial.hcursor.get[Map[String, Json]]("occurredEvents")
       _ <- check(occurred.isEmpty, "No scheduled history in this profile", c)
       common <- background.hcursor.get[Set[FactId]]("commonKnowledge")
+      stage <- investigation.hcursor.get[Option[InvestigationStage]]("stage")
+      witnesses <- investigation.hcursor.get[Option[Vector[WitnessProfile]]]("witnesses").map(_.getOrElse(Vector.empty))
+      police <- investigation.hcursor.get[Option[PoliceContact]]("police")
       entities <- world.hcursor.get[Vector[Json]]("entities")
       entityIds <- entities.traverse(_.hcursor.get[EntityId]("id"))
+      _ <- check(sceneObjects.forall(o => entityIds.contains(o.entity)), "Unknown scene object entity", c)
       _ <- check(opened.subsetOf(entityIds.toSet) && unlocked.subsetOf(entityIds.toSet), "Unknown initial entity", c)
       _ <- check(operations.flatMap(_.effects).forall {
         case FixtureEffect.Open(entity) => entityIds.contains(entity)
@@ -158,7 +174,7 @@ private[cases] object FixtureLoader:
         case _ => true
       }, "Missing effect entity", c)
       _ <- check(operations.forall(_.openedRequirement.forall(r => entityIds.contains(r.entity))),"Unknown operation condition entity",c)
-      content = CaseContent(place, placeName, time, origin, position, nodes, points, facts, clues, routes, operations, opened, unlocked, common, observations)
+      content = CaseContent(place, placeName, time, origin, position, nodes, points, facts, clues, routes, operations, opened, unlocked, common, observations, stage, sceneObjects, witnesses, police)
       record = CaseRevisionRecord(caseId, revision, 1, title, content)
       _ <- check(valid(record), "Invalid fixture references / node hierarchy", c)
     yield record).left.map(error => GameError(ErrorCode.InvalidValue, s"案件数据不合法：${error.getMessage}"))
@@ -177,7 +193,26 @@ private[cases] object FixtureLoader:
       f.points.forall(p => nodes.contains(p.node) && finite(p.localPoint) && p.radiusMeters.isFinite && p.radiusMeters > 0) &&
       f.clues.forall(c => c.facts.subsetOf(f.facts.map(_.id).toSet)) &&
       f.commonFacts.subsetOf(f.facts.map(_.id).toSet) &&
-      f.routes.forall(r => f.points.exists(_.id == r.point) && f.operations.exists(_.id == r.prerequisite) && r.clues.forall(id => f.clues.exists(_.id == id))) &&
+      f.police.forall(p => p.name.trim.nonEmpty && p.background.trim.nonEmpty &&
+        f.points.exists(_.id == p.point) && !f.witnesses.exists(_.point == p.point)) &&
+      unique(f.witnesses.map(_.id)) && unique(f.witnesses.map(_.point)) && f.witnesses.forall(w =>
+        w.id.value.matches("[a-z][a-z0-9_]{0,63}") && w.name.trim.nonEmpty && w.background.trim.nonEmpty && w.voice.trim.nonEmpty &&
+        f.points.exists(_.id == w.point) && w.answers.nonEmpty && unique(w.answers.map(_.id)) &&
+        w.answers.forall(a => a.id.value.matches("[a-z][a-z0-9_]{0,99}") && a.text.trim.nonEmpty && a.text.length <= 1500 &&
+          a.requiredEvidence.subsetOf(f.clues.map(_.id).toSet) && a.routes.distinct.size == a.routes.size &&
+          a.routes.forall(id => f.routes.exists(r => r.id == id && r.point == w.point)))) &&
+      f.routes.forall(r => f.points.exists(_.id == r.point) && r.prerequisite.forall(op => f.operations.exists(_.id == op)) &&
+        r.clues.forall(id => f.clues.exists(_.id == id)) && r.requiredClues.subsetOf(f.clues.map(_.id).toSet) &&
+        r.requiredClues.intersect(r.clues.toSet).isEmpty && r.presentedClues.subsetOf(r.requiredClues)) &&
+      f.stage.forall(s => s.introduction.trim.nonEmpty && s.objective.trim.nonEmpty && f.clues.exists(_.id == s.completionClue) &&
+        s.comparison.forall(c => f.points.exists(_.id == c.point) && !f.routes.exists(_.id == c.route) && c.requiredClues.nonEmpty && c.evidenceClues.nonEmpty &&
+          c.evidenceClues.subsetOf(c.requiredClues) && c.requiredClues.subsetOf(f.clues.map(_.id).toSet) &&
+          !c.requiredClues(s.completionClue) && c.convertedTimeMinutes >= 0 && c.convertedTimeMinutes < 1440 &&
+          !f.routes.exists(_.clues.contains(s.completionClue)))) &&
+      unique(f.sceneObjects.map(_.node)) && unique(f.sceneObjects.map(_.entity)) && f.sceneObjects.forall(o =>
+        nodes.contains(o.node) && o.label.trim.nonEmpty && o.point.forall(p => f.points.exists(x => x.id == p && x.node == o.node)) &&
+        o.readRoute.forall(r => f.routes.exists(x => x.id == r && o.point.contains(x.point))) &&
+        (o.point.nonEmpty || f.observations.exists(_.node == o.node))) &&
       unique(f.observations.map(_.node)) && f.observations.forall(o => nodes.contains(o.node) && o.label.trim.nonEmpty && o.description.trim.nonEmpty) &&
       f.operations.forall(o => f.points.exists(_.id == o.point) && o.effects.forall {
         case FixtureEffect.SetNodeVisible(node, _) => nodes.contains(node)

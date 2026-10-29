@@ -3,7 +3,8 @@ import io.circe.{Decoder, Encoder}
 import io.circe.generic.semiauto.*
 import services.system.objects.*
 import services.cases.objects.*
-final case class StudySceneView(bundleId: String, revision: String, placeName: String, drawerOpened: Boolean, letterVisible: Boolean)
+final case class StudySceneView(bundleId: String, revision: String, placeName: String, drawerOpened: Boolean,
+  windowOpened: Boolean, objects: Vector[SceneObjectBinding])
 object StudySceneView:
   given Encoder[StudySceneView] = deriveEncoder[StudySceneView]
   given Decoder[StudySceneView] = deriveDecoder[StudySceneView]

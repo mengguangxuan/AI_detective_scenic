@@ -6,14 +6,15 @@ import java.net.InetSocketAddress
 import java.util.concurrent.Executors
 import services.accounts.routes.AccountsRoutes
 import services.games.routes.GamesRoutes
+import services.models.api.ChatCompletionClient
 object LocalHttpServer:
-  def resource(databaseUrl: String,port: Int)(using IORuntime): Resource[IO,HttpServer] =
+  def resource(databaseUrl: String,port: Int,modelClient: ChatCompletionClient = ChatCompletionClient.unconfigured)(using IORuntime): Resource[IO,HttpServer] =
     Resource.make(IO.blocking {
       val server = HttpServer.create(new InetSocketAddress("127.0.0.1",port),32)
       val executor = Executors.newFixedThreadPool(8)
       try
         server.setExecutor(executor)
-        server.createContext("/api/",APIMessageRouter.handler(databaseUrl,AccountsRoutes.apiMessages ++ GamesRoutes.apiMessages,server.getAddress.getPort))
+        server.createContext("/api/",APIMessageRouter.handler(databaseUrl,AccountsRoutes.apiMessages ++ GamesRoutes.apiMessages ++ GamesRoutes.interviewMessages(modelClient),server.getAddress.getPort))
         server.start()
         (server,executor)
       catch

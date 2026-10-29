@@ -20,7 +20,7 @@ final case class OpenStudyMessage(userId: UserId,sessionId: SessionId) extends A
       existing <- SessionTable.lock(connection,sessionId)
       _ <- existing match
         case Some(row) => MutationSupport.owned(Some(row),userId).flatMap(saved =>
-          IO.raiseUnless(saved.caseId == StudyProjection.caseId && saved.caseRevision == StudyProjection.revision)(GameError(ErrorCode.ConflictingContent,"会话绑定了不同案件。")))
+          IO.raiseUnless(StudyProjection.supports(saved.caseId,saved.caseRevision))(GameError(ErrorCode.ConflictingContent,"会话绑定了不支持的案件或场景版本，请保留原存档。")))
         case None => StartGameMessage(userId,sessionId,StudyProjection.caseId,StudyProjection.revision).plan(connection).void
       result <- GetInvestigationSnapshotMessage(userId,sessionId).plan(connection)
     yield result

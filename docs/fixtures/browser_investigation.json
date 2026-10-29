@@ -1,7 +1,7 @@
 {
-  "id": "fixture_drawer_web",
+  "id": "vicarage_study",
   "revision": {
-    "value": 2
+    "value": 4
   },
   "schemaVersion": {
     "value": 2
@@ -9,11 +9,11 @@
   "reducerVersion": {
     "value": "fixture-v1"
   },
-  "title": "书房里的一封信",
+  "title": "牧师寓所谋杀案 · 书房初查",
   "initialStoryTime": {
     "seconds": 0
   },
-  "timeOriginLabel": "调查开始",
+  "timeOriginLabel": "周五上午初查",
   "calendarOrigin": null,
   "assets": [
     {
@@ -26,10 +26,10 @@
     "places": [
       {
         "id": "study",
-        "name": "书房",
+        "name": "牧师寓所 · 书房",
         "parent": null,
         "geography": null,
-        "background": "浏览器调查闭环示例",
+        "background": "周五警方初勘后的书房。遗体已送交医生检查，初查意见可向警方询问。窗户在本局初始时关闭，可在许可范围内打开或关上。",
         "walkable": [
           {
             "min": {
@@ -54,28 +54,63 @@
         "name": "书桌",
         "initialPlace": "study",
         "owner": null,
-        "background": "普通书桌"
+        "background": "命案现场，禁止擅自移动物证"
       },
       {
         "id": "drawer",
         "name": "抽屉",
         "initialPlace": "study",
         "owner": null,
-        "background": "书桌抽屉，初始关闭"
+        "background": "可逆开关，仅供普通观察，不放旧 Demo 信件"
       },
       {
-        "id": "letter",
-        "name": "信件",
+        "id": "clock",
+        "name": "座钟",
         "initialPlace": "study",
         "owner": null,
-        "background": "放在抽屉内"
+        "background": "保留在现场供获准检查，发现时状态以初勘记录为准"
+      },
+      {
+        "id": "paper",
+        "name": "纸张原位置",
+        "initialPlace": "study",
+        "owner": null,
+        "background": "原件由警方保管，此处仅标记原位置"
+      },
+      {
+        "id": "telephone",
+        "name": "电话",
+        "initialPlace": "study",
+        "owner": null,
+        "background": "牧师接到召唤电话的设备"
+      },
+      {
+        "id": "window",
+        "name": "窗户",
+        "initialPlace": "study",
+        "owner": null,
+        "background": "书房陈设；本局现场交互对象"
+      },
+      {
+        "id": "lamp",
+        "name": "台灯",
+        "initialPlace": "study",
+        "owner": null,
+        "background": "书房陈设；本局现场交互对象"
+      },
+      {
+        "id": "bookshelf",
+        "name": "书架",
+        "initialPlace": "study",
+        "owner": null,
+        "background": "书房陈设；本局现场交互对象"
       }
     ],
     "relationships": [],
     "scenes": []
   },
   "truth": {
-    "background": "调查示例，无凶案与人物",
+    "background": "本文件只承载周五初查的固定披露材料，不包含全案真相或完整人物模型。",
     "persons": [],
     "privateContexts": [],
     "motives": [],
@@ -83,12 +118,12 @@
     "incidents": [],
     "topics": [
       {
-        "id": "topic_letter_text",
+        "id": "topic_desk",
         "subject": {
-          "kind": "Entity",
-          "id": "letter"
+          "kind": "Place",
+          "id": "study"
         },
-        "question": "信件上的内容是什么？",
+        "question": "固定的初查材料；陈述及推论的归属见正文，不等同于完整案件真相。",
         "when": {
           "earliest": {
             "seconds": 0
@@ -97,36 +132,461 @@
             "seconds": 0
           }
         },
-        "boundary": "本封信的正文"
+        "boundary": "周五初查固定披露材料"
+      },
+      {
+        "id": "topic_clock",
+        "subject": {
+          "kind": "Place",
+          "id": "study"
+        },
+        "question": "固定的初查材料；陈述及推论的归属见正文，不等同于完整案件真相。",
+        "when": {
+          "earliest": {
+            "seconds": 0
+          },
+          "latest": {
+            "seconds": 0
+          }
+        },
+        "boundary": "周五初查固定披露材料"
+      },
+      {
+        "id": "topic_paper",
+        "subject": {
+          "kind": "Place",
+          "id": "study"
+        },
+        "question": "固定的初查材料；陈述及推论的归属见正文，不等同于完整案件真相。",
+        "when": {
+          "earliest": {
+            "seconds": 0
+          },
+          "latest": {
+            "seconds": 0
+          }
+        },
+        "boundary": "周五初查固定披露材料"
+      },
+      {
+        "id": "topic_habit",
+        "subject": {
+          "kind": "Place",
+          "id": "study"
+        },
+        "question": "固定的初查材料；陈述及推论的归属见正文，不等同于完整案件真相。",
+        "when": {
+          "earliest": {
+            "seconds": 0
+          },
+          "latest": {
+            "seconds": 0
+          }
+        },
+        "boundary": "周五初查固定披露材料"
+      },
+      {
+        "id": "topic_discovery",
+        "subject": {
+          "kind": "Place",
+          "id": "study"
+        },
+        "question": "固定的初查材料；陈述及推论的归属见正文，不等同于完整案件真相。",
+        "when": {
+          "earliest": {
+            "seconds": 0
+          },
+          "latest": {
+            "seconds": 0
+          }
+        },
+        "boundary": "周五初查固定披露材料"
+      },
+      {
+        "id": "topic_call",
+        "subject": {
+          "kind": "Place",
+          "id": "study"
+        },
+        "question": "固定的初查材料；陈述及推论的归属见正文，不等同于完整案件真相。",
+        "when": {
+          "earliest": {
+            "seconds": 0
+          },
+          "latest": {
+            "seconds": 0
+          }
+        },
+        "boundary": "周五初查固定披露材料"
+      },
+      {
+        "id": "topic_arrival",
+        "subject": {
+          "kind": "Place",
+          "id": "study"
+        },
+        "question": "固定的初查材料；陈述及推论的归属见正文，不等同于完整案件真相。",
+        "when": {
+          "earliest": {
+            "seconds": 0
+          },
+          "latest": {
+            "seconds": 0
+          }
+        },
+        "boundary": "周五初查固定披露材料"
+      },
+      {
+        "id": "topic_arrival_basis",
+        "subject": {
+          "kind": "Place",
+          "id": "study"
+        },
+        "question": "固定的初查材料；陈述及推论的归属见正文，不等同于完整案件真相。",
+        "when": {
+          "earliest": {
+            "seconds": 0
+          },
+          "latest": {
+            "seconds": 0
+          }
+        },
+        "boundary": "周五初查固定披露材料"
+      },
+      {
+        "id": "topic_clock_presented",
+        "subject": {
+          "kind": "Place",
+          "id": "study"
+        },
+        "question": "固定的初查材料；陈述及推论的归属见正文，不等同于完整案件真相。",
+        "when": {
+          "earliest": {
+            "seconds": 0
+          },
+          "latest": {
+            "seconds": 0
+          }
+        },
+        "boundary": "周五初查固定披露材料"
+      },
+      {
+        "id": "topic_arrival_checked",
+        "subject": {
+          "kind": "Place",
+          "id": "study"
+        },
+        "question": "固定的初查材料；陈述及推论的归属见正文，不等同于完整案件真相。",
+        "when": {
+          "earliest": {
+            "seconds": 0
+          },
+          "latest": {
+            "seconds": 0
+          }
+        },
+        "boundary": "周五初查固定披露材料"
+      },
+      {
+        "id": "topic_time_contradiction",
+        "subject": {
+          "kind": "Place",
+          "id": "study"
+        },
+        "question": "固定的初查材料；陈述及推论的归属见正文，不等同于完整案件真相。",
+        "when": {
+          "earliest": {
+            "seconds": 0
+          },
+          "latest": {
+            "seconds": 0
+          }
+        },
+        "boundary": "周五初查固定披露材料"
+      },
+      {
+        "id": "topic_medical_cause",
+        "subject": {
+          "kind": "Place",
+          "id": "study"
+        },
+        "question": "固定的初查材料；陈述及推论的归属见正文，不等同于完整案件真相。",
+        "when": {
+          "earliest": {
+            "seconds": 0
+          },
+          "latest": {
+            "seconds": 0
+          }
+        },
+        "boundary": "周五初查固定披露材料"
+      },
+      {
+        "id": "topic_medical_time",
+        "subject": {
+          "kind": "Place",
+          "id": "study"
+        },
+        "question": "固定的初查材料；陈述及推论的归属见正文，不等同于完整案件真相。",
+        "when": {
+          "earliest": {
+            "seconds": 0
+          },
+          "latest": {
+            "seconds": 0
+          }
+        },
+        "boundary": "周五初查固定披露材料"
+      },
+      {
+        "id": "topic_police_scene",
+        "subject": {
+          "kind": "Place",
+          "id": "study"
+        },
+        "question": "固定的初查材料；陈述及推论的归属见正文，不等同于完整案件真相。",
+        "when": {
+          "earliest": {
+            "seconds": 0
+          },
+          "latest": {
+            "seconds": 0
+          }
+        },
+        "boundary": "周五初查固定披露材料"
+      },
+      {
+        "id": "topic_police_surrender",
+        "subject": {
+          "kind": "Place",
+          "id": "study"
+        },
+        "question": "固定的初查材料；陈述及推论的归属见正文，不等同于完整案件真相。",
+        "when": {
+          "earliest": {
+            "seconds": 0
+          },
+          "latest": {
+            "seconds": 0
+          }
+        },
+        "boundary": "周五初查固定披露材料"
       }
     ],
     "facts": [
       {
-        "id": "fact_letter_text",
-        "topic": "topic_letter_text",
+        "id": "fact_desk",
         "value": {
           "kind": "AuthoredDetail",
-          "detail": "信上写着：今晚九点见。"
+          "detail": "【周四初勘记录】上校被发现伏在书桌前，头部有枪伤，桌上和地面有血迹。桌上有一座倒下的座钟和一张未写完的纸。初勘时未发现枪。"
         },
         "requiresOccurred": [],
-        "explanation": "阅读固定信件所得",
+        "explanation": "固定的初查材料；陈述及推论的归属见正文，不等同于完整案件真相。",
         "sources": [
-          "source_fixture"
-        ]
+          "source_ch5"
+        ],
+        "topic": "topic_desk"
+      },
+      {
+        "id": "fact_clock",
+        "value": {
+          "kind": "AuthoredDetail",
+          "detail": "座钟已经扶正，指针停在18:22。初勘记录上写着：发现时钟倒在书桌上，停在同一读数。"
+        },
+        "requiresOccurred": [],
+        "explanation": "固定的初查材料；陈述及推论的归属见正文，不等同于完整案件真相。",
+        "sources": [
+          "source_ch5"
+        ],
+        "topic": "topic_clock"
+      },
+      {
+        "id": "fact_paper",
+        "value": {
+          "kind": "AuthoredDetail",
+          "detail": "【原件由警方保管】\n纸张上方标着18:20。\n“亲爱的克莱门特：抱歉，我不能再等下去了，我必须……”\n后面的字迹拖成了一道潦草的笔痕。"
+        },
+        "requiresOccurred": [],
+        "explanation": "固定的初查材料；陈述及推论的归属见正文，不等同于完整案件真相。",
+        "sources": [
+          "source_ch5"
+        ],
+        "topic": "topic_paper"
+      },
+      {
+        "id": "fact_habit",
+        "value": {
+          "kind": "AuthoredDetail",
+          "detail": "克莱门特：“那座钟我一直拨快一刻钟。昨晚我想跟斯莱克说这件事，可他根本不让我插话。”"
+        },
+        "requiresOccurred": [],
+        "explanation": "固定的初查材料；陈述及推论的归属见正文，不等同于完整案件真相。",
+        "sources": [
+          "source_ch5"
+        ],
+        "topic": "topic_habit"
+      },
+      {
+        "id": "fact_discovery",
+        "value": {
+          "kind": "AuthoredDetail",
+          "detail": "克莱门特：“我回来时快七点了，具体几分我记不清了。在门外我遇见雷丁，他脸色很难看。进了书房，我才看见上校。我让玛丽去请海多克医生，他检查过以后报了警。”"
+        },
+        "requiresOccurred": [],
+        "explanation": "固定的初查材料；陈述及推论的归属见正文，不等同于完整案件真相。",
+        "sources": [
+          "source_ch5"
+        ],
+        "topic": "topic_discovery"
+      },
+      {
+        "id": "fact_call",
+        "value": {
+          "kind": "AuthoredDetail",
+          "detail": "克莱门特：“有人打电话，说病人快不行了，要我赶紧过去。可我到那里一看，病人比前几天还好些。他太太说，她根本没给我打过电话。”"
+        },
+        "requiresOccurred": [],
+        "explanation": "固定的初查材料；陈述及推论的归属见正文，不等同于完整案件真相。",
+        "sources": [
+          "source_ch5"
+        ],
+        "topic": "topic_call"
+      },
+      {
+        "id": "fact_arrival",
+        "value": {
+          "kind": "AuthoredDetail",
+          "detail": "玛丽：“六点一刻。我把上校带进书房，之后就回厨房忙自己的活了。”"
+        },
+        "requiresOccurred": [],
+        "explanation": "固定的初查材料；陈述及推论的归属见正文，不等同于完整案件真相。",
+        "sources": [
+          "source_ch5"
+        ],
+        "topic": "topic_arrival"
+      },
+      {
+        "id": "fact_arrival_basis",
+        "value": {
+          "kind": "AuthoredDetail",
+          "detail": "玛丽：“我没看书房的钟。我刚把他带进去，就听见教堂报时了。”"
+        },
+        "requiresOccurred": [],
+        "explanation": "固定的初查材料；陈述及推论的归属见正文，不等同于完整案件真相。",
+        "sources": [
+          "source_ch18"
+        ],
+        "topic": "topic_arrival_basis"
+      },
+      {
+        "id": "fact_clock_presented",
+        "value": {
+          "kind": "AuthoredDetail",
+          "detail": "克莱门特：“六点二十二？嗯，我平时会把它拨快一刻钟。我一直这么用它。”"
+        },
+        "requiresOccurred": [],
+        "explanation": "固定的初查材料；陈述及推论的归属见正文，不等同于完整案件真相。",
+        "sources": [
+          "source_ch5"
+        ],
+        "topic": "topic_clock_presented"
+      },
+      {
+        "id": "fact_arrival_checked",
+        "value": {
+          "kind": "AuthoredDetail",
+          "detail": "玛丽：“纸上是六点二十？我给上校开门的时候没见到这张纸。我说的六点一刻，是听教堂的钟，不是看书房那座钟。”"
+        },
+        "requiresOccurred": [],
+        "explanation": "固定的初查材料；陈述及推论的归属见正文，不等同于完整案件真相。",
+        "sources": [
+          "source_ch18"
+        ],
+        "topic": "topic_arrival_checked"
+      },
+      {
+        "id": "fact_time_contradiction",
+        "value": {
+          "kind": "AuthoredDetail",
+          "detail": "调查笔记：按座钟平时的偏差换算，18:22对应18:07；玛丽说她在约18:15把上校带进书房，依据是教堂报时。我认为这两处时间对不上。"
+        },
+        "requiresOccurred": [],
+        "explanation": "固定的初查材料；陈述及推论的归属见正文，不等同于完整案件真相。",
+        "sources": [
+          "source_ch5"
+        ],
+        "topic": "topic_time_contradiction"
+      },
+      {
+        "id": "fact_medical_cause",
+        "value": {
+          "kind": "AuthoredDetail",
+          "detail": "海多克医生的现场初步意见：上校头部遭近距离枪击，导致死亡。医生查看了伤口的位置，认为不像自杀；现场没有发现枪。"
+        },
+        "requiresOccurred": [],
+        "explanation": "固定的初查材料；陈述及推论的归属见正文，不等同于完整案件真相。",
+        "sources": [
+          "source_ch5"
+        ],
+        "topic": "topic_medical_cause"
+      },
+      {
+        "id": "fact_medical_time",
+        "value": {
+          "kind": "AuthoredDetail",
+          "detail": "海多克医生在周四到场检查时说：“我看人已经死了半小时左右。”这是他当时的初步估计；记录没有写下精确的检查时刻。"
+        },
+        "requiresOccurred": [],
+        "explanation": "固定的初查材料；陈述及推论的归属见正文，不等同于完整案件真相。",
+        "sources": [
+          "source_ch5"
+        ],
+        "topic": "topic_medical_time"
+      },
+      {
+        "id": "fact_police_scene",
+        "value": {
+          "kind": "AuthoredDetail",
+          "detail": "梅尔切特：“遗体已经送交医生检查。你看到的是初勘后保留的书房；昨天发现时的姿态、座钟和纸张，记在现场记录里。发现什么新情况，可以告诉我。”"
+        },
+        "requiresOccurred": [],
+        "explanation": "固定的初查材料；陈述及推论的归属见正文，不等同于完整案件真相。",
+        "sources": [
+          "source_game_scene"
+        ],
+        "topic": "topic_police_scene"
+      },
+      {
+        "id": "fact_police_surrender",
+        "value": {
+          "kind": "AuthoredDetail",
+          "detail": "梅尔切特：“雷丁昨晚十点左右来了，交出一支手枪，说是他杀了上校。他说来找牧师时遇到上校，两人起了争执，他就开了枪。争执的缘由，他没有说清楚。”"
+        },
+        "requiresOccurred": [],
+        "explanation": "固定的初查材料；陈述及推论的归属见正文，不等同于完整案件真相。",
+        "sources": [
+          "source_ch7"
+        ],
+        "topic": "topic_police_surrender"
       }
     ],
     "claims": [],
     "sources": [
       {
-        "id": "source_fixture",
+        "id": "source_ch5",
         "kind": "Original",
-        "reference": "本项目最小测试数据"
+        "reference": "https://en.wikisource.org/wiki/The_Murder_at_the_Vicarage/Chapter_5"
+      },
+      {
+        "id": "source_ch18",
+        "kind": "Original",
+        "reference": "https://en.wikisource.org/wiki/The_Murder_at_the_Vicarage/Chapter_18"
       }
     ]
   },
   "publicInfo": {
     "background": {
-      "introduction": "检查书桌里的信件。",
+      "introduction": "周五上午，你来到圣玛丽米德的牧师寓所。普罗瑟罗上校昨天死在书房，画家雷丁已向警方自首。遗体已送交医生检查，书房保留供继续勘查。牧师、女佣玛丽和负责联系的警方人员可以提供情况。",
       "commonKnowledge": [],
       "persons": [],
       "openingReports": [],
@@ -187,56 +647,6 @@
         "initiallyVisible": true
       },
       {
-        "id": "node_contents",
-        "asset": "model_placeholder",
-        "transform": {
-          "position": {
-            "x": 0,
-            "y": 0,
-            "z": 0
-          },
-          "rotation": {
-            "xRad": 0,
-            "yRad": 0,
-            "zRad": 0
-          },
-          "scale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
-          }
-        },
-        "parent": "node_drawer",
-        "represents": null,
-        "place": "study",
-        "initiallyVisible": false
-      },
-      {
-        "id": "node_letter",
-        "asset": "model_placeholder",
-        "transform": {
-          "position": {
-            "x": 0,
-            "y": -0.017,
-            "z": -0.13
-          },
-          "rotation": {
-            "xRad": 0,
-            "yRad": 0,
-            "zRad": 0
-          },
-          "scale": {
-            "x": 1,
-            "y": 1,
-            "z": 1
-          }
-        },
-        "parent": "node_contents",
-        "represents": "letter",
-        "place": "study",
-        "initiallyVisible": true
-      },
-      {
         "id": "node_lamp",
         "asset": "model_placeholder",
         "transform": {
@@ -257,7 +667,7 @@
           }
         },
         "parent": null,
-        "represents": null,
+        "represents": "lamp",
         "place": "study",
         "initiallyVisible": true
       },
@@ -282,7 +692,7 @@
           }
         },
         "parent": null,
-        "represents": null,
+        "represents": "window",
         "place": "study",
         "initiallyVisible": true
       },
@@ -307,7 +717,82 @@
           }
         },
         "parent": null,
-        "represents": null,
+        "represents": "bookshelf",
+        "place": "study",
+        "initiallyVisible": true
+      },
+      {
+        "id": "node_clock",
+        "asset": "model_placeholder",
+        "transform": {
+          "position": {
+            "x": 0.45,
+            "y": 1.5,
+            "z": -0.32
+          },
+          "rotation": {
+            "xRad": 0,
+            "yRad": 0,
+            "zRad": 0
+          },
+          "scale": {
+            "x": 1,
+            "y": 1,
+            "z": 1
+          }
+        },
+        "parent": null,
+        "represents": "clock",
+        "place": "study",
+        "initiallyVisible": true
+      },
+      {
+        "id": "node_paper",
+        "asset": "model_placeholder",
+        "transform": {
+          "position": {
+            "x": 0,
+            "y": 1.27,
+            "z": 0.12
+          },
+          "rotation": {
+            "xRad": 0,
+            "yRad": 0,
+            "zRad": 0
+          },
+          "scale": {
+            "x": 1,
+            "y": 1,
+            "z": 1
+          }
+        },
+        "parent": null,
+        "represents": "paper",
+        "place": "study",
+        "initiallyVisible": true
+      },
+      {
+        "id": "node_telephone",
+        "asset": "model_placeholder",
+        "transform": {
+          "position": {
+            "x": -0.65,
+            "y": 1.32,
+            "z": -0.3
+          },
+          "rotation": {
+            "xRad": 0,
+            "yRad": 0,
+            "zRad": 0
+          },
+          "scale": {
+            "x": 1,
+            "y": 1,
+            "z": 1
+          }
+        },
+        "parent": null,
+        "represents": "telephone",
         "place": "study",
         "initiallyVisible": true
       }
@@ -315,10 +800,70 @@
     "cues": [],
     "points": [
       {
+        "id": "point_desk",
+        "subject": {
+          "kind": "Entity",
+          "id": "desk"
+        },
+        "label": "书桌与初勘记录",
+        "entry": {
+          "kind": "OnNode",
+          "node": "node_desk",
+          "localPoint": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "radiusMeters": 4
+        },
+        "topics": [],
+        "fallbackFinding": null
+      },
+      {
+        "id": "point_clock",
+        "subject": {
+          "kind": "Entity",
+          "id": "desk"
+        },
+        "label": "座钟",
+        "entry": {
+          "kind": "OnNode",
+          "node": "node_clock",
+          "localPoint": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "radiusMeters": 4
+        },
+        "topics": [],
+        "fallbackFinding": null
+      },
+      {
+        "id": "point_paper",
+        "subject": {
+          "kind": "Entity",
+          "id": "desk"
+        },
+        "label": "纸张原位置",
+        "entry": {
+          "kind": "OnNode",
+          "node": "node_paper",
+          "localPoint": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "radiusMeters": 4
+        },
+        "topics": [],
+        "fallbackFinding": null
+      },
+      {
         "id": "point_drawer",
         "subject": {
           "kind": "Entity",
-          "id": "drawer"
+          "id": "desk"
         },
         "label": "书桌抽屉",
         "entry": {
@@ -329,31 +874,109 @@
             "y": 0,
             "z": 0
           },
-          "radiusMeters": 2
+          "radiusMeters": 4
         },
         "topics": [],
         "fallbackFinding": null
       },
       {
-        "id": "point_letter",
+        "id": "point_clement",
         "subject": {
-          "kind": "Entity",
-          "id": "letter"
+          "kind": "Place",
+          "id": "study"
         },
-        "label": "抽屉中的信",
+        "label": "克莱门特牧师",
         "entry": {
           "kind": "OnNode",
-          "node": "node_letter",
+          "node": "node_desk",
           "localPoint": {
             "x": 0,
             "y": 0,
             "z": 0
           },
-          "radiusMeters": 2
+          "radiusMeters": 4
         },
-        "topics": [
-          "topic_letter_text"
-        ],
+        "topics": [],
+        "fallbackFinding": null
+      },
+      {
+        "id": "point_mary",
+        "subject": {
+          "kind": "Place",
+          "id": "study"
+        },
+        "label": "玛丽",
+        "entry": {
+          "kind": "OnNode",
+          "node": "node_desk",
+          "localPoint": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "radiusMeters": 4
+        },
+        "topics": [],
+        "fallbackFinding": null
+      },
+      {
+        "id": "point_compare",
+        "subject": {
+          "kind": "Place",
+          "id": "study"
+        },
+        "label": "时间核对",
+        "entry": {
+          "kind": "OnNode",
+          "node": "node_desk",
+          "localPoint": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "radiusMeters": 4
+        },
+        "topics": [],
+        "fallbackFinding": null
+      },
+      {
+        "id": "point_window",
+        "subject": {
+          "kind": "Entity",
+          "id": "window"
+        },
+        "label": "窗户",
+        "entry": {
+          "kind": "OnNode",
+          "node": "node_window",
+          "localPoint": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "radiusMeters": 4
+        },
+        "topics": [],
+        "fallbackFinding": null
+      },
+      {
+        "id": "point_police",
+        "subject": {
+          "kind": "Place",
+          "id": "study"
+        },
+        "label": "警方联络 · 梅尔切特",
+        "entry": {
+          "kind": "OnNode",
+          "node": "node_desk",
+          "localPoint": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "radiusMeters": 4
+        },
+        "topics": [],
         "fallbackFinding": null
       }
     ],
@@ -365,37 +988,306 @@
       {
         "node": "node_desk",
         "label": "书桌",
-        "description": "一张木制书桌，右侧有抽屉，桌面上摆着台灯和一本书。"
+        "description": "一张木制书桌，右侧装有抽屉，桌面上放着座钟、台灯和电话。"
       },
       {
         "node": "node_lamp",
         "label": "台灯",
-        "description": "桌面上放着一盏金属灯座、锥形灯罩的台灯。"
+        "description": "金属灯座，锥形灯罩，放在书桌左侧。"
       },
       {
         "node": "node_window",
         "label": "窗户",
-        "description": "墙上是一扇分格窗，可以观察窗框和窗面。"
+        "description": "一扇分格窗，窗外是花园。"
       },
       {
         "node": "node_bookshelf",
         "label": "书架",
-        "description": "一座木制书架，搁板上摆着几本不同颜色的书。"
+        "description": "木制书架，几层搁板上放着书。"
+      },
+      {
+        "node": "node_clock",
+        "label": "座钟",
+        "description": "木壳座钟，摆在桌面上。"
+      },
+      {
+        "node": "node_paper",
+        "label": "纸张原位置",
+        "description": "警方留下的纸张位置标记，旁边附有原件摘录。"
+      },
+      {
+        "node": "node_telephone",
+        "label": "电话",
+        "description": "旧式电话，听筒搁在机座上。"
+      }
+    ],
+    "objects": [
+      {
+        "node": "node_desk",
+        "entity": "desk",
+        "label": "书桌",
+        "point": "point_desk",
+        "readRoute": "route_desk"
+      },
+      {
+        "node": "node_drawer",
+        "entity": "drawer",
+        "label": "抽屉",
+        "point": "point_drawer",
+        "readRoute": null
+      },
+      {
+        "node": "node_clock",
+        "entity": "clock",
+        "label": "座钟",
+        "point": "point_clock",
+        "readRoute": "route_clock"
+      },
+      {
+        "node": "node_paper",
+        "entity": "paper",
+        "label": "纸张原位置",
+        "point": "point_paper",
+        "readRoute": "route_paper"
+      },
+      {
+        "node": "node_window",
+        "entity": "window",
+        "label": "窗户",
+        "point": "point_window",
+        "readRoute": null
+      },
+      {
+        "node": "node_lamp",
+        "entity": "lamp",
+        "label": "台灯",
+        "point": null,
+        "readRoute": null
+      },
+      {
+        "node": "node_bookshelf",
+        "entity": "bookshelf",
+        "label": "书架",
+        "point": null,
+        "readRoute": null
+      },
+      {
+        "node": "node_telephone",
+        "entity": "telephone",
+        "label": "电话",
+        "point": null,
+        "readRoute": null
       }
     ]
   },
   "investigation": {
     "clues": [
       {
-        "id": "clue_letter",
-        "title": "信件正文",
-        "finding": "信上写着：今晚九点见。",
+        "id": "clue_desk",
+        "title": "书桌初勘记录",
+        "finding": "【周四初勘记录】上校被发现伏在书桌前，头部有枪伤，桌上和地面有血迹。桌上有一座倒下的座钟和一张未写完的纸。初勘时未发现枪。",
         "facts": [
-          "fact_letter_text"
+          "fact_desk"
         ],
         "relatedClaims": [],
         "result": {
-          "text": "信上写着：今晚九点见。",
+          "text": "【周四初勘记录】上校被发现伏在书桌前，头部有枪伤，桌上和地面有血迹。桌上有一座倒下的座钟和一张未写完的纸。初勘时未发现枪。",
+          "media": []
+        },
+        "suggests": []
+      },
+      {
+        "id": "clue_clock",
+        "title": "座钟读数",
+        "finding": "座钟已经扶正，指针停在18:22。初勘记录上写着：发现时钟倒在书桌上，停在同一读数。",
+        "facts": [
+          "fact_clock"
+        ],
+        "relatedClaims": [],
+        "result": {
+          "text": "座钟已经扶正，指针停在18:22。初勘记录上写着：发现时钟倒在书桌上，停在同一读数。",
+          "media": []
+        },
+        "suggests": []
+      },
+      {
+        "id": "clue_paper",
+        "title": "纸张摘录",
+        "finding": "【原件由警方保管】\n纸张上方标着18:20。\n“亲爱的克莱门特：抱歉，我不能再等下去了，我必须……”\n后面的字迹拖成了一道潦草的笔痕。",
+        "facts": [
+          "fact_paper"
+        ],
+        "relatedClaims": [],
+        "result": {
+          "text": "【原件由警方保管】\n纸张上方标着18:20。\n“亲爱的克莱门特：抱歉，我不能再等下去了，我必须……”\n后面的字迹拖成了一道潦草的笔痕。",
+          "media": []
+        },
+        "suggests": []
+      },
+      {
+        "id": "clue_habit",
+        "title": "牧师谈座钟",
+        "finding": "克莱门特：“那座钟我一直拨快一刻钟。昨晚我想跟斯莱克说这件事，可他根本不让我插话。”",
+        "facts": [
+          "fact_habit"
+        ],
+        "relatedClaims": [],
+        "result": {
+          "text": "克莱门特：“那座钟我一直拨快一刻钟。昨晚我想跟斯莱克说这件事，可他根本不让我插话。”",
+          "media": []
+        },
+        "suggests": []
+      },
+      {
+        "id": "clue_discovery",
+        "title": "牧师的归来经过",
+        "finding": "克莱门特：“我回来时快七点了，具体几分我记不清了。在门外我遇见雷丁，他脸色很难看。进了书房，我才看见上校。我让玛丽去请海多克医生，他检查过以后报了警。”",
+        "facts": [
+          "fact_discovery"
+        ],
+        "relatedClaims": [],
+        "result": {
+          "text": "克莱门特：“我回来时快七点了，具体几分我记不清了。在门外我遇见雷丁，他脸色很难看。进了书房，我才看见上校。我让玛丽去请海多克医生，他检查过以后报了警。”",
+          "media": []
+        },
+        "suggests": []
+      },
+      {
+        "id": "clue_call",
+        "title": "牧师接到的电话",
+        "finding": "克莱门特：“有人打电话，说病人快不行了，要我赶紧过去。可我到那里一看，病人比前几天还好些。他太太说，她根本没给我打过电话。”",
+        "facts": [
+          "fact_call"
+        ],
+        "relatedClaims": [],
+        "result": {
+          "text": "克莱门特：“有人打电话，说病人快不行了，要我赶紧过去。可我到那里一看，病人比前几天还好些。他太太说，她根本没给我打过电话。”",
+          "media": []
+        },
+        "suggests": []
+      },
+      {
+        "id": "clue_arrival",
+        "title": "玛丽谈上校来访",
+        "finding": "玛丽：“六点一刻。我把上校带进书房，之后就回厨房忙自己的活了。”",
+        "facts": [
+          "fact_arrival"
+        ],
+        "relatedClaims": [],
+        "result": {
+          "text": "玛丽：“六点一刻。我把上校带进书房，之后就回厨房忙自己的活了。”",
+          "media": []
+        },
+        "suggests": []
+      },
+      {
+        "id": "clue_arrival_basis",
+        "title": "玛丽的时间依据",
+        "finding": "玛丽：“我没看书房的钟。我刚把他带进去，就听见教堂报时了。”",
+        "facts": [
+          "fact_arrival_basis"
+        ],
+        "relatedClaims": [],
+        "result": {
+          "text": "玛丽：“我没看书房的钟。我刚把他带进去，就听见教堂报时了。”",
+          "media": []
+        },
+        "suggests": []
+      },
+      {
+        "id": "clue_clock_presented",
+        "title": "向牧师出示座钟记录",
+        "finding": "克莱门特：“六点二十二？嗯，我平时会把它拨快一刻钟。我一直这么用它。”",
+        "facts": [
+          "fact_clock_presented"
+        ],
+        "relatedClaims": [],
+        "result": {
+          "text": "克莱门特：“六点二十二？嗯，我平时会把它拨快一刻钟。我一直这么用它。”",
+          "media": []
+        },
+        "suggests": []
+      },
+      {
+        "id": "clue_arrival_checked",
+        "title": "向玛丽出示纸张摘录",
+        "finding": "玛丽：“纸上是六点二十？我给上校开门的时候没见到这张纸。我说的六点一刻，是听教堂的钟，不是看书房那座钟。”",
+        "facts": [
+          "fact_arrival_checked"
+        ],
+        "relatedClaims": [],
+        "result": {
+          "text": "玛丽：“纸上是六点二十？我给上校开门的时候没见到这张纸。我说的六点一刻，是听教堂的钟，不是看书房那座钟。”",
+          "media": []
+        },
+        "suggests": []
+      },
+      {
+        "id": "clue_time_contradiction",
+        "title": "我的时间核对",
+        "finding": "调查笔记：按座钟平时的偏差换算，18:22对应18:07；玛丽说她在约18:15把上校带进书房，依据是教堂报时。我认为这两处时间对不上。",
+        "facts": [
+          "fact_time_contradiction"
+        ],
+        "relatedClaims": [],
+        "result": {
+          "text": "调查笔记：按座钟平时的偏差换算，18:22对应18:07；玛丽说她在约18:15把上校带进书房，依据是教堂报时。我认为这两处时间对不上。",
+          "media": []
+        },
+        "suggests": []
+      },
+      {
+        "id": "clue_medical_cause",
+        "title": "医生初查：死因",
+        "finding": "海多克医生的现场初步意见：上校头部遭近距离枪击，导致死亡。医生查看了伤口的位置，认为不像自杀；现场没有发现枪。",
+        "facts": [
+          "fact_medical_cause"
+        ],
+        "relatedClaims": [],
+        "result": {
+          "text": "海多克医生的现场初步意见：上校头部遭近距离枪击，导致死亡。医生查看了伤口的位置，认为不像自杀；现场没有发现枪。",
+          "media": []
+        },
+        "suggests": []
+      },
+      {
+        "id": "clue_medical_time",
+        "title": "医生初查：死亡时间",
+        "finding": "海多克医生在周四到场检查时说：“我看人已经死了半小时左右。”这是他当时的初步估计；记录没有写下精确的检查时刻。",
+        "facts": [
+          "fact_medical_time"
+        ],
+        "relatedClaims": [],
+        "result": {
+          "text": "海多克医生在周四到场检查时说：“我看人已经死了半小时左右。”这是他当时的初步估计；记录没有写下精确的检查时刻。",
+          "media": []
+        },
+        "suggests": []
+      },
+      {
+        "id": "clue_police_scene",
+        "title": "警方说明：现场保全",
+        "finding": "梅尔切特：“遗体已经送交医生检查。你看到的是初勘后保留的书房；昨天发现时的姿态、座钟和纸张，记在现场记录里。发现什么新情况，可以告诉我。”",
+        "facts": [
+          "fact_police_scene"
+        ],
+        "relatedClaims": [],
+        "result": {
+          "text": "梅尔切特：“遗体已经送交医生检查。你看到的是初勘后保留的书房；昨天发现时的姿态、座钟和纸张，记在现场记录里。发现什么新情况，可以告诉我。”",
+          "media": []
+        },
+        "suggests": []
+      },
+      {
+        "id": "clue_police_surrender",
+        "title": "警方记录：雷丁自首",
+        "finding": "梅尔切特：“雷丁昨晚十点左右来了，交出一支手枪，说是他杀了上校。他说来找牧师时遇到上校，两人起了争执，他就开了枪。争执的缘由，他没有说清楚。”",
+        "facts": [
+          "fact_police_surrender"
+        ],
+        "relatedClaims": [],
+        "result": {
+          "text": "梅尔切特：“雷丁昨晚十点左右来了，交出一支手枪，说是他杀了上校。他说来找牧师时遇到上校，两人起了争执，他就开了枪。争执的缘由，他没有说清楚。”",
           "media": []
         },
         "suggests": []
@@ -403,18 +1295,215 @@
     ],
     "routes": [
       {
-        "id": "route_letter",
-        "point": "point_letter",
+        "id": "route_desk",
+        "point": "point_desk",
         "condition": {
-          "kind": "OperationDone",
-          "operation": "open_drawer"
+          "kind": "Always"
         },
         "method": {
           "kind": "Fixed",
-          "label": "阅读信件"
+          "label": "查看初勘记录"
         },
         "grants": [
-          "clue_letter"
+          "clue_desk"
+        ],
+        "reports": []
+      },
+      {
+        "id": "route_clock",
+        "point": "point_clock",
+        "condition": {
+          "kind": "Always"
+        },
+        "method": {
+          "kind": "Fixed",
+          "label": "查看座钟"
+        },
+        "grants": [
+          "clue_clock"
+        ],
+        "reports": []
+      },
+      {
+        "id": "route_paper",
+        "point": "point_paper",
+        "condition": {
+          "kind": "Always"
+        },
+        "method": {
+          "kind": "Fixed",
+          "label": "阅读摘录"
+        },
+        "grants": [
+          "clue_paper"
+        ],
+        "reports": []
+      },
+      {
+        "id": "route_habit",
+        "point": "point_clement",
+        "condition": {
+          "kind": "Always"
+        },
+        "method": {
+          "kind": "Fixed",
+          "label": "询问：座钟平时准吗？"
+        },
+        "grants": [
+          "clue_habit"
+        ],
+        "reports": []
+      },
+      {
+        "id": "route_discovery",
+        "point": "point_clement",
+        "condition": {
+          "kind": "Always"
+        },
+        "method": {
+          "kind": "Fixed",
+          "label": "询问：你如何发现上校？"
+        },
+        "grants": [
+          "clue_discovery"
+        ],
+        "reports": []
+      },
+      {
+        "id": "route_call",
+        "point": "point_clement",
+        "condition": {
+          "kind": "Always"
+        },
+        "method": {
+          "kind": "Fixed",
+          "label": "询问：你为什么离开寓所？"
+        },
+        "grants": [
+          "clue_call"
+        ],
+        "reports": []
+      },
+      {
+        "id": "route_arrival",
+        "point": "point_mary",
+        "condition": {
+          "kind": "Always"
+        },
+        "method": {
+          "kind": "Fixed",
+          "label": "询问：上校什么时候到？"
+        },
+        "grants": [
+          "clue_arrival"
+        ],
+        "reports": []
+      },
+      {
+        "id": "route_arrival_basis",
+        "point": "point_mary",
+        "condition": {
+          "kind": "CluesKnown",
+          "clues": [
+            "clue_arrival"
+          ]
+        },
+        "method": {
+          "kind": "Fixed",
+          "label": "追问：18:15是看哪一座钟？"
+        },
+        "grants": [
+          "clue_arrival_basis"
+        ],
+        "reports": []
+      },
+      {
+        "id": "route_clock_presented",
+        "point": "point_clement",
+        "condition": {
+          "kind": "CluesKnown",
+          "clues": [
+            "clue_clock",
+            "clue_habit"
+          ]
+        },
+        "method": {
+          "kind": "Fixed",
+          "label": "出示座钟记录"
+        },
+        "grants": [
+          "clue_clock_presented"
+        ],
+        "reports": [],
+        "presentedClues": [
+          "clue_clock"
+        ]
+      },
+      {
+        "id": "route_arrival_checked",
+        "point": "point_mary",
+        "condition": {
+          "kind": "CluesKnown",
+          "clues": [
+            "clue_paper",
+            "clue_arrival_basis"
+          ]
+        },
+        "method": {
+          "kind": "Fixed",
+          "label": "出示纸张摘录"
+        },
+        "grants": [
+          "clue_arrival_checked"
+        ],
+        "reports": [],
+        "presentedClues": [
+          "clue_paper"
+        ]
+      },
+      {
+        "id": "route_police_medical",
+        "point": "point_police",
+        "condition": {
+          "kind": "Always"
+        },
+        "method": {
+          "kind": "Fixed",
+          "label": "询问医生的初查意见"
+        },
+        "grants": [
+          "clue_medical_cause",
+          "clue_medical_time"
+        ],
+        "reports": []
+      },
+      {
+        "id": "route_police_scene",
+        "point": "point_police",
+        "condition": {
+          "kind": "Always"
+        },
+        "method": {
+          "kind": "Fixed",
+          "label": "询问遗体去向与现场保全"
+        },
+        "grants": [
+          "clue_police_scene"
+        ],
+        "reports": []
+      },
+      {
+        "id": "route_police_surrender",
+        "point": "point_police",
+        "condition": {
+          "kind": "Always"
+        },
+        "method": {
+          "kind": "Fixed",
+          "label": "询问雷丁的自首情况"
+        },
+        "grants": [
+          "clue_police_surrender"
         ],
         "reports": []
       }
@@ -436,14 +1525,6 @@
               "kind": "SetOpened",
               "entity": "drawer",
               "opened": true
-            }
-          },
-          {
-            "kind": "World",
-            "effect": {
-              "kind": "SetNodeVisible",
-              "node": "node_contents",
-              "visible": true
             }
           }
         ],
@@ -467,13 +1548,47 @@
               "entity": "drawer",
               "opened": false
             }
-          },
+          }
+        ]
+      },
+      {
+        "id": "open_window",
+        "point": "point_window",
+        "label": "打开窗户",
+        "repeatable": true,
+        "condition": {
+          "kind": "EntityOpen",
+          "entity": "window",
+          "opened": false
+        },
+        "effects": [
           {
             "kind": "World",
             "effect": {
-              "kind": "SetNodeVisible",
-              "node": "node_contents",
-              "visible": false
+              "kind": "SetOpened",
+              "entity": "window",
+              "opened": true
+            }
+          }
+        ]
+      },
+      {
+        "id": "close_window",
+        "point": "point_window",
+        "label": "关上窗户",
+        "repeatable": true,
+        "condition": {
+          "kind": "EntityOpen",
+          "entity": "window",
+          "opened": true
+        },
+        "effects": [
+          {
+            "kind": "World",
+            "effect": {
+              "kind": "SetOpened",
+              "entity": "window",
+              "opened": false
             }
           }
         ]
@@ -497,6 +1612,130 @@
     "scheduled": [],
     "assessment": {
       "kind": "InvestigationOnly"
+    },
+    "stage": {
+      "introduction": "周五上午，你来到圣玛丽米德的牧师寓所。普罗瑟罗上校昨天死在书房，画家雷丁已向警方自首。遗体已送交医生检查，书房保留供继续勘查。牧师、女佣玛丽和负责联系的警方人员可以提供情况。",
+      "objective": "查看书房里的物品，询问相关人员，整理你的调查笔记。",
+      "completionClue": "clue_time_contradiction",
+      "comparison": {
+        "point": "point_compare",
+        "requiredClues": [
+          "clue_desk",
+          "clue_clock",
+          "clue_paper",
+          "clue_habit",
+          "clue_arrival_basis"
+        ],
+        "evidenceClues": [
+          "clue_clock",
+          "clue_habit",
+          "clue_arrival_basis"
+        ],
+        "convertedTimeMinutes": 1087,
+        "assessment": "conflict",
+        "route": "comparison_time"
+      }
+    },
+    "witnesses": [
+      {
+        "id": "clement",
+        "point": "point_clement",
+        "name": "克莱门特牧师",
+        "background": "圣玛丽米德的牧师，寓所主人，也是发现普罗瑟罗尸体的人。",
+        "voice": "温和、克制，讲自己的经历；记不清的具体分钟不硬说。",
+        "answers": [
+          {
+            "id": "clement_identity",
+            "text": "我是这里的牧师，克莱门特。昨天是我回来以后发现了上校。",
+            "routes": [],
+            "requiredEvidence": []
+          },
+          {
+            "id": "clement_habit",
+            "text": "那座钟我一直拨快一刻钟。昨晚我想跟斯莱克说这件事，可他根本不让我插话。",
+            "routes": [
+              "route_habit"
+            ],
+            "requiredEvidence": []
+          },
+          {
+            "id": "clement_discovery",
+            "text": "我回来时快七点了，具体几分我记不清了。在门外我遇见雷丁，他脸色很难看。进了书房，我才看见上校。我让玛丽去请海多克医生，他检查过以后报了警。",
+            "routes": [
+              "route_discovery"
+            ],
+            "requiredEvidence": []
+          },
+          {
+            "id": "clement_call",
+            "text": "有人打电话，说病人快不行了，要我赶紧过去。可我到那里一看，病人比前几天还好些。他太太说，她根本没给我打过电话。",
+            "routes": [
+              "route_call"
+            ],
+            "requiredEvidence": []
+          },
+          {
+            "id": "clement_shown_clock",
+            "text": "六点二十二？嗯，我平时会把它拨快一刻钟。我一直这么用它。",
+            "routes": [
+              "route_habit",
+              "route_clock_presented"
+            ],
+            "requiredEvidence": [
+              "clue_clock"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "mary",
+        "point": "point_mary",
+        "name": "玛丽",
+        "background": "牧师寓所的女佣，接待来客，也负责厨房事务。",
+        "voice": "直截了当，口语化，说自己看到和听到的事。",
+        "answers": [
+          {
+            "id": "mary_identity",
+            "text": "我是这里的女佣玛丽。厨房的活、给客人开门，都是我在忙。",
+            "routes": [],
+            "requiredEvidence": []
+          },
+          {
+            "id": "mary_arrival",
+            "text": "六点一刻。我把上校带进书房，之后就回厨房忙自己的活了。",
+            "routes": [
+              "route_arrival"
+            ],
+            "requiredEvidence": []
+          },
+          {
+            "id": "mary_time_basis",
+            "text": "我没看书房的钟。把上校带进去以后，我就听见教堂报六点一刻了。",
+            "routes": [
+              "route_arrival",
+              "route_arrival_basis"
+            ],
+            "requiredEvidence": []
+          },
+          {
+            "id": "mary_shown_paper",
+            "text": "纸上是六点二十？我给上校开门的时候没见到这张纸。我说的六点一刻，是听教堂的钟，不是看书房那座钟。",
+            "routes": [
+              "route_arrival",
+              "route_arrival_basis",
+              "route_arrival_checked"
+            ],
+            "requiredEvidence": [
+              "clue_paper"
+            ]
+          }
+        ]
+      }
+    ],
+    "police": {
+      "point": "point_police",
+      "name": "梅尔切特",
+      "background": "负责本案的警察局长。可以向他询问警方现有记录和医生的初查意见，也可以出示你已取得的材料。"
     }
   }
 }

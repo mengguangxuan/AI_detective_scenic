@@ -1,0 +1,8 @@
+{
+  "baseUrl": "https://api.deepseek.com",
+  "apiKey": "",
+  "model": "deepseek-flash",
+  "timeoutSeconds": 20,
+  "maxTokens": 512,
+  "disableThinking": true
+}

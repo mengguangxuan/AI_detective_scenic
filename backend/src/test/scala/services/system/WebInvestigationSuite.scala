@@ -35,7 +35,7 @@ class WebInvestigationSuite extends FunSuite:
   private def execute(id: String,request: String="open",seq: Long=0) =
     s"""{"sessionId":"$id","requestId":"$request","expectedSequence":{"value":$seq},"operation":"open_drawer"}"""
   private def investigate(id: String,request: String="read",seq: Long=1) =
-    s"""{"sessionId":"$id","requestId":"$request","expectedSequence":{"value":$seq},"point":"point_letter","route":"route_letter"}"""
+    s"""{"sessionId":"$id","requestId":"$request","expectedSequence":{"value":$seq},"point":"point_clock","route":"route_clock"}"""
 
   test("HTTP projection hides unrevealed content and start retry preserves the session") {
     withServer { port => for
@@ -44,9 +44,9 @@ class WebInvestigationSuite extends FunSuite:
       initial <- send(port,"openstudy",payload(id),identity._3)
       _ = assertEquals(initial._1,200)
       _ = assert(!initial._2.noSpaces.contains("今晚"))
-      _ = assert(!initial._2.noSpaces.contains("route_letter"))
+      _ = assert(!initial._2.noSpaces.contains("route_clock_presented"))
       _ = assertEquals(initial._2.hcursor.downField("clues").focus.get.asArray.get.size,0)
-      _ = assertEquals(initial._2.hcursor.downField("scene").get[Boolean]("letterVisible"),Right(false))
+      _ = assertEquals(initial._2.hcursor.downField("stage").get[Boolean]("completed"),Right(false))
       _ <- send(port,"executeoperation",execute(id),identity._3)
       resumed <- send(port,"openstudy",payload(id),identity._3)
       _ = assertEquals(resumed._2.hcursor.downField("sequence").get[Long]("value"),Right(1L))
@@ -73,14 +73,14 @@ class WebInvestigationSuite extends FunSuite:
       identity <- send(port,"openlocalidentity")
       id = UUID.randomUUID().toString
       _ <- send(port,"openstudy",payload(id),identity._3)
-      hidden <- send(port,"investigate",investigate(id,seq=0),identity._3)
+      hidden <- send(port,"investigate",investigate(id,seq=0).replace("point_clock","point_clement").replace("route_clock","route_clock_presented"),identity._3)
       opened <- send(port,"executeoperation",execute(id),identity._3)
       learned <- send(port,"investigate",investigate(id),identity._3)
       retry <- send(port,"investigate",investigate(id),identity._3)
       conflict <- send(port,"investigate",investigate(id,seq=2),identity._3)
       stale <- send(port,"investigate",investigate(id,"stale",0),identity._3)
       snapshot <- send(port,"getinvestigationsnapshot",payload(id),identity._3)
-      _ = assertEquals(hidden._1,403)
+      _ = assertEquals(hidden._1,409)
       _ = assertEquals(opened._1,200)
       _ = assertEquals(learned._1,200)
       _ = assertEquals(retry._2,learned._2)
@@ -89,7 +89,7 @@ class WebInvestigationSuite extends FunSuite:
       _ = assert(learned._2.hcursor.downField("result").focus.isEmpty)
       _ = assertEquals(snapshot._2.hcursor.downField("sequence").get[Long]("value"),Right(2L))
       _ = assertEquals(snapshot._2.hcursor.downField("journal").focus.get.asArray.get.size,2)
-      _ = assert(snapshot._2.noSpaces.contains("今晚九点见"))
+      _ = assert(snapshot._2.noSpaces.contains("18:22"))
     yield () }
   }
   test("file database restores local credentials and full player view after HTTP server restart") {
@@ -136,7 +136,7 @@ class WebInvestigationSuite extends FunSuite:
       identity <- send(port,"openlocalidentity")
       id = UUID.randomUUID().toString
       initial <- send(port,"openstudy",payload(id),identity._3)
-      _ = assertEquals(initial._2.hcursor.downField("observations").focus.get.asArray.get.size,4)
+      _ = assertEquals(initial._2.hcursor.downField("observations").focus.get.asArray.get.size,7)
       badClose <- send(port,"executeoperation",execute(id,"bad-close",0).replace("open_drawer","close_drawer"),identity._3)
       _ = assertEquals(badClose._1,409)
       _ <- send(port,"executeoperation",execute(id),identity._3)
@@ -148,10 +148,9 @@ class WebInvestigationSuite extends FunSuite:
       _ = assertEquals(closed._1,200)
       _ = assertEquals(retry._2,closed._2)
       _ = assertEquals(afterClose._2.hcursor.downField("scene").get[Boolean]("drawerOpened"),Right(false))
-      _ = assertEquals(afterClose._2.hcursor.downField("scene").get[Boolean]("letterVisible"),Right(false))
       _ = assertEquals(afterClose._2.hcursor.downField("clues").focus.get.asArray.get.size,1)
-      hidden <- send(port,"investigate",investigate(id,"hidden",3),identity._3)
-      _ = assertEquals(hidden._1,403)
+      hidden <- send(port,"investigate",investigate(id,"hidden",3).replace("route_clock","route_clock_presented").replace("point_clock","point_clement"),identity._3)
+      _ = assertEquals(hidden._1,409)
       reopened <- send(port,"executeoperation",execute(id,"reopen",3),identity._3)
       _ = assertEquals(reopened._1,200)
       repeatRead <- send(port,"investigate",investigate(id,"already-known",4),identity._3)
@@ -161,5 +160,132 @@ class WebInvestigationSuite extends FunSuite:
       _ = assertEquals(finalState._2.hcursor.downField("sequence").get[Long]("value"),Right(5L))
       _ = assertEquals(finalState._2.hcursor.downField("journal").focus.get.asArray.get.size,5)
       _ = assertEquals(finalState._2.hcursor.downField("clues").focus.get.asArray.get.size,1)
+    yield () }
+  }
+
+
+  private val requiredPath = Vector(
+    "clock" -> "clock", "paper" -> "paper", "desk" -> "desk", "clement" -> "habit",
+    "mary" -> "arrival", "mary" -> "arrival_basis")
+  private def inquiry(id: String, point: String, route: String, seq: Long, request: String): String =
+    s"""{"sessionId":"$id","requestId":"$request","expectedSequence":{"value":$seq},"point":"point_$point","route":"route_$route"}"""
+  private def comparison(id: String, seq: Long = 6, request: String = "compare", minutes: Int = 1087,
+      assessment: String = "conflict", evidence: String = "\"clue_clock\",\"clue_habit\",\"clue_arrival_basis\""): String =
+    s"""{"sessionId":"$id","requestId":"$request","expectedSequence":{"value":$seq},"evidence":[$evidence],"convertedTimeMinutes":$minutes,"assessment":"$assessment"}"""
+
+  test("player calculation and evidence complete the stage and survive an actual HTTP restart") {
+    val directory = Files.createTempDirectory("vicarage-stage-")
+    val url = s"jdbc:h2:file:${directory.resolve("case")};LOCK_TIMEOUT=10000"
+    val id = UUID.randomUUID().toString
+    (for
+      _ <- setup(url)
+      saved <- LocalHttpServer.resource(url,0).use { server =>
+        val port = server.getAddress.getPort
+        for
+          identity <- send(port,"openlocalidentity")
+          initial <- send(port,"openstudy",payload(id),identity._3)
+          _ = assert(!initial._2.noSpaces.contains("18:22"))
+          _ = assert(!initial._2.noSpaces.contains("18:07"))
+          _ = assert(!initial._2.noSpaces.contains("convertedTimeMinutes"))
+          early <- send(port,"comparetimes",comparison(id,seq=0),identity._3)
+          oldShortcut <- send(port,"investigate",inquiry(id,"compare","time_contradiction",0,"old-shortcut"),identity._3)
+          _ = assertEquals(early._1,403)
+          _ = assertEquals(oldShortcut._1,403)
+          _ <- requiredPath.zipWithIndex.traverse_ { case ((point,route),index) =>
+            send(port,"investigate",inquiry(id,point,route,index.toLong,s"step-$index"),identity._3).map(reply => assertEquals(reply._1,200))
+          }
+          before <- send(port,"getinvestigationsnapshot",payload(id),identity._3)
+          _ = assertEquals(before._2.hcursor.downField("stage").get[Boolean]("completed"),Right(false))
+          _ = assert(!before._2.noSpaces.contains("18:07"))
+          wrongTime <- send(port,"comparetimes",comparison(id,request="wrong-time",minutes=1102),identity._3)
+          wrongAssessment <- send(port,"comparetimes",comparison(id,request="wrong-assessment",assessment="consistent"),identity._3)
+          missingBasis <- send(port,"comparetimes",comparison(id,request="missing-basis",evidence="\"clue_clock\",\"clue_habit\""),identity._3)
+          invented <- send(port,"comparetimes",comparison(id,request="invented",evidence="\"clue_future_report\""),identity._3)
+          _ = assertEquals(Vector(wrongTime._1,wrongAssessment._1,missingBasis._1,invented._1),Vector(409,409,409,403))
+          _ = assert(!wrongTime._2.noSpaces.contains("18:07"))
+          doneBody = comparison(id)
+          done <- send(port,"comparetimes",doneBody,identity._3)
+          retry <- send(port,"comparetimes",doneBody,identity._3)
+          conflict <- send(port,"comparetimes",comparison(id,minutes=1102),identity._3)
+          repeated <- send(port,"comparetimes",comparison(id,seq=7,request="again"),identity._3)
+          _ = assertEquals(done._1,200)
+          _ = assertEquals(retry._2,done._2)
+          _ = assertEquals(Vector(conflict._1,repeated._1),Vector(409,409))
+          snapshot <- send(port,"getinvestigationsnapshot",payload(id),identity._3)
+          _ = assertEquals(snapshot._2.hcursor.downField("stage").get[Boolean]("completed"),Right(true))
+          _ = assertEquals(snapshot._2.hcursor.downField("sequence").get[Long]("value"),Right(7L))
+          _ = assertEquals(snapshot._2.hcursor.downField("journal").focus.get.asArray.get.size,7)
+          _ = assert(snapshot._2.noSpaces.contains("18:07"))
+          _ = assert(!snapshot._2.noSpaces.contains("今晚九点见"))
+          _ = assert(!snapshot._2.noSpaces.contains("霍斯"))
+        yield (identity._3,snapshot._2,doneBody,done._2)
+      }
+      _ <- LocalHttpServer.resource(url,0).use { server => for
+        restored <- send(server.getAddress.getPort,"getinvestigationsnapshot",payload(id),saved._1)
+        retry <- send(server.getAddress.getPort,"comparetimes",saved._3,saved._1)
+        _ = assertEquals(restored._2,saved._2)
+        _ = assertEquals(retry._2,saved._4)
+      yield () }
+    yield ()).unsafeRunSync()
+  }
+
+  test("missing each material blocks comparison; wrong targets and unearned evidence cannot disclose replies") {
+    withServer { port => for
+      identity <- send(port,"openlocalidentity")
+      _ <- requiredPath.indices.toVector.traverse_ { skip =>
+        val id = UUID.randomUUID().toString
+        for
+          _ <- send(port,"openstudy",payload(id),identity._3)
+          end <- requiredPath.zipWithIndex.filterNot(_._2 == skip).foldLeft(IO.pure(0L)) { case (sequence,((point,route),index)) =>
+            sequence.flatMap(seq => send(port,"investigate",inquiry(id,point,route,seq,s"without-$skip-$index"),identity._3)
+              .map(reply => if reply._1 == 200 then seq+1 else seq))
+          }
+          result <- send(port,"comparetimes",comparison(id,seq=end),identity._3)
+          wrongTarget <- send(port,"investigate",inquiry(id,"mary","clock_presented",end,"wrong-person"),identity._3)
+          snapshot <- send(port,"getinvestigationsnapshot",payload(id),identity._3)
+          _ = assert(Set(403,409)(result._1))
+          _ = assertEquals(wrongTarget._1,403)
+          _ = assertEquals(snapshot._2.hcursor.downField("stage").get[Boolean]("completed"),Right(false))
+        yield ()
+      }
+    yield () }
+  }
+
+  test("object registration is public but only earned object contents are projected") {
+    withServer { port => for
+      identity <- send(port,"openlocalidentity")
+      id = UUID.randomUUID().toString
+      initial <- send(port,"openstudy",payload(id),identity._3)
+      _ = assertEquals(initial._2.hcursor.downField("scene").get[Vector[Json]]("objects").toOption.get.size,8)
+      _ = assert(initial._2.hcursor.get[Vector[Json]]("points").toOption.get.forall(_.hcursor.get[Vector[Json]]("findings").toOption.get.isEmpty))
+      learned <- send(port,"investigate",inquiry(id,"paper","paper",0,"paper"),identity._3)
+      snapshot <- send(port,"getinvestigationsnapshot",payload(id),identity._3)
+      _ = assertEquals(learned._1,200)
+      paper = snapshot._2.hcursor.get[Vector[Json]]("points").toOption.get.find(_.hcursor.get[String]("id")==Right("point_paper")).get
+      _ = assert(paper.hcursor.get[Vector[Json]]("findings").toOption.get.head.noSpaces.contains("18:20"))
+      _ = assert(!snapshot._2.noSpaces.contains("不能保证"))
+      _ = assert(!snapshot._2.noSpaces.contains("不等于死亡"))
+    yield () }
+  }
+
+  test("window opening is authoritative, reversible and retryable without granting evidence") {
+    withServer { port => for
+      identity <- send(port,"openlocalidentity")
+      id = UUID.randomUUID().toString
+      _ <- send(port,"openstudy",payload(id),identity._3)
+      bad <- send(port,"executeoperation",execute(id).replace("open_drawer","close_window"),identity._3)
+      _ = assertEquals(bad._1,409)
+      body = execute(id).replace("open_drawer","open_window")
+      opened <- send(port,"executeoperation",body,identity._3)
+      retry <- send(port,"executeoperation",body,identity._3)
+      afterOpen <- send(port,"openstudy",payload(id),identity._3)
+      _ = assertEquals(opened._1,200)
+      _ = assertEquals(retry._2,opened._2)
+      _ = assertEquals(afterOpen._2.hcursor.downField("scene").get[Boolean]("windowOpened"),Right(true))
+      _ <- send(port,"executeoperation",execute(id,"close-window",1).replace("open_drawer","close_window"),identity._3)
+      afterClose <- send(port,"getinvestigationsnapshot",payload(id),identity._3)
+      _ = assertEquals(afterClose._2.hcursor.downField("scene").get[Boolean]("windowOpened"),Right(false))
+      _ = assertEquals(afterClose._2.hcursor.get[Vector[Json]]("clues").toOption.get.size,0)
+      _ = assertEquals(afterClose._2.hcursor.downField("sequence").get[Long]("value"),Right(2L))
     yield () }
   }
