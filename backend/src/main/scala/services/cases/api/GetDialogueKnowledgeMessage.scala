@@ -1,33 +1,28 @@
 package services.cases.api
 
 import cats.effect.IO
-import io.circe.parser.parse
 import io.circe.{Decoder,Encoder}
 import io.circe.generic.semiauto.*
-import java.nio.file.{Files,Paths}
 import java.sql.Connection
 import services.cases.objects.*
+import services.cases.tables.CaseRevisionTable.CaseRevisionTable
+import services.cases.utils.LegacyDialogueKnowledge
 import services.system.api.APIMessage
 import services.system.objects.*
 
-// Internal author-maintained dialogue supplement. It adds personal context, not executable clues.
-// Existing reservations retain their frozen context; existing case/session records are never rewritten.
+// New cases read personal data frozen in their own revision, without a character-name registry.
 final case class GetDialogueKnowledgeMessage(caseId: CaseId, revision: Revision, witness: WitnessId)
   extends APIMessage[DialogueDossier]:
   override def plan(connection: Connection): IO[DialogueDossier] =
-    if caseId != CaseId("vicarage_study") || !Set(Revision(3),Revision(4),Revision(5),Revision(6),Revision(7),Revision(8),Revision(9))(revision) then
-      IO.pure(DialogueDossier(Vector.empty,Vector.empty,Vector.empty))
-    else IO.blocking {
-      val json=parse(Files.readString(Paths.get("../docs/fixtures/vicarage_dialogue.json")))
-        .fold(_ => throw GameError(ErrorCode.InvalidValue,"人物对话资料无法读取。"),identity)
-      require(json.hcursor.get[Int]("version").contains(2),"Unsupported dialogue version")
-      val entries=json.hcursor.get[Map[String,DialogueDossier]]("characters")
-        .fold(_ => throw GameError(ErrorCode.InvalidValue,"人物对话资料格式不正确。"),identity)
-      require(entries.keySet == Set("clement","mary","melchett","redding","marple","anne","valet","stone","hartnell"),"Invalid dialogue characters")
-      require(entries.values.forall(d => d.knowledge.nonEmpty && Vector(d.knowledge,d.privateContext,d.policy).forall(xs =>
-        xs.size <= 30 && xs.forall(s => s.trim.nonEmpty && s.length <= 1200))),"Invalid dialogue knowledge")
-      entries.getOrElse(witness.value,DialogueDossier(Vector.empty,Vector.empty,Vector.empty))
-    }
+    for
+      record <- CaseRevisionTable.find(connection,caseId,revision).flatMap(value =>
+        IO.fromOption(value)(GameError(ErrorCode.InvalidValue,"案件修订不存在。")))
+      dossier = record.content.witnesses.find(_.id == witness).map(_.dossier)
+        .orElse(record.content.police.filter(_.id == witness).map(_.dossier))
+      result <- dossier match
+        case Some(d) if d.knowledge.nonEmpty || d.privateContext.nonEmpty || d.policy.nonEmpty => IO.pure(d)
+        case _ => LegacyDialogueKnowledge.load(caseId,revision,witness)
+    yield result
 
 object GetDialogueKnowledgeMessage:
   given Encoder[GetDialogueKnowledgeMessage] = deriveEncoder[GetDialogueKnowledgeMessage]

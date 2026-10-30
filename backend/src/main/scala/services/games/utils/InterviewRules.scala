@@ -18,10 +18,10 @@ private[games] object InterviewRules:
       privateContext: Vector[String] = Vector.empty, policy: Vector[String] = Vector.empty): Either[GameError,InterviewContext] =
     for
       _ <- Either.cond(question.trim.nonEmpty && question.length <= 1000 && evidence.size <= 20,(),GameError(ErrorCode.InvalidValue,"请填写1至1000字的问题，最多出示20份材料。"))
-      profile <- content.witnesses.find(_.id == witness).orElse(content.police.filter(_ => witness == WitnessId("melchett")).map { p =>
-        WitnessProfile(witness,p.point,p.name,p.background,"直率、务实，清楚区分供述、医生意见和待核实的猜测。",
-          content.routes.filter(_.point == p.point).map(r => WitnessAnswer(WitnessAnswerId(r.id.value.stripPrefix("route_")),
-            content.clues.filter(c => r.clues.contains(c.id)).map(_.text.value).mkString("\n"),Vector(r.id),r.requiredClues)))
+      profile <- content.witnesses.find(_.id == witness).orElse(content.police.filter(_.id == witness).map { p =>
+        WitnessProfile(witness,p.point,p.name,p.background,p.voice,
+          if p.answers.nonEmpty then p.answers else content.routes.filter(_.point == p.point).map(r => WitnessAnswer(WitnessAnswerId(r.id.value.stripPrefix("route_")),
+            content.clues.filter(c => r.clues.contains(c.id)).map(_.text.value).mkString("\n"),Vector(r.id),r.requiredClues)),p.dossier)
       }).toRight(denied)
       _ <- content.points.find(_.id == profile.point).filter(FixtureRules.accessible(content,state,_)).toRight(denied)
       _ <- Either.cond(evidence.subsetOf(state.clues),(),denied)
@@ -38,9 +38,10 @@ private[games] object InterviewRules:
         a.routes.foldLeft(Option(state)) { (candidate,id) => candidate.flatMap(s =>
           content.routes.find(r => r.id == id && r.point == profile.point).filter(FixtureRules.routeAvailable(s,_))
             .map(r => s.copy(clues=s.clues++r.clues))) }.nonEmpty)
+      val initial = if knowledge.nonEmpty || privateContext.nonEmpty || policy.nonEmpty then DialogueDossier(knowledge,privateContext,policy) else profile.dossier
       val phase = content.followUps.find(p => p.witness == witness && state.completedOperations(p.operation))
-      val phaseKnowledge = phase.map(_.knowledge).getOrElse(knowledge)
-      val phasePolicy = phase.map(_.policy).getOrElse(policy)
+      val phaseKnowledge = phase.map(_.knowledge).getOrElse(initial.knowledge)
+      val phasePolicy = phase.map(_.policy).getOrElse(initial.policy)
       // Completed reports are already-held evidence, not new routes the model can execute.
       val reportIds = content.externalChecks.flatMap(_.resultClues).toSet
       val reports = content.clues.filter(c => reportIds(c.id) && known(c.id)).map(c =>
@@ -53,8 +54,8 @@ private[games] object InterviewRules:
           p.completedAt.fold(s"${c.title}：${p.requestedAt}受理，预计${p.readyAt}完成，目前仍在办理。") { at => s"${c.title}：$at 已完成，可依据shownEvidence中的实际核查结果回答。" }
         }
       } else Vector.empty
-      InterviewContext(profile.copy(answers=available,knowledge=phaseKnowledge++current++mapKnowledge++conditions,privateContext=privateContext,policy=phasePolicy),content.clues.filter(c => known(c.id)),history.takeRight(12),state.caseId,state.caseRevision,
-        if knowledge.nonEmpty then 2 else 1)
+      InterviewContext(profile.copy(answers=available,dossier=DialogueDossier(phaseKnowledge++current++mapKnowledge++conditions,initial.privateContext,phasePolicy)),content.clues.filter(c => known(c.id)),history.takeRight(12),state.caseId,state.caseRevision,
+        if initial.knowledge.nonEmpty then 2 else 1)
 
   private[games] def prompt(request: InterviewRequestRecord): ChatCompletionInput =
     val c = request.context
@@ -64,7 +65,7 @@ private[games] object InterviewRules:
       |只输出JSON，严格格式为 {"answerIds":["提供的条目ID"]}，最多两个不同ID。
       |无法回答时输出 {"answerIds":[]}。不输出答复正文、解释、Markdown或其他字段。
       |涉及时间依据的追问应选择具体说明时间依据的条目，而不仅是重复一个时刻。""".stripMargin
-    val conversational = """你是1930年圣玛丽米德侦探游戏中的一位人物，正与玩家当面交谈。当前日期与时刻以knowledge中的案件时钟为准；未提供时为周五上午初查。
+    val conversational = """你是侦探游戏中的一位人物，正与玩家当面交谈。时代与地点以本人资料和案件背景为准；当前日期与时刻以knowledge中的案件时钟为准，未提供时不自行补造。
       |你要扮演输入中这位人物，不是资料检索器、全知旁白或小说结局讲解员。
       |knowledge是本人经历、认识的人、记忆和表达边界；disclosures是当前可披露的调查材料。两者都可用于理解和组织回答，不必照抄标准答案。
       |privateContext是你本人知道但不愿公开的内情；policy规定你此刻选择怎么说，包括隐瞒、撒谎和拒答。必须按policy对外说话，不能把知道的秘密自动说出口，也不能把对外口供当成真实内心。
@@ -85,9 +86,9 @@ private[games] object InterviewRules:
     val system = if c.responseVersion == 2 then conversational else legacy
     val user = Json.obj("witness" -> Json.obj("name" -> c.profile.name.asJson, "background" -> c.profile.background.asJson,
       "voice" -> c.profile.voice.asJson),
-      "knowledge" -> c.profile.knowledge.asJson,
-      "privateContext" -> c.profile.privateContext.asJson,
-      "policy" -> c.profile.policy.asJson,
+      "knowledge" -> c.profile.dossier.knowledge.asJson,
+      "privateContext" -> c.profile.dossier.privateContext.asJson,
+      "policy" -> c.profile.dossier.policy.asJson,
       (if c.responseVersion == 2 then "disclosures" else "answers") -> Json.fromValues(c.profile.answers.map(a => Json.obj("id" -> a.id.asJson, "text" -> a.text.asJson))),
       "shownEvidence" -> Json.fromValues(c.evidence.map(e => Json.obj("id" -> e.id.asJson,"title" -> e.title.value.asJson,"text" -> e.text.value.asJson))),
       "history" -> Json.fromValues(c.history.map(t => Json.obj("question" -> t.question.asJson,"reply" -> t.reply.asJson,"mode" -> t.mode.asJson))),

@@ -10,6 +10,7 @@ private[games] object LegacyFixture:
     val routes=added.map(_.id).toSet
     val clues=added.flatMap(_.clues).toSet
     content.copy(followUps=Vector.empty,statementComparisons=Vector.empty,
+      police=content.police.map(p => p.copy(answers=p.answers.filterNot(a => a.routes.exists(routes)))),
       operations=content.operations.filterNot(o => operations(o.id)),
       routes=content.routes.filterNot(r => routes(r.id)).map(_.copy(disabledAfter=None)),
       clues=content.clues.filterNot(c => clues(c.id)),

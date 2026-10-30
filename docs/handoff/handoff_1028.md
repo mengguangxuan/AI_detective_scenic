@@ -225,3 +225,16 @@ TypeScript／生产构建、7项前端基础测试及12项真实浏览器测试�
 用户批准开始整理，按`docs/cases_cleanup_plan.md`先完成A批。修改前文档基线`2ec91e9`已推送。FixtureLoader原整串布尔校验拆成10组有名称的纯函数，内部validation返回首个失败路径，valid仍为Boolean兼容入口；作者条目解码补数组索引。CaseRevisionTable清理games跨模块无用导入，存取复用详细校验。无新增领域类型，41个类型及案件JSON定义不变，不改DB、旧修订／回执、模型配置、前端或服务进程。
 
 新增FixtureValidationSuite的7项边界与错误定位测试，原生Windows后端完整91项通过，含旧存档／回执和问询隔离回归。本批未运行前端全量或真实模型。B—D批尚未实施；下一批为WitnessProfile复用DialogueDossier，须保留旧扁平codec和冻结问询上下文。方案第9节已有具体记录。
+
+
+## 2026-10-30：B批完成——统一人物资料，交互配置独立
+
+用户要求先修改方案再实施，修订方案基线57f8ad7已推送。新增作者CharacterProfile（资料）与WitnessInteraction（交互），根characters有13人，investigation.interviews有9个绑定；人物资料无入口／披露引用，交互以PersonId关联。原routes、followUps等保留阶段及出示条件，本局状态不混入静态人物资料。警方也有显式answers，并由police.witness配置身份；运行问询和玩家投影不按melchett姓名分派。
+
+WitnessProfile定位为编译／冻结上下文投影，内部复用DialogueDossier，原扁平knowledge/privateContext/policy JSON兼容。CharacterConfiguration纯校验／编译新格式，旧作者格式仍可加载。GetDialogueKnowledgeMessage对新修订查询案件表中的固定资料；旧3—9外置资料仅在LegacyDialogueKnowledge兼容读取，老PoliceContact无ID仅在解码层恢复原身份。新案不再编辑人物名单或新增本案路径分支。通用提示不写死本案地名／时代。
+
+新建修订10承载原来外置资料的固定化，旧3—9、未决问询、历史回执、场景4、v6键保留，无新表或清库。新增两类作者类型后cases为43个，不宣称类型数量精简；编译运行投影保留以减少协议与存档影响。另一案件ID及不同警方身份通过配置完成资料读取和隔离；网页仍限已登记study场景，未完成任意新案发布平台。
+
+新增4项后端人物结构／冻结／隔离用例、2项浏览器用例。95项后端覆盖中完整回归94项通过，原模型HTTP测试遇本机短超时，其套件3项单独复验通过，未改产品超时／断言。前端12项、生产构建、34项浏览器通过，包含保留的真实修订9存档；恢复正常模型配置后6项实际进程重启恢复通过。未调用付费模型，密钥未改，本地模拟供应商已停止，正常后端供验收。
+
+填写示例及字段约束见docs/cases/character_configuration.md，方案第10节和验收准备第17节已更新，课堂文档增加新结构索引。C／D批尚未执行，后续整理按新的人物／交互／会话边界，不回退为把交互塞入人物对象。

@@ -136,7 +136,7 @@ class InterviewSuite extends FunSuite:
       row = prepared match
         case InterviewPreparation.Reserved(value) => value
         case _ => fail("Expected reserved request")
-      old = row.copy(context=row.context.copy(responseVersion=1,profile=row.context.profile.copy(knowledge=Vector.empty)),leaseUntilMillis=0)
+      old = row.copy(context=row.context.copy(responseVersion=1,profile=row.context.profile.copy(dossier=row.context.profile.dossier.copy(knowledge=Vector.empty))),leaseUntilMillis=0)
       _ <- tx(url)(InterviewRequestTable.replace(_,old,row.leaseToken))
       _ <- ask(id).run(url,legacy)
       saved <- tx(url)(GetInvestigationSnapshotMessage(owner,id).plan)

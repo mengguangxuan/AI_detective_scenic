@@ -133,7 +133,6 @@ private[cases] object FixtureLoader:
       _ <- empty(publicInfo.hcursor, "reports")
       background <- c.downField("publicInfo").get[Json]("background")
       _ <- empty(background.hcursor, "openingReports", "openingMaterials")
-      publicPersons <- background.hcursor.get[Vector[CasePersonBrief]]("persons")
       places <- world.hcursor.get[Vector[Json]]("places")
       _ <- check(places.nonEmpty, "Missing places", c)
       place <- c.downField("investigation").downField("initial").get[PlaceId]("spawnPlace")
@@ -172,8 +171,7 @@ private[cases] object FixtureLoader:
       _ <- check(occurred.isEmpty, "No scheduled history in this profile", c)
       common <- background.hcursor.get[Set[FactId]]("commonKnowledge")
       stage <- investigation.hcursor.get[Option[InvestigationStage]]("stage")
-      witnesses <- investigation.hcursor.get[Option[Vector[WitnessProfile]]]("witnesses").map(_.getOrElse(Vector.empty))
-      police <- investigation.hcursor.get[Option[PoliceContact]]("police")
+      people <- CharacterConfiguration.decode(c,background,investigation)
       areaMap <- background.hcursor.get[Option[AreaMap]]("areaMap")
       clock <- investigation.hcursor.get[Option[InvestigationClock]]("clock")
       checks <- investigation.hcursor.get[Option[Vector[ExternalCheckSpec]]]("externalChecks").map(_.getOrElse(Vector.empty))
@@ -191,7 +189,7 @@ private[cases] object FixtureLoader:
         case _ => true
       }, "investigation.operations.effects：效果引用了未知实体", c)
       _ <- check(operations.forall(_.openedRequirement.forall(r => entityIds.contains(r.entity))),"investigation.operations.openedRequirement：前提引用了未知实体",c)
-      content = CaseContent(place, placeName, time, origin, position, nodes, points, facts, clues, routes, operations, opened, unlocked, common, observations, stage, sceneObjects, witnesses, police, publicPersons, areaMap, clock, checks, followUps, comparisons)
+      content = CaseContent(place, placeName, time, origin, position, nodes, points, facts, clues, routes, operations, opened, unlocked, common, observations, stage, sceneObjects, people._2, people._3, people._1, areaMap, clock, checks, followUps, comparisons)
       record = CaseRevisionRecord(caseId, revision, 1, title, content)
       _ <- validation(record).left.map(message => DecodingFailure(message,c.history))
     yield record).left.map(error => GameError(ErrorCode.InvalidValue, s"案件数据不合法：${error.getMessage}"))
@@ -288,20 +286,22 @@ private[cases] object FixtureLoader:
     yield ()
 
   private def validateDialogue(f: CaseContent): Either[String, Unit] =
-    val clues = f.clues.map(_.id).toSet
     for
       _ <- unique(f.publicPersons.map(_.id), "publicInfo.background.persons")
       _ <- entries(f.publicPersons, "publicInfo.background.persons") { (p, path) =>
         for
           _ <- rule(p.id.value.matches("[a-z][a-z0-9_]{0,63}"), s"$path.id", "人物编号格式不合法")
           _ <- rule(Vector(p.name,p.identity,p.victimRelation,p.caseRelation).forall(_.trim.nonEmpty), path, "公开人物说明不能为空")
-          _ <- rule(p.witness.forall(id => f.witnesses.exists(_.id == id) || (id == WitnessId("melchett") && f.police.nonEmpty)), s"$path.witness", "引用了不存在的问询对象")
+          _ <- rule(p.witness.forall(id => f.witnesses.exists(_.id == id) || f.police.exists(_.id == id)), s"$path.witness", "引用了不存在的问询对象")
         yield ()
       }
       _ <- f.police.traverse_ { p =>
         for
           _ <- rule(p.name.trim.nonEmpty && p.background.trim.nonEmpty, "investigation.police", "警方姓名和背景不能为空")
           _ <- rule(f.points.exists(_.id == p.point) && !f.witnesses.exists(_.point == p.point), "investigation.police.point", "警方入口不存在或与人物入口重叠")
+          _ <- rule(!f.witnesses.exists(_.id == p.id), "investigation.police.id", "警方与人物问询ID不能重复")
+          _ <- rule(CharacterConfiguration.validDossier(p.dossier,false), "investigation.police.dossier", "人物资料条数或长度不合法")
+          _ <- validateAnswers(f,p.point,p.answers,"investigation.police.answers")
         yield ()
       }
       _ <- unique(f.witnesses.map(_.id), "investigation.witnesses")
@@ -312,16 +312,23 @@ private[cases] object FixtureLoader:
           _ <- rule(Vector(w.name,w.background,w.voice).forall(_.trim.nonEmpty), path, "人物姓名、背景和语气不能为空")
           _ <- rule(f.points.exists(_.id == w.point), s"$path.point", "人物入口不存在")
           _ <- rule(w.answers.nonEmpty, s"$path.answers", "合法答复不能为空")
-          _ <- unique(w.answers.map(_.id), s"$path.answers")
-          _ <- entries(w.answers, s"$path.answers") { (a, answerPath) =>
-            for
-              _ <- rule(a.id.value.matches("[a-z][a-z0-9_]{0,99}"), s"$answerPath.id", "答复编号格式不合法")
-              _ <- rule(a.text.trim.nonEmpty && a.text.length <= 1500, s"$answerPath.text", "答复正文长度不合法")
-              _ <- rule(a.requiredEvidence.subsetOf(clues), s"$answerPath.requiredEvidence", "引用了不存在的线索")
-              _ <- unique(a.routes, s"$answerPath.routes")
-              _ <- rule(a.routes.forall(id => f.routes.exists(r => r.id == id && r.point == w.point)), s"$answerPath.routes", "路线不存在或不属于该人物")
-            yield ()
-          }
+          _ <- rule(CharacterConfiguration.validDossier(w.dossier,false), s"$path.dossier", "人物资料条数或长度不合法")
+          _ <- validateAnswers(f,w.point,w.answers,s"$path.answers")
+        yield ()
+      }
+    yield ()
+
+  private def validateAnswers(f: CaseContent, point: PointId, answers: Vector[WitnessAnswer], path: String): Either[String, Unit] =
+    val clues = f.clues.map(_.id).toSet
+    for
+      _ <- unique(answers.map(_.id), path)
+      _ <- entries(answers,path) { (a, answerPath) =>
+        for
+          _ <- rule(a.id.value.matches("[a-z][a-z0-9_]{0,99}"), s"$answerPath.id", "答复编号格式不合法")
+          _ <- rule(a.text.trim.nonEmpty && a.text.length <= 1500, s"$answerPath.text", "答复正文长度不合法")
+          _ <- rule(a.requiredEvidence.subsetOf(clues), s"$answerPath.requiredEvidence", "引用了不存在的线索")
+          _ <- unique(a.routes, s"$answerPath.routes")
+          _ <- rule(a.routes.forall(id => f.routes.exists(r => r.id == id && r.point == point)), s"$answerPath.routes", "路线不存在或不属于该人物")
         yield ()
       }
     yield ()
