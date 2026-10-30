@@ -47,12 +47,14 @@ const server = http.createServer(async (request, response) => {
       else if (/雷丁.*补充/.test(context.question)) id = 'anne_redding_challenge';
     }
     if (context.witness.name === '梅尔切特' && /四份供述/.test(context.question)) id = 'police_revised_review';
+    if (context.witness.name === '阿彻太太') id = /谁|照料|来过/.test(context.question) ? 'archer_household' : 'archer_gun_memory';
+    if (context.witness.name === '梅尔切特' && /阿彻/.test(context.question)) id = 'police_archer_review';
     let reply = (context.disclosures ?? context.answers).find(answer => answer.id === id)?.text ?? '这件事我也不清楚。';
     if (context.witness.name === '克莱门特牧师' && context.question.includes('斯莱克是谁')) reply = '斯莱克是调查本案的警探，昨晚来过这里。我跟他说话时，他很不耐烦。';
     if (context.witness.name === '克莱门特牧师' && context.question.includes('什么时候离开')) reply = '五点半接到电话，打完给上校家的电话后我就离开了。原本争取六点半回来，实际快七点才到家。';
     if (context.witness.name === '克莱门特牧师' && context.question.includes('病人是谁')) reply = '下农场的阿博特先生。电话里说他快不行了，我到了才发现不是那么回事。';
     if (context.witness.name === '玛丽' && !['mary_sound', 'mary_fish_time'].includes(id) && /异响|响声/.test(context.question)) reply = '我记得一声砰响，当时以为在树林里，具体几点我没留意。';
-    if (context.witness.name === '梅尔切特' && !['police_gun_check', 'police_movement_check', 'police_sound_check'].includes(id) && /怎么看|材料/.test(context.question) && context.shownEvidence.length) reply = '你出示的这份座钟记录写的是18:22。还得问清它平时走得准不准。';
+    if (context.witness.name === '梅尔切特' && !['police_gun_check', 'police_movement_check', 'police_sound_check', 'police_archer_review'].includes(id) && /怎么看|材料/.test(context.question) && context.shownEvidence.length) reply = '你出示的这份座钟记录写的是18:22。还得问清它平时走得准不准。';
     if (context.witness.name === '梅尔切特' && /核验结果|核验.*多久|医生到场.*进展/.test(context.question)) {
       const medical = /医生到场/.test(context.question);
       const title = medical ? '医生到场与初查记录' : '手枪与弹头核验';

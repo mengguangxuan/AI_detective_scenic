@@ -1,7 +1,7 @@
 {
   "id": "vicarage_study",
   "revision": {
-    "value": 10
+    "value": 11
   },
   "schemaVersion": {
     "value": 2
@@ -1129,6 +1129,57 @@
           }
         },
         "boundary": "本局实际质询／补充供述；人物陈述与客观事实分开"
+      },
+      {
+        "id": "topic_archer_gun_memory",
+        "subject": {
+          "kind": "Place",
+          "id": "study"
+        },
+        "question": "固定的初查材料；陈述及推论的归属见正文，不等同于完整案件真相。",
+        "when": {
+          "earliest": {
+            "seconds": 0
+          },
+          "latest": {
+            "seconds": 0
+          }
+        },
+        "boundary": "本人回忆或本局实际登记，不能代替搜查、技术鉴定或无罪结论"
+      },
+      {
+        "id": "topic_archer_household",
+        "subject": {
+          "kind": "Place",
+          "id": "study"
+        },
+        "question": "固定的初查材料；陈述及推论的归属见正文，不等同于完整案件真相。",
+        "when": {
+          "earliest": {
+            "seconds": 0
+          },
+          "latest": {
+            "seconds": 0
+          }
+        },
+        "boundary": "本人回忆或本局实际登记，不能代替搜查、技术鉴定或无罪结论"
+      },
+      {
+        "id": "topic_police_archer_review",
+        "subject": {
+          "kind": "Place",
+          "id": "study"
+        },
+        "question": "固定的初查材料；陈述及推论的归属见正文，不等同于完整案件真相。",
+        "when": {
+          "earliest": {
+            "seconds": 0
+          },
+          "latest": {
+            "seconds": 0
+          }
+        },
+        "boundary": "本人回忆或本局实际登记，不能代替搜查、技术鉴定或无罪结论"
       }
     ],
     "facts": [
@@ -1823,6 +1874,47 @@
           "source_game_interview"
         ],
         "topic": "topic_police_revised_review"
+      },
+      {
+        "id": "fact_archer_gun_memory",
+        "value": {
+          "kind": "AuthoredDetail",
+          "detail": "阿彻太太说：“那支枪我认得，雷丁先生把它搁在起居室书架旁。我记得星期四中午走的时候，它还在那里。那时是十二点三刻。”这是她对案发前所见的回忆，尚不能据此确定谁取走了枪。"
+        },
+        "requiresOccurred": [],
+        "explanation": "固定的初查材料；陈述及推论的归属见正文，不等同于完整案件真相。",
+        "sources": [
+          "source_ch18",
+          "source_game_interview"
+        ],
+        "topic": "topic_archer_gun_memory"
+      },
+      {
+        "id": "fact_archer_household",
+        "value": {
+          "kind": "AuthoredDetail",
+          "detail": "阿彻太太说：“我每天早晨来替雷丁先生料理家务。我不是看门的，没有把每个来往的人都记下来。我走了以后谁来过、谁把枪拿走了，我说不上来。”这份回答没有提供完整来访名单，也不是对小屋的搜查记录。"
+        },
+        "requiresOccurred": [],
+        "explanation": "固定的初查材料；陈述及推论的归属见正文，不等同于完整案件真相。",
+        "sources": [
+          "source_ch12",
+          "source_game_interview"
+        ],
+        "topic": "topic_archer_household"
+      },
+      {
+        "id": "fact_police_archer_review",
+        "value": {
+          "kind": "AuthoredDetail",
+          "detail": "梅尔切特说：“雷丁对最后见枪的日期没有把握；阿彻太太回忆周四中午十二点三刻离开时枪还在。两份说法及她说明的照料范围已经分别登记。她没有提供完整来访名单，也没有目击取枪。我们还得继续核实；这不是搜查或弹道鉴定的结论，更不能据此排除谁。”"
+        },
+        "requiresOccurred": [],
+        "explanation": "固定的初查材料；陈述及推论的归属见正文，不等同于完整案件真相。",
+        "sources": [
+          "source_game_interview"
+        ],
+        "topic": "topic_police_archer_review"
       }
     ],
     "claims": [],
@@ -1886,6 +1978,11 @@
         "id": "source_game_check",
         "kind": "Adapted",
         "reference": "docs/cases/murder_at_the_vicarage.md#地图与案件时钟"
+      },
+      {
+        "id": "source_ch18",
+        "kind": "Original",
+        "reference": "https://en.wikisource.org/wiki/The_Murder_at_the_Vicarage/Chapter_18"
       }
     ]
   },
@@ -2430,6 +2527,31 @@
         "represents": null,
         "place": "study",
         "initiallyVisible": false
+      },
+      {
+        "id": "node_archer_meeting",
+        "asset": "model_placeholder",
+        "transform": {
+          "position": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "rotation": {
+            "xRad": 0,
+            "yRad": 0,
+            "zRad": 0
+          },
+          "scale": {
+            "x": 1,
+            "y": 1,
+            "z": 1
+          }
+        },
+        "parent": null,
+        "represents": null,
+        "place": "study",
+        "initiallyVisible": false
       }
     ],
     "cues": [],
@@ -2724,6 +2846,26 @@
         "entry": {
           "kind": "OnNode",
           "node": "node_hartnell_meeting",
+          "localPoint": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "radiusMeters": 4
+        },
+        "topics": [],
+        "fallbackFinding": null
+      },
+      {
+        "id": "point_archer",
+        "subject": {
+          "kind": "Place",
+          "id": "study"
+        },
+        "label": "阿彻太太",
+        "entry": {
+          "kind": "OnNode",
+          "node": "node_archer_meeting",
           "localPoint": {
             "x": 0,
             "y": 0,
@@ -3568,6 +3710,48 @@
         "relatedClaims": [],
         "result": {
           "text": "警方已分别保留雷丁和安妮的首份、补充陈述。两人现在把先前认罪解释成替对方承担责任；雷丁对钟的说法、枪的来路和纸张仍需核实。梅尔切特准备继续查枪的存放与接触者，并复查原件。",
+          "media": []
+        },
+        "suggests": []
+      },
+      {
+        "id": "clue_archer_gun_memory",
+        "title": "阿彻太太的见枪回忆",
+        "finding": "阿彻太太说：“那支枪我认得，雷丁先生把它搁在起居室书架旁。我记得星期四中午走的时候，它还在那里。那时是十二点三刻。”这是她对案发前所见的回忆，尚不能据此确定谁取走了枪。",
+        "facts": [
+          "fact_archer_gun_memory"
+        ],
+        "relatedClaims": [],
+        "result": {
+          "text": "阿彻太太说：“那支枪我认得，雷丁先生把它搁在起居室书架旁。我记得星期四中午走的时候，它还在那里。那时是十二点三刻。”这是她对案发前所见的回忆，尚不能据此确定谁取走了枪。",
+          "media": []
+        },
+        "suggests": []
+      },
+      {
+        "id": "clue_archer_household",
+        "title": "阿彻太太的照料范围",
+        "finding": "阿彻太太说：“我每天早晨来替雷丁先生料理家务。我不是看门的，没有把每个来往的人都记下来。我走了以后谁来过、谁把枪拿走了，我说不上来。”这份回答没有提供完整来访名单，也不是对小屋的搜查记录。",
+        "facts": [
+          "fact_archer_household"
+        ],
+        "relatedClaims": [],
+        "result": {
+          "text": "阿彻太太说：“我每天早晨来替雷丁先生料理家务。我不是看门的，没有把每个来往的人都记下来。我走了以后谁来过、谁把枪拿走了，我说不上来。”这份回答没有提供完整来访名单，也不是对小屋的搜查记录。",
+          "media": []
+        },
+        "suggests": []
+      },
+      {
+        "id": "clue_police_archer_review",
+        "title": "警方登记的住处核查材料",
+        "finding": "梅尔切特说：“雷丁对最后见枪的日期没有把握；阿彻太太回忆周四中午十二点三刻离开时枪还在。两份说法及她说明的照料范围已经分别登记。她没有提供完整来访名单，也没有目击取枪。我们还得继续核实；这不是搜查或弹道鉴定的结论，更不能据此排除谁。”",
+        "facts": [
+          "fact_police_archer_review"
+        ],
+        "relatedClaims": [],
+        "result": {
+          "text": "梅尔切特说：“雷丁对最后见枪的日期没有把握；阿彻太太回忆周四中午十二点三刻离开时枪还在。两份说法及她说明的照料范围已经分别登记。她没有提供完整来访名单，也没有目击取枪。我们还得继续核实；这不是搜查或弹道鉴定的结论，更不能据此排除谁。”",
           "media": []
         },
         "suggests": []
@@ -4468,6 +4652,61 @@
           "clue_redding_revised",
           "clue_anne_revised"
         ]
+      },
+      {
+        "id": "route_archer_gun_memory",
+        "point": "point_archer",
+        "condition": {
+          "kind": "Always"
+        },
+        "method": {
+          "kind": "Fixed",
+          "label": "询问：最后一次记得看见枪是什么时候？"
+        },
+        "grants": [
+          "clue_archer_gun_memory"
+        ],
+        "reports": []
+      },
+      {
+        "id": "route_archer_household",
+        "point": "point_archer",
+        "condition": {
+          "kind": "Always"
+        },
+        "method": {
+          "kind": "Fixed",
+          "label": "询问：你怎样照料住处，能说明谁来过吗？"
+        },
+        "grants": [
+          "clue_archer_household"
+        ],
+        "reports": []
+      },
+      {
+        "id": "route_police_archer_review",
+        "point": "point_police",
+        "condition": {
+          "kind": "CluesKnown",
+          "clues": [
+            "clue_redding_gun_revised",
+            "clue_archer_gun_memory",
+            "clue_archer_household"
+          ]
+        },
+        "method": {
+          "kind": "Fixed",
+          "label": "出示雷丁与阿彻太太材料，登记住处核查"
+        },
+        "grants": [
+          "clue_police_archer_review"
+        ],
+        "reports": [],
+        "presentedClues": [
+          "clue_redding_gun_revised",
+          "clue_archer_gun_memory",
+          "clue_archer_household"
+        ]
       }
     ],
     "operations": [
@@ -4670,6 +4909,29 @@
           ]
         },
         "effects": []
+      },
+      {
+        "id": "open_archer_meeting",
+        "point": "point_police",
+        "label": "联系阿彻太太，核实雷丁住处的情况",
+        "repeatable": false,
+        "condition": {
+          "kind": "CluesKnown",
+          "clues": [
+            "clue_police_revised_review",
+            "clue_redding_gun_revised"
+          ]
+        },
+        "effects": [
+          {
+            "kind": "World",
+            "effect": {
+              "kind": "SetNodeVisible",
+              "node": "node_archer_meeting",
+              "visible": true
+            }
+          }
+        ]
       }
     ],
     "rules": [],
@@ -5189,6 +5451,18 @@
               "clue_redding_revised",
               "clue_anne_revised"
             ]
+          },
+          {
+            "id": "police_archer_review",
+            "text": "梅尔切特说：“雷丁对最后见枪的日期没有把握；阿彻太太回忆周四中午十二点三刻离开时枪还在。两份说法及她说明的照料范围已经分别登记。她没有提供完整来访名单，也没有目击取枪。我们还得继续核实；这不是搜查或弹道鉴定的结论，更不能据此排除谁。”",
+            "routes": [
+              "route_police_archer_review"
+            ],
+            "requiredEvidence": [
+              "clue_redding_gun_revised",
+              "clue_archer_gun_memory",
+              "clue_archer_household"
+            ]
           }
         ]
       },
@@ -5344,6 +5618,29 @@
             "text": "哈特内尔记得安妮聊天时轻松、愉快，看不出有什么烦心事。这是她对来访时神情的印象；她没有看见寓所书房内的事。",
             "routes": [
               "route_hartnell_manner"
+            ],
+            "requiredEvidence": []
+          }
+        ]
+      },
+      {
+        "id": "archer",
+        "person": "mrs_archer",
+        "point": "point_archer",
+        "answers": [
+          {
+            "id": "archer_gun_memory",
+            "text": "阿彻太太说：“那支枪我认得，雷丁先生把它搁在起居室书架旁。我记得星期四中午走的时候，它还在那里。那时是十二点三刻。”这是她对案发前所见的回忆，尚不能据此确定谁取走了枪。",
+            "routes": [
+              "route_archer_gun_memory"
+            ],
+            "requiredEvidence": []
+          },
+          {
+            "id": "archer_household",
+            "text": "阿彻太太说：“我每天早晨来替雷丁先生料理家务。我不是看门的，没有把每个来往的人都记下来。我走了以后谁来过、谁把枪拿走了，我说不上来。”这份回答没有提供完整来访名单，也不是对小屋的搜查记录。",
+            "routes": [
+              "route_archer_household"
             ],
             "requiredEvidence": []
           }
@@ -5621,6 +5918,28 @@
         "privateContext": [],
         "policy": [
           "直接说明借杂志、聊天、离开的经历与当时印象；不把她的轻松神态说成无罪证明，不编造全天下落或自动获知本局供述。"
+        ]
+      }
+    },
+    {
+      "id": "mrs_archer",
+      "name": "阿彻太太",
+      "identity": "每天照料雷丁住处的钟点女佣",
+      "victimRelation": "为画家雷丁料理家务，与上校没有雇佣关系",
+      "caseRelation": "可通过警方联系，询问雷丁住处的日常照料情况。",
+      "background": "每天早晨到雷丁的小屋料理家务，可说明自己记得的事情。",
+      "voice": "用朴实的日常语言回答，分清亲眼所见、回忆和不知道的事，不使用鉴定报告口吻。",
+      "dossier": {
+        "knowledge": [
+          "你是阿彻太太，每天早晨到画家劳伦斯·雷丁的小屋料理家务。雷丁住处与寓所书房是不同地方，你不是上校的女佣。",
+          "本人回忆：你认得雷丁起居室书架旁搁着的那支手枪。你记得周四中午离开时它还在那里；你记得那时是十二点三刻。这是你的回忆，不是钟表校准记录或对枪的技术鉴定。",
+          "工作范围：你料理家务，不是看守住处，也没有逐一登记来访者。你不能提供完整出入名单，不能说明离开后谁进了屋、谁拿走枪。",
+          "你没有目击寓所书房的枪击；不知道取枪者、开枪者或枪支的弹道结果。未向你实际出示的雷丁补供、安妮供词和警方材料，不是你早已知道的事。"
+        ],
+        "privateContext": [],
+        "policy": [
+          "按本人记忆回答照料住处和中午见枪的事；对没有看见的活动明确说明不知道，不编造来访名单或自己参与搜查。",
+          "本局提前询问的是案发前经历，不说已经参加周六验尸庭，不凭自己的确信宣布任何人无罪或确定取枪时间。"
         ]
       }
     }

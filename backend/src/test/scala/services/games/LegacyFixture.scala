@@ -3,7 +3,21 @@ import services.cases.objects.*
 
 // Test-only reconstruction of the preceding published feature set.
 private[games] object LegacyFixture:
-  def withoutFollowUps(content: CaseContent): CaseContent =
+  def withoutArcher(content: CaseContent): CaseContent =
+    val routes=Set("route_archer_gun_memory","route_archer_household","route_police_archer_review").map(RouteId.apply)
+    val clues=content.routes.filter(r => routes(r.id)).flatMap(_.clues).toSet
+    val facts=content.clues.filter(c => clues(c.id)).flatMap(_.facts).toSet
+    content.copy(
+      nodes=content.nodes.filterNot(_.id == SceneNodeId("node_archer_meeting")),
+      points=content.points.filterNot(_.id == PointId("point_archer")),
+      operations=content.operations.filterNot(_.id == OperationId("open_archer_meeting")),
+      routes=content.routes.filterNot(r => routes(r.id)),
+      clues=content.clues.filterNot(c => clues(c.id)),facts=content.facts.filterNot(f => facts(f.id)),
+      witnesses=content.witnesses.filterNot(_.id == WitnessId("archer")).map(w => w.copy(answers=w.answers.filterNot(a => a.routes.exists(routes)))),
+      publicPersons=content.publicPersons.filterNot(_.id == PersonId("mrs_archer")))
+
+  def withoutFollowUps(current: CaseContent): CaseContent =
+    val content=withoutArcher(current)
     val operations=content.followUps.map(_.operation).toSet
     val added=content.routes.filter(r => r.prerequisite.exists(operations) ||
       Set("route_redding_time_challenge","route_anne_gun_challenge","route_anne_redding_challenge","route_police_revised_review")(r.id.value))

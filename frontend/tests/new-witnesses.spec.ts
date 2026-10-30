@@ -20,7 +20,7 @@ async function snapshot(page: Page) {
 test('case introduction presents public relationships and leads into both new interviews', async ({ page }) => {
   await page.goto('/case');
   const cast = page.getByRole('region', { name: '案中人物', exact: true });
-  await expect(cast.getByRole('article')).toHaveCount(13);
+  await expect(cast.getByRole('article')).toHaveCount(14);
   await expect(cast.getByRole('article', { name: '安妮·普罗瑟罗', exact: true })).toContainText('死者的妻子');
   await expect(cast.getByRole('article', { name: '劳伦斯·雷丁', exact: true })).toContainText('前夜已自首');
   await expect(cast).not.toContainText('18:45');

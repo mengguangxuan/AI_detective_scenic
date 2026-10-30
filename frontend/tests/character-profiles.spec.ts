@@ -8,8 +8,8 @@ test('unified character authoring keeps public profiles and the current browser 
   const response = await page.request.post('/api/getinvestigationsnapshot', { data: { sessionId: saved.sessionId }, headers: { 'X-Detective-Client': 'web' } });
   expect(response.status()).toBe(200);
   const state = await response.json();
-  expect(state.caseRevision.value).toBe(10);
-  expect(state.people).toHaveLength(13);
+  expect(state.caseRevision.value).toBe(11);
+  expect(state.people).toHaveLength(14);
   expect(state.witnesses.some((p: { id: string }) => p.id === 'melchett')).toBe(true);
   expect(JSON.stringify(state)).not.toMatch(/privateContext|"policy"|"dossier"/);
 });
@@ -43,6 +43,8 @@ test.describe('real pre-merge revision 10 save', () => {
     expect(response.status()).toBe(200);
     const state = await response.json();
     expect(state.caseRevision.value).toBe(10);
+    expect(state.people.some((p: { id: string }) => p.id === 'mrs_archer')).toBe(false);
+    await expect(page.getByRole('status').filter({ hasText: '若要继续阿彻太太相关调查' })).toBeVisible();
     const officers = state.witnesses.filter((w: { point: string }) => w.point === state.police.point);
     expect(officers).toHaveLength(1);
     expect(state.police.sharedClues).toContain('clue_redding_revised');

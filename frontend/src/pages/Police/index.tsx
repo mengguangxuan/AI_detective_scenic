@@ -17,7 +17,7 @@ export default function PolicePage({ ready, actions }: Props) {
   const disabled = ready.mutation.kind !== 'idle';
   const available = ready.snapshot.clues.filter(clue => !police.sharedClues.includes(clue.id));
   const evidence = selected.filter(id => available.some(clue => clue.id === id));
-  const contacted = ready.snapshot.witnesses.filter(w => ['valet', 'stone', 'hartnell'].includes(w.id));
+  const contacted = ready.snapshot.witnesses.filter(w => ['valet', 'stone', 'hartnell', 'archer'].includes(w.id));
   const titles = new Map(ready.snapshot.clues.map(clue => [clue.id, clue.title]));
   function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();

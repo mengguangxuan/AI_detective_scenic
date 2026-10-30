@@ -34,8 +34,8 @@ class CharacterConfigurationSuite extends FunSuite:
 
   test("new authoring separates personal data, interaction bindings and police selection") {
     val record = FixtureLoader.decode(source.noSpaces).toOption.get
-    assertEquals(record.content.publicPersons.size,13)
-    assertEquals(record.content.witnesses.size,9)
+    assertEquals(record.content.publicPersons.size,14)
+    assertEquals(record.content.witnesses.size,10)
     assertEquals(record.content.police.get,WitnessId("melchett"))
     assert(record.content.witnesses.find(_.id == WitnessId("clement")).get.dossier.knowledge.exists(_.contains("阿博特")))
     val mixed = changeCharacter(source,"clement")(_.mapObject(_.add("point",Json.fromString("point_clement"))))
@@ -77,7 +77,7 @@ class CharacterConfigurationSuite extends FunSuite:
 
   }
 
-  test("embedded revision-10 police data normalizes to the same unified content without a version change") {
+  test("embedded legacy police data normalizes to the same unified content without a version change") {
     val record = FixtureLoader.decode(source.noSpaces).toOption.get
     val content = record.content
     val police = content.witnesses.find(w => content.police.contains(w.id)).get
