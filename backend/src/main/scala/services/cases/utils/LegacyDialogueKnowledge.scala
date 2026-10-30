@@ -5,6 +5,7 @@ import io.circe.parser.parse
 import java.nio.file.{Files,Paths}
 import services.cases.objects.*
 import services.system.objects.*
+import services.cases.objects.dialogue.DialogueDossier
 
 // Compatibility only: revisions published before personal data was frozen in case content.
 private[cases] object LegacyDialogueKnowledge:

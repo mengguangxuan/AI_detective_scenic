@@ -18,6 +18,7 @@ import services.models.api.ChatCompletionClient
 import services.models.objects.ChatCompletionInput
 import services.system.api.{DatabaseSchema,DatabaseSession}
 import services.system.objects.*
+import services.cases.objects.dialogue.{DialogueDossier, WitnessProfile}
 
 class CharacterConfigurationSuite extends FunSuite:
   private val source = parser.parse(Files.readString(Paths.get("../docs/fixtures/browser_investigation.json"))).toOption.get

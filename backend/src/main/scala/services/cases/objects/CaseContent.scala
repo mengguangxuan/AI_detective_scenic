@@ -5,6 +5,9 @@ import io.circe.generic.semiauto.*
 import services.system.objects.*
 import services.cases.utils.LegacyPoliceProfile
 import services.cases.objects.scene.{FixtureNode, FixturePoint, SceneObservation, SceneObjectBinding, AreaMap}
+import services.cases.objects.content.{FixtureFact, FixtureClue, CasePersonBrief}
+import services.cases.objects.dialogue.WitnessProfile
+import services.cases.objects.investigation.{ExternalCheckSpec, FixtureOperation, FixtureRoute, InvestigationClock, InvestigationStage, WitnessFollowUpSpec, StatementComparisonSpec}
 
 
 final case class CaseContent(place: PlaceId, placeName: String, initialStoryTimeSeconds: Long, timeOriginLabel: String,

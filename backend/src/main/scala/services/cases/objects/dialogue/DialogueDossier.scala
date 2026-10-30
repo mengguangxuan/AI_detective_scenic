@@ -1,4 +1,4 @@
-package services.cases.objects
+package services.cases.objects.dialogue
 
 import io.circe.{Decoder,Encoder,DecodingFailure}
 import io.circe.generic.semiauto.*

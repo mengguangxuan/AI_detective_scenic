@@ -1,9 +1,9 @@
-package services.cases.objects
+package services.cases.objects.investigation
 
 import io.circe.{Decoder, Encoder}
 import io.circe.generic.semiauto.*
 import services.system.objects.*
-import services.cases.objects.*
+import services.cases.objects.{ClueId, OperationId, PointId, RouteId}
 
 
 final case class FixtureRoute(id: RouteId, point: PointId, prerequisite: Option[OperationId], clues: Vector[ClueId], label: String,

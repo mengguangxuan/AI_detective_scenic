@@ -7,6 +7,7 @@ import services.cases.objects.*
 import services.games.objects.*
 import services.games.objects.migration.*
 import services.system.objects.*
+import services.cases.objects.investigation.FixtureEffect
 
 // Used only once to translate the old fixture-v1 protocol, never by normal state queries.
 private[games] object LegacyMigrationRules:

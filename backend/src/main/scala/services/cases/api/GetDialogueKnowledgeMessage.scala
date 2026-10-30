@@ -9,6 +9,7 @@ import services.cases.tables.CaseRevisionTable.CaseRevisionTable
 import services.cases.utils.LegacyDialogueKnowledge
 import services.system.api.APIMessage
 import services.system.objects.*
+import services.cases.objects.dialogue.DialogueDossier
 
 // New cases read personal data frozen in their own revision, without a character-name registry.
 final case class GetDialogueKnowledgeMessage(caseId: CaseId, revision: Revision, witness: WitnessId)

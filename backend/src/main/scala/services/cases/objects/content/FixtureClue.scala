@@ -1,9 +1,9 @@
-package services.cases.objects
+package services.cases.objects.content
 
 import io.circe.{Decoder, Encoder}
 import io.circe.generic.semiauto.*
 import services.system.objects.*
-import services.cases.objects.*
+import services.cases.objects.{ClueId, FactId}
 
 final case class FixtureClue(id: ClueId, title: Text, text: Text, facts: Set[FactId])
 

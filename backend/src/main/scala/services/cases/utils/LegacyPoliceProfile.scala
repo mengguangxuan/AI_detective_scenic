@@ -3,6 +3,9 @@ package services.cases.utils
 import io.circe.{Decoder, DecodingFailure, HCursor, Json}
 import io.circe.syntax.*
 import services.cases.objects.*
+import services.cases.objects.content.FixtureClue
+import services.cases.objects.dialogue.{DialogueDossier, WitnessProfile}
+import services.cases.objects.investigation.{FixtureRoute, WitnessAnswer}
 
 // Read-only compatibility for the old embedded police object. All runtime actors
 // use WitnessProfile; missing legacy disclosures are compiled once at decoding.

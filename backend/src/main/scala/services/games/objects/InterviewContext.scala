@@ -4,6 +4,8 @@ import io.circe.{Decoder, Encoder}
 import io.circe.generic.semiauto.*
 import services.system.objects.*
 import services.cases.objects.*
+import services.cases.objects.content.FixtureClue
+import services.cases.objects.dialogue.WitnessProfile
 
 final case class InterviewContext(profile: WitnessProfile, evidence: Vector[FixtureClue], history: Vector[InterviewTurnRecord], caseId: CaseId, revision: Revision, responseVersion: Int = 1)
 object InterviewContext:

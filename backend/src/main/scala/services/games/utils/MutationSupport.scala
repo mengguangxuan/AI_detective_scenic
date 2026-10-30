@@ -15,6 +15,7 @@ import services.games.tables.SessionRecordTable.SessionRecordTable
 import services.games.tables.ReceiptTable.ReceiptTable
 import services.games.tables.InterviewRequestTable.InterviewRequestTable
 import services.system.objects.*
+import services.cases.objects.investigation.TimeAssessment
 
 private[games] object MutationSupport:
   private[games] def owned(row: Option[GameSessionRecord],user: UserId): IO[GameSessionRecord] = row match

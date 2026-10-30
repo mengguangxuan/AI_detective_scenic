@@ -3,6 +3,9 @@ package services.cases.utils
 import cats.syntax.all.*
 import io.circe.{Decoder, DecodingFailure, HCursor, Json}
 import services.cases.objects.*
+import services.cases.objects.content.{FixtureClue, CasePersonBrief}
+import services.cases.objects.dialogue.{CharacterProfile, DialogueDossier, WitnessProfile}
+import services.cases.objects.investigation.{FixtureRoute, WitnessInteraction}
 
 private[cases] object CharacterConfiguration:
   private[cases] def validDossier(d: DialogueDossier, requireKnowledge: Boolean): Boolean =

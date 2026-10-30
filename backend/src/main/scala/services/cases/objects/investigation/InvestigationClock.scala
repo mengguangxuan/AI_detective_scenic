@@ -1,4 +1,4 @@
-package services.cases.objects
+package services.cases.objects.investigation
 import io.circe.{Decoder,Encoder}
 import io.circe.generic.semiauto.*
 

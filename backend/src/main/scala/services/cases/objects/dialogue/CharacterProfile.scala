@@ -1,7 +1,8 @@
-package services.cases.objects
+package services.cases.objects.dialogue
 
 import io.circe.{Decoder, Encoder, DecodingFailure}
 import io.circe.generic.semiauto.*
+import services.cases.objects.PersonId
 
 // Author-owned personal data. Entry points, disclosures and phase transitions belong elsewhere.
 final case class CharacterProfile(id: PersonId, name: String, identity: String,

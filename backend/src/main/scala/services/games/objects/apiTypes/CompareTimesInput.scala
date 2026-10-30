@@ -4,6 +4,7 @@ import io.circe.{Decoder, Encoder}
 import io.circe.generic.semiauto.*
 import services.system.objects.*
 import services.cases.objects.*
+import services.cases.objects.investigation.TimeAssessment
 
 final case class CompareTimesInput(sessionId: SessionId, requestId: RequestId, expectedSequence: Sequence,
   evidence: Set[ClueId], convertedTimeMinutes: Int, assessment: TimeAssessment)

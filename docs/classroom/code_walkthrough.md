@@ -85,6 +85,8 @@ detective_scenic/
 
 场景与地图的七个类型现在放在`cases/objects/scene/`：`FixtureNode`、`FixturePoint`、`SceneObservation`、`SceneObjectBinding`、`AreaMap`、`MapLocation`、`MapRoad`。ID类型仍在`cases/objects/`根目录。这里保存固定场景配置，前端`pages/Scene/`负责实际3D渲染。目录分组没有改变类型数量或存档字段。
 
+其余类型也按用途分组：`objects/content`保存事实、线索和公开人物简介；`objects/dialogue`保存人物资料与编译后的问询投影；`objects/investigation`保存人物交互、披露、阶段、对照和操作配置。根目录仅保留13个ID与CaseContent／CaseRevisionRecord，共15个文件；所有子目录合计仍42个类型。该目录调整没有改写材料语义或替玩家作推理判断。
+
 例如`games/tables/SessionTable/`内有`SessionTable.scala`与`SessionTableInitializer.scala`，分别管理会话表访问和表初始化。
 
 固定内容和本局状态也分开：`CaseContent`描述作者配置的案件内容；`GameSessionRecord`保存这次调查已完成的操作、已得线索和时间；`SessionRecord`保留行动与披露历史。更新本局进度不会改写原案件。
@@ -164,7 +166,7 @@ val wrong: ClueId = WitnessId("redding")        // 编译错误：类型不同
 注意：`final case class`的构造器本身没有禁止所有非法字符串；JSON解码通过`fromString`检查非空和首尾空格。某个ID是否真的存在于当前案件，仍由案件引用校验确认。强类型不会自动证明证据内容真实。
 
 ### 示例二：业务配置明确关联类型
-源码：[WitnessFollowUpSpec.scala](../../backend/src/main/scala/services/cases/objects/WitnessFollowUpSpec.scala)。
+源码：[WitnessFollowUpSpec.scala](../../backend/src/main/scala/services/cases/objects/investigation/WitnessFollowUpSpec.scala)。
 
 ```scala
 final case class WitnessFollowUpSpec(operation: OperationId, witness: WitnessId, title: String, requiredEvidence: Set[ClueId], requiredRoutes: Set[RouteId], knowledge: Vector[String], policy: Vector[String])
@@ -173,7 +175,7 @@ final case class WitnessFollowUpSpec(operation: OperationId, witness: WitnessId,
 `requiredEvidence`只能放线索ID，`requiredRoutes`只能放路线ID，`witness`指向人物，`operation`指向开始操作。知识和对外策略采用语义文字，程序校验关联与执行条件。这样既保留案件描述的开放性，也让执行边界清楚。
 
 ### 示例三：有限状态使用枚举或可辨识联合类型
-后端源码：[FixtureEffect.scala](../../backend/src/main/scala/services/cases/objects/FixtureEffect.scala)。
+后端源码：[FixtureEffect.scala](../../backend/src/main/scala/services/cases/objects/investigation/FixtureEffect.scala)。
 
 ```scala
 enum FixtureEffect:

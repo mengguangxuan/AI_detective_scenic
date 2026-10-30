@@ -12,6 +12,7 @@ import services.games.tables.ReceiptTable.ReceiptTable
 import services.games.utils.{FixtureRules, MutationSupport}
 import services.system.api.APIMessage
 import services.system.objects.*
+import services.cases.objects.investigation.TimeAssessment
 
 final case class CompareTimesMessage(userId: UserId, sessionId: SessionId, requestId: RequestId, expectedSequence: Sequence,
   evidence: Set[ClueId], convertedTimeMinutes: Int, assessment: TimeAssessment) extends APIMessage[CommandResult]:

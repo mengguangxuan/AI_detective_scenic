@@ -5,6 +5,7 @@ import services.games.objects.*
 import services.games.objects.apiTypes.*
 import services.system.objects.*
 import services.cases.objects.scene.FixturePoint
+import services.cases.objects.investigation.{FixtureEffect, FixtureOperation, FixtureRoute, TimeAssessment}
 
 private[games] object FixtureRules:
   private def denied = GameError(ErrorCode.AccessDenied,"当前无法访问该调查入口。")

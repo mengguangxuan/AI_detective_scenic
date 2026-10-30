@@ -1,7 +1,8 @@
-package services.cases.objects
+package services.cases.objects.investigation
 
 import io.circe.{Decoder, Encoder, DecodingFailure}
 import io.circe.generic.semiauto.*
+import services.cases.objects.{PersonId, PointId, WitnessId}
 
 final case class WitnessInteraction(id: WitnessId, person: PersonId, point: PointId, answers: Vector[WitnessAnswer])
 object WitnessInteraction:

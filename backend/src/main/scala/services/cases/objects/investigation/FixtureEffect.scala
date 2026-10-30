@@ -1,7 +1,8 @@
-package services.cases.objects
+package services.cases.objects.investigation
 
 import io.circe.{Decoder, Encoder, Json, DecodingFailure}
 import io.circe.syntax.*
+import services.cases.objects.{EntityId, SceneNodeId}
 
 // Closed execution protocol supported by the fixture runner.
 enum FixtureEffect:

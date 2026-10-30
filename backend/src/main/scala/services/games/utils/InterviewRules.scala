@@ -8,6 +8,8 @@ import services.games.objects.*
 import services.games.objects.apiTypes.CommandResult
 import services.models.objects.ChatCompletionInput
 import services.system.objects.*
+import services.cases.objects.dialogue.DialogueDossier
+import services.cases.objects.investigation.WitnessAnswer
 
 private[games] object InterviewRules:
   private def denied = GameError(ErrorCode.AccessDenied,"当前无法向这位人物进行该项问询。")

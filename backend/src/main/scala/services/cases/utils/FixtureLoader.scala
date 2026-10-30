@@ -6,6 +6,8 @@ import io.circe.parser.parse
 import services.cases.objects.*
 import services.system.objects.*
 import services.cases.objects.scene.{FixtureNode, FixturePoint, SceneObservation, SceneObjectBinding, AreaMap}
+import services.cases.objects.content.{FixtureFact, FixtureClue}
+import services.cases.objects.investigation.{EntityOpenRequirement, ExternalCheckSpec, FixtureEffect, FixtureOperation, FixtureRoute, InvestigationClock, InvestigationStage, WitnessAnswer, WitnessFollowUpSpec, StatementComparisonSpec}
 
 private[cases] object FixtureLoader:
   private def check(ok: Boolean, message: String, cursor: HCursor): Decoder.Result[Unit] =

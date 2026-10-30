@@ -1,7 +1,9 @@
-package services.cases.objects
+package services.cases.objects.dialogue
 
 import io.circe.{Decoder, Encoder, Json}
 import io.circe.syntax.*
+import services.cases.objects.{PointId, WitnessId}
+import services.cases.objects.investigation.WitnessAnswer
 
 // Compiled interview projection, also used in frozen contexts. New authoring uses
 // CharacterProfile + WitnessInteraction; keep the original flat JSON for saved requests.

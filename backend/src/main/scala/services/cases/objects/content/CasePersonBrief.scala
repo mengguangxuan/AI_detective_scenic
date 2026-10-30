@@ -1,7 +1,8 @@
-package services.cases.objects
+package services.cases.objects.content
 
 import io.circe.{Decoder,Encoder}
 import io.circe.generic.semiauto.*
+import services.cases.objects.{PersonId, WitnessId}
 
 // Public opening information only; testimony and private motives do not belong here.
 final case class CasePersonBrief(id: PersonId, name: String, identity: String,

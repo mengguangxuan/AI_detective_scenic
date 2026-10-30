@@ -2,7 +2,7 @@
 
 日期：2026-10-30。基线：当前案件修订9、场景4、浏览器存档键v6。
 
-本文记录整理方案及实施进度。用户已提出：`cases`管理范围过宽，可以精简类型。按本文分批推进，不默认启动整体重构或微服务拆分。A批实施记录见第9节，B批按人物／交互分离后的实施记录见第10节；C批第一组的目录整理见第12节，D批首项的合并记录见第11节。
+本文记录整理方案及实施进度。用户已提出：`cases`管理范围过宽，可以精简类型。按本文分批推进，不默认启动整体重构或微服务拆分。A批实施记录见第9节，B批按人物／交互分离后的实施记录见第10节；C批目录整理已完成，见第12、13节；D批已完成项见第11节，剩余候选按用户决定取消。
 
 ## 1. 整理目标与当前判断
 
@@ -45,16 +45,16 @@
 | 类型或类型组 | 建议处置 | 原因与限制 |
 |---|---|---|
 | `CaseId`、`ClueId`、`EntityId`、`ExternalCheckId`、`FactId`、`OperationId`、`PersonId`、`PlaceId`、`PointId`、`RouteId`、`SceneNodeId`、`WitnessAnswerId`、`WitnessId` | 保留13个ID类型 | 有实际跨对象关联，避免同为String的编号混用。不批量改为String或类型别名 |
-| `CaseRevisionRecord`、`CaseContent` | 保留；优先拆清校验职责，后续再评估聚合结构 | 修订与固定内容是必要概念；不立即改存储JSON结构 |
+| `CaseRevisionRecord`、`CaseContent` | 保留原聚合；C批仅调整被引用类型的目录 | 修订与固定内容是必要概念；不立即改存储JSON结构 |
 | `FixtureFact`、`FixtureClue` | 保留 | 事实与调查取得的信息含义不同。不能因正文相似合并，也不假设每份证词就是客观真相 |
 | `FixtureNode`、`FixturePoint`、`FixtureRoute`、`FixtureOperation`、`FixtureEffect`、`EntityOpenRequirement` | 保留执行概念，按场景／调查用途分组 | 分别表达节点、入口、披露路线、操作与受支持效果；不合为充满可选字段的万能对象 |
 | `CasePersonBrief`、`WitnessProfile`、`WitnessAnswer`、`DialogueDossier` | 保留；优先复用已有DialogueDossier | 公开关系、可问询资料、合法披露和私人资料有不同职责；复用内部结构不扩大公开范围 |
 | `PoliceContact` | 已在第11节合并删除 | 以统一WitnessProfile加警方ID引用替代；旧对象只在兼容解码处读取 |
-| `SceneObservation`、`SceneObjectBinding` | 当前保留，核对登记重复后再决定是否局部收拢 | 一个描述可见外观，一个绑定实体及操作。没有交互实体的外观节点也可能合法，不能强制两者一一对应 |
+| `SceneObservation`、`SceneObjectBinding` | 保留；已按C批迁入scene，取消后续合并候选 | 一个描述可见外观，一个绑定实体及操作。没有交互实体的外观节点也可能合法，不能强制两者一一对应 |
 | `AreaMap`、`MapLocation`、`MapRoad` | 保留 | 地图、地点和道路各有独立数据结构与消费者；不改为无字段名元组或任意Map |
 | `InvestigationClock`、`ExternalCheckSpec`、`InvestigationStage`、`TimeComparisonSpec`、`TimeAssessment` | 固定配置当前留cases；运行状态留games | 保持案件定义与会话状态分离，避免为减少cases文件数制造循环依赖 |
 | `WitnessFollowUpSpec` | 保留 | 表达开始操作、本人物证接收、关键回应和阶段策略；不能丢掉实际出示与实际回应的区别 |
-| `StatementComparisonSpec`、`StatementComparisonRowSpec` | 保留，检查是否重复记录可推导关联 | 行标签与两版本线索ID有明确含义；单一消费者并不等于该类型多余 |
+| `StatementComparisonSpec`、`StatementComparisonRowSpec` | 保留现有含义；C批仅迁入investigation | 行标签与两版本线索ID有明确含义；单一消费者并不等于该类型多余 |
 
 ### B批修订：人物资料与交互配置分离（2026-10-30）
 
@@ -81,7 +81,7 @@
 
 原先未随修订保存的对话资料本轮正式纳入新运行快照，属于内容冻结方式的变化：新建修订10承载；已有3—9不覆盖、不重算。区别于纯包名调整，不修改原版本记录以伪装同修订兼容。场景4和v6键继续沿用，公开HTTP响应格式保持。
 
-本轮增加作者配置类型旨在明确边界，类型数量可能增加，不宣称完成类型数量压缩。其他资料合并仍以实际语义为准。
+本轮增加作者配置类型旨在明确边界，类型数量可能增加，不宣称完成类型数量压缩。其他资料合并不再纳入本轮整理，按第6节的取消决定保留。
 
 ## 4. 目标目录与CaseContent处理
 
@@ -96,8 +96,8 @@ cases/
 │   ├── CaseRevisionRecord.scala
 │   ├── content/            事实、线索、公开人物信息
 │   ├── scene/              节点、物品绑定、公开外观、地图
-│   ├── dialogue/           人物资料、披露配置、补充与对照配置
-│   └── investigation/      路线、操作、条件、阶段、时钟和核查定义
+│   ├── dialogue/           人物资料、主观资料及编译后的问询投影
+│   └── investigation/      人物交互、披露、对照及路线／操作／阶段／核查定义
 ├── tables/CaseRevisionTable/
 └── utils/                  源文档加载和服务内部校验
 ```
@@ -106,7 +106,7 @@ cases/
 
 首批保留`CaseContent`当前数据形状。通过明确的校验函数和分组文档先改善职责，不为了让根对象字段少就新加多层包装。
 
-后续若调用方确实总是成组使用场景配置或对话配置，再提取对应聚合；届时单独说明收益、codec和旧存储适配。聚合类型数可能增加，不能把“根字段少了”包装成“类型精简”。避免保留新旧两套长期并行的CaseContent。
+CaseContent聚合调整不纳入当前C批；剩余D候选已取消。保留当前字段与单一结构，不增加多层包装或并行的新旧模型。
 
 ## 5. 校验整理方式
 
@@ -147,11 +147,11 @@ cases/
 
 验收：编译与后端完整回归通过；数据codec、端点和响应格式保持不变；前端类型／生产构建通过。用已有代表性存档验证旧版本恢复，不清空用户数据。
 
-### D批：有证据后再删除或统一
+### D批：剩余候选取消（用户决定，2026-10-30）
 
-候选：警方与普通问询角色资料的共同部分、场景外观与实体登记重复信息、CaseContent成组配置。每项先列消费者、能消除的重复和替代结构；若删除引入更多可选字段、转换或重复状态，就不做。
+用户认为剩余语义重复判断成本较高，且案件中的信息理解与推断应由侦探完成，决定不继续D批。保留第11节已完成的PoliceContact结构合并，不回滚；未实施的场景观察／物品绑定合并、CaseContent聚合调整及其他删除候选停止推进。
 
-该批不预先承诺全部实施，不阻塞枪接触者、纸张原件与视线复验等主线功能。删除真正有用的语义类型不能作为完成指标。
+本轮C批只按职责迁移文件和导入，不比较、合并或删除案件事实、线索、人物信念与供述，不增加自动语义去重、等价认定或替玩家判断的逻辑。原有材料、对照、解锁及权限规则保持。需要新的结构或玩法调整时，另按明确需求提出。
 
 ## 7. 兼容与实施边界
 
@@ -220,3 +220,22 @@ GetDialogueKnowledgeMessage对新修订按案件ID、修订和问询ID从数据�
 cases类型总数仍42个（递归统计），根目录35个，scene子目录7个。本次改善目录职责，不称为类型数量减少；3D几何和镜头仍在前端pages/Scene，与后端固定场景配置分开。
 
 验证完成：现有98项后端完整回归通过，包含配置解码／编码往返、旧修订与HTTP存档恢复；前端类型／生产构建通过。正常配置启动现有数据库成功，再通过HTTP只读恢复真实修订9与10存档，序号均保持30、8个物品／15地点／17道路及全部供述版本恢复，二次读取结果一致。未新增镜像实现的测试、未重跑无关浏览器全量或调用付费模型。当前修订10、场景4、v6键及接口保持，不改源案件数据、数据库、历史回执或模型配置。
+
+
+## 13. C批剩余分组与D批取消（2026-10-30）
+
+用户要求继续完成C批，同时取消D批剩余项。保留已完成的PoliceContact结构合并，不继续删除／合并其他语义结构，不对案件事实、线索、供词和人物信念做自动去重或等价认定；侦探继续自行理解和推断。现有材料、对照及权限规则不变。
+
+本轮分组迁移如下：
+
+| 新目录 | 类型 |
+|---|---|
+| `objects/content` | FixtureFact、FixtureClue、CasePersonBrief，共3个 |
+| `objects/dialogue` | CharacterProfile、DialogueDossier、WitnessProfile，共3个，分别为人物作者资料、主观资料和编译后的问询投影 |
+| `objects/investigation` | EntityOpenRequirement、ExternalCheckSpec、FixtureEffect、FixtureOperation、FixtureRoute、InvestigationClock、InvestigationStage、TimeComparisonSpec、TimeAssessment、WitnessInteraction、WitnessAnswer、WitnessFollowUpSpec、StatementComparisonSpec、StatementComparisonRowSpec，共14个 |
+
+人物交互绑定、披露能力、补充与对照配置单独放investigation，不与人物资料混放。已整理的scene仍7个。根目录保留13个ID和CaseContent／CaseRevisionRecord两个聚合，共15个；递归总数仍42。仅移动文件、package及显式导入，无别名、重复模型或字段调整。
+
+内容组和人物资料组分别完成编译后再迁移下一组，交互组完成后运行完整回归。20个类型及受影响Scala文件已与迁移前基线64d69a8比对，除包名、导入和必要的限定类型路径外，字段、codec和执行正文一致。源案件JSON、修订10、场景4、v6键、HTTP协议、原请求摘要及数据库均保持。
+
+验证完成：内容组及人物资料组分别编译通过，交互组首次编译发现WitnessAnswerId被同名前缀误改导入，恢复其原路径后完整98项后端回归通过；13个ID文件未移动。20个类型及受影响Scala文件已再次比对，执行正文与codec保持。前端类型／生产构建通过；正常配置启动原数据库，经HTTP只读恢复真实修订9与10存档，序号均为30、8个物品、15地点、17道路及供述版本正常，二次读取一致。无付费模型调用，也未新增重复测试或重跑无关浏览器全量。C批至此按四个目录分组完成，D批剩余候选取消，不自动进入CaseContent重组或新的语义合并。
