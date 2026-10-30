@@ -93,7 +93,7 @@ CharacterProfile + WitnessInteraction
   → 固定案件修订中的运行投影
       · 公开人物简介
       · 编译后的WitnessProfile
-      · 配置指定的PoliceContact
+      · police保存指向列表中问询对象的WitnessId
   → GetDialogueKnowledgeMessage按案件ID、修订、问询ID读取本人dossier
   → InterviewRules按当前阶段、实际出示材料和历史组合上下文
   → 模型回复经过合法披露校验后提交
@@ -106,7 +106,8 @@ WitnessProfile是编译后的运行／冻结上下文结构，出现入口与材
 ## 4. 旧调查兼容和范围
 
 - 旧修订3—9继续读原案件内容；其原本外置的对话资料由LegacyDialogueKnowledge兼容读取，vicarage_dialogue.json保留为历史兼容资源，新案件不依赖它。
-- 老PoliceContact没有显式问询ID的格式在解码兼容层恢复原melchett身份，旧无answers的警方投影沿原路线生成能力。新格式要求显式绑定与披露配置，运行规则不再按该名字识别警方。
+- 旧独立警方对象在LegacyPoliceProfile解码兼容处归入统一WitnessProfile列表，缺ID的旧格式恢复原melchett身份，缺披露配置的旧格式按原路线生成能力。此转换只读旧数据，不回写旧修订。运行时已删除PoliceContact类型，警方只保留WitnessId引用。
+- 新作者格式不变，运行快照的新写入格式为统一witnesses列表加police问询ID；旧对象格式仍可读取。人物列表维持普通对象顺序，警方放在最后，使既有修订10规范化后与同修订源文件导入值相等。
 - 已冻结问询上下文和responseVersion保留；旧未决请求、原回执、场景4、v6浏览器键不重写。
 - 统一的是人物制作与后端资料读取。网页仍使用已登记的study/4场景和本案入口；没有因此实现任意新案件的场景生成、案件大厅或全案发布平台。
 

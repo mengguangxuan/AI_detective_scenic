@@ -29,7 +29,7 @@ private[games] object ExternalCheckRules:
     for
       _ <- Either.cond(content.clock.nonEmpty,(),GameError(ErrorCode.ConflictingContent,"这份旧调查尚未启用案件时钟，请保留原存档。"))
       _ <- Either.cond(minutes >= 1 && minutes <= 30,(),GameError(ErrorCode.InvalidValue,"每次可推进1至30分钟。"))
-      point <- content.police.map(_.point).toRight(GameError(ErrorCode.AccessDenied,"当前无法整理核查进度。"))
+      point <- content.police.flatMap(id => content.witnesses.find(_.id == id)).map(_.point).toRight(GameError(ErrorCode.AccessDenied,"当前无法整理核查进度。"))
     yield
       val next=state.copy(sequence=Sequence(state.sequence.value+1),storyTimeSeconds=state.storyTimeSeconds+minutes.toLong*60)
       val text=s"整理材料并等待$minutes 分钟，当前${timeLabel(content,next.storyTimeSeconds)}。"

@@ -9,7 +9,7 @@ private[cases] object CharacterConfiguration:
     (!requireKnowledge || d.knowledge.nonEmpty) &&
       Vector(d.knowledge,d.privateContext,d.policy).forall(xs => xs.size <= 30 && xs.forall(s => s.trim.nonEmpty && s.length <= 1200))
 
-  private[cases] def decode(root: HCursor, background: Json, investigation: Json): Decoder.Result[(Vector[CasePersonBrief],Vector[WitnessProfile],Option[PoliceContact])] =
+  private[cases] def decode(root: HCursor, background: Json, investigation: Json, routes: Vector[FixtureRoute], clues: Vector[FixtureClue]): Decoder.Result[(Vector[CasePersonBrief],Vector[WitnessProfile],Option[WitnessId])] =
     def check(ok: Boolean, path: String, message: String): Decoder.Result[Unit] =
       Either.cond(ok,(),DecodingFailure(s"$path：$message",root.history))
     if !root.downField("characters").succeeded then
@@ -17,8 +17,10 @@ private[cases] object CharacterConfiguration:
       for
         people <- background.hcursor.get[Vector[CasePersonBrief]]("persons")
         witnesses <- investigation.hcursor.get[Option[Vector[WitnessProfile]]]("witnesses")
-        police <- investigation.hcursor.get[Option[PoliceContact]]("police")
-      yield (people,witnesses.getOrElse(Vector.empty),police)
+        rawPolice <- investigation.hcursor.get[Option[Json]]("police")
+        police <- rawPolice.traverse(LegacyPoliceProfile.decode(_,routes,clues))
+        all = witnesses.getOrElse(Vector.empty) ++ police.toVector
+      yield (people,all,police.map(_.id))
     else
       for
         characters <- root.get[Vector[CharacterProfile]]("characters")
@@ -47,7 +49,6 @@ private[cases] object CharacterConfiguration:
         _ <- check(policeId.forall(id => profiles.exists(_.id == id)),"investigation.police.witness","警方问询身份不存在")
         _ <- profiles.traverse_(p => check(p.answers.nonEmpty,"investigation.interviews.answers","问询对象需要合法披露配置"))
         policeProfile = policeId.flatMap(id => profiles.find(_.id == id))
-        police = policeProfile.map(p => PoliceContact(p.point,p.name,p.background,p.id,p.voice,p.dossier,p.answers))
         people = characters.map(p => CasePersonBrief(p.id,p.name,p.identity,p.victimRelation,p.caseRelation,
           interactions.find(_.person == p.id).map(_.id)))
-      yield (people,profiles.filterNot(p => policeId.contains(p.id)),police)
+      yield (people,profiles.filterNot(p => policeId.contains(p.id)) ++ policeProfile.toVector,policeId)

@@ -18,19 +18,15 @@ private[games] object InterviewRules:
       privateContext: Vector[String] = Vector.empty, policy: Vector[String] = Vector.empty): Either[GameError,InterviewContext] =
     for
       _ <- Either.cond(question.trim.nonEmpty && question.length <= 1000 && evidence.size <= 20,(),GameError(ErrorCode.InvalidValue,"请填写1至1000字的问题，最多出示20份材料。"))
-      profile <- content.witnesses.find(_.id == witness).orElse(content.police.filter(_.id == witness).map { p =>
-        WitnessProfile(witness,p.point,p.name,p.background,p.voice,
-          if p.answers.nonEmpty then p.answers else content.routes.filter(_.point == p.point).map(r => WitnessAnswer(WitnessAnswerId(r.id.value.stripPrefix("route_")),
-            content.clues.filter(c => r.clues.contains(c.id)).map(_.text.value).mkString("\n"),Vector(r.id),r.requiredClues)),p.dossier)
-      }).toRight(denied)
+      profile <- content.witnesses.find(_.id == witness).toRight(denied)
       _ <- content.points.find(_.id == profile.point).filter(FixtureRules.accessible(content,state,_)).toRight(denied)
       _ <- Either.cond(evidence.subsetOf(state.clues),(),denied)
     yield
       val history = turns.filter(_.witness == witness)
       val fixedPresentations = records.filter(_.point == profile.point).flatMap(_.route)
         .flatMap(id => content.routes.find(_.id == id).toVector.flatMap(_.presentedClues))
-      val policeEvidence = if content.police.exists(_.point == profile.point) then exchanges.flatMap(_.evidence).toSet else Set.empty[ClueId]
-      val checked = if content.police.exists(_.point == profile.point) then
+      val policeEvidence = if content.police.contains(profile.id) then exchanges.flatMap(_.evidence).toSet else Set.empty[ClueId]
+      val checked = if content.police.contains(profile.id) then
         content.externalChecks.filter(c => state.externalChecks.exists(p => p.id == c.id && p.completedAtSeconds.nonEmpty)).flatMap(_.resultClues).toSet else Set.empty[ClueId]
       val known = checked ++ evidence ++ history.filter(t => t.mode == InterviewReplyMode.Answered || t.mode == InterviewReplyMode.Unknown).flatMap(_.shownClues) ++ fixedPresentations ++ policeEvidence
       // Composite answers may establish a prerequisite for their own later route.
@@ -49,7 +45,7 @@ private[games] object InterviewRules:
       val available = native ++ reports.filterNot(r => native.exists(_.id == r.id))
       val current = content.clock.toVector.map(_ => s"当前案件时间是${ExternalCheckRules.timeLabel(content,state.storyTimeSeconds)}，日期和时刻以此为准；历史经历不随等待改写。")
       val mapKnowledge = content.areaMap.toVector.map(m => s"公开地点示意：${m.locations.map(l => s"${l.name}：${l.description}").mkString("；")}。道路路程约数：${m.roads.map(r => s"${m.locations.find(_.id == r.from).map(_.name).getOrElse(r.from.value)}至${m.locations.find(_.id == r.to).map(_.name).getOrElse(r.to.value)} ${r.meters}米").mkString("；")}。${m.note}")
-      val conditions = if content.police.exists(_.point == profile.point) then ExternalCheckRules.views(content,state).map { c =>
+      val conditions = if content.police.contains(profile.id) then ExternalCheckRules.views(content,state).map { c =>
         c.progress.fold(s"${c.title}：尚未受理，可通过登记申请，不能声称已经核验或得到结果。") { p =>
           p.completedAt.fold(s"${c.title}：${p.requestedAt}受理，预计${p.readyAt}完成，目前仍在办理。") { at => s"${c.title}：$at 已完成，可依据shownEvidence中的实际核查结果回答。" }
         }

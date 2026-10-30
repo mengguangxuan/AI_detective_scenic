@@ -45,7 +45,7 @@ final case class FinishInterviewMessage(userId: UserId,sessionId: SessionId,requ
             planned <- IO.fromEither(InterviewRules.plan(revision.content,session,request,validDecision,safeFailure))
             (action,turn) = planned
             _ <- InterviewTurnTable.insert(connection,turn)
-            _ <- if revision.content.police.exists(_.point == request.context.profile.point) && turn.mode == InterviewReplyMode.Answered && turn.shownClues.nonEmpty then
+            _ <- if revision.content.police.contains(request.context.profile.id) && turn.mode == InterviewReplyMode.Answered && turn.shownClues.nonEmpty then
               PoliceExchangeTable.insert(connection,PoliceExchangeRecord(sessionId,requestId,turn.sequence,turn.shownClues,turn.reply)) else IO.unit
             _ <- InterviewRequestTable.replace(connection,request.copy(status=InterviewRequestStatus.Finished),leaseToken)
             response <- MutationSupport.commit(connection,session,requestId,request.digest,action,pendingInterview=true)

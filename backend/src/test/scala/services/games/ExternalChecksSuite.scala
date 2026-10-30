@@ -187,3 +187,24 @@ class ExternalChecksSuite extends FunSuite:
       _ = assertEquals(done.clues.map(_.id),Vector(ClueId("clue_medical_visit_record")))
     yield ()).unsafeRunSync()
   }
+
+
+  test("a non-police witness with the officer's name receives no automatic police reports") {
+    val url=database
+    (for
+      _ <- DatabaseSession.connection(url).use(c => DatabaseSchema.initialize(c))
+      record <- tx(url)(ImportCaseMessage(Paths.get("../docs/fixtures/browser_investigation.json")).plan)
+      content = record.content
+      officer = content.witnesses.find(w => content.police.contains(w.id)).get
+      ordinary = content.witnesses.find(_.id == WitnessId("clement")).get.copy(name=officer.name)
+      sameName = content.copy(witnesses=content.witnesses.map(w => if w.id == ordinary.id then ordinary else w))
+      reports = content.externalChecks.flatMap(_.resultClues).toSet
+      initial = services.games.utils.FixtureRules.initial(record,SessionId("role-test"),owner)
+      completed = initial.copy(clues=reports,externalChecks=content.externalChecks.map(c => ExternalCheckProgress(c.id,0L,c.delaySeconds.toLong,Some(c.delaySeconds.toLong))))
+      police <- IO.fromEither(services.games.utils.InterviewRules.context(sameName,completed,officer.id,"进展如何？",Set.empty,Vector.empty,Vector.empty))
+      other <- IO.fromEither(services.games.utils.InterviewRules.context(sameName,completed,ordinary.id,"进展如何？",Set.empty,Vector.empty,Vector.empty))
+      _ = assert(reports.subsetOf(police.evidence.map(_.id).toSet))
+      _ = assert(other.evidence.forall(c => !reports(c.id)))
+      _ = assertEquals(other.profile.name,police.profile.name)
+    yield ()).unsafeRunSync()
+  }

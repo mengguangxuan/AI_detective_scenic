@@ -34,8 +34,8 @@ class CharacterConfigurationSuite extends FunSuite:
   test("new authoring separates personal data, interaction bindings and police selection") {
     val record = FixtureLoader.decode(source.noSpaces).toOption.get
     assertEquals(record.content.publicPersons.size,13)
-    assertEquals(record.content.witnesses.size,8)
-    assertEquals(record.content.police.get.id,WitnessId("melchett"))
+    assertEquals(record.content.witnesses.size,9)
+    assertEquals(record.content.police.get,WitnessId("melchett"))
     assert(record.content.witnesses.find(_.id == WitnessId("clement")).get.dossier.knowledge.exists(_.contains("阿博特")))
     val mixed = changeCharacter(source,"clement")(_.mapObject(_.add("point",Json.fromString("point_clement"))))
     error(mixed,"人物资料")
@@ -55,7 +55,7 @@ class CharacterConfigurationSuite extends FunSuite:
         if p.hcursor.get[String]("id").contains("melchett") then
           p.hcursor.downField("answers").downArray.downField("routes").withFocus(_ => Json.arr(Json.fromString("route_clement_habit"))).top.get
         else p))).top.get
-    error(wrong,"investigation.police.answers[0].routes")
+    error(wrong,".answers[0].routes")
     val duplicate = source.hcursor.downField("investigation").downField("interviews").withFocus(x =>
       Json.fromValues(x.asArray.get :+ x.asArray.get.head.mapObject(_.add("id",Json.fromString("second_identity"))))).top.get
     error(duplicate,"investigation.interviews.person")
@@ -73,9 +73,39 @@ class CharacterConfigurationSuite extends FunSuite:
     val frozen = context.as[InterviewContext].toOption.get
     assertEquals(frozen.responseVersion,1)
     assertEquals(frozen.profile.asJson,flat)
-    val oldPolice = parser.parse("""{"point":"point_police","name":"旧警方","background":"旧说明"}""").toOption.get.as[PoliceContact].toOption.get
-    assertEquals(oldPolice.id,WitnessId("melchett"))
-    assert(oldPolice.dossier.knowledge.isEmpty)
+
+  }
+
+  test("embedded revision-10 police data normalizes to the same unified content without a version change") {
+    val record = FixtureLoader.decode(source.noSpaces).toOption.get
+    val content = record.content
+    val police = content.witnesses.find(w => content.police.contains(w.id)).get
+    val embedded = Json.obj("point" -> police.point.asJson,"name" -> police.name.asJson,
+      "background" -> police.background.asJson,"id" -> police.id.asJson,"voice" -> police.voice.asJson,
+      "dossier" -> police.dossier.asJson,"answers" -> police.answers.asJson)
+    val oldBody = content.asJson.mapObject(_.add("police",embedded)
+      .add("witnesses",content.witnesses.filterNot(w => content.police.contains(w.id)).asJson))
+    val normalized = oldBody.as[CaseContent].toOption.get
+    assertEquals(normalized,content)
+    assertEquals(normalized.asJson.hcursor.get[WitnessId]("police"),Right(police.id))
+    assertEquals(normalized.witnesses.count(_.id == police.id),1)
+    assertEquals(normalized.witnesses.last.id,police.id)
+    assert(FixtureLoader.valid(record.copy(content=normalized)))
+  }
+
+  test("old minimal police objects compile their disclosures only at the compatibility boundary") {
+    val content = FixtureLoader.decode(source.noSpaces).toOption.get.content
+    val legacy = content.asJson.mapObject(_.add("police",Json.obj("point" -> Json.fromString("point_police"),
+      "name" -> Json.fromString("旧警方"),"background" -> Json.fromString("旧说明")))
+      .add("witnesses",content.witnesses.filterNot(w => content.police.contains(w.id)).asJson))
+    val decoded = legacy.as[CaseContent].toOption.get
+    val officer = decoded.witnesses.find(w => decoded.police.contains(w.id)).get
+    assertEquals(officer.id,WitnessId("melchett"))
+    assert(officer.dossier.knowledge.isEmpty)
+    assertEquals(officer.answers.map(_.routes.head).toSet,content.routes.filter(_.point == officer.point).map(_.id).toSet)
+    val duplicate = content.asJson.mapObject(_.add("police",legacy.hcursor.get[Json]("police").toOption.get))
+    assert(duplicate.as[CaseContent].isLeft)
+    assert(!FixtureLoader.valid(FixtureLoader.decode(source.noSpaces).toOption.get.copy(content=content.copy(police=Some(WitnessId("missing"))))))
   }
 
   test("another case and another police identity work from configuration with revision-frozen dossiers") {

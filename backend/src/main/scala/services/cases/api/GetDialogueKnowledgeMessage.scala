@@ -18,7 +18,6 @@ final case class GetDialogueKnowledgeMessage(caseId: CaseId, revision: Revision,
       record <- CaseRevisionTable.find(connection,caseId,revision).flatMap(value =>
         IO.fromOption(value)(GameError(ErrorCode.InvalidValue,"案件修订不存在。")))
       dossier = record.content.witnesses.find(_.id == witness).map(_.dossier)
-        .orElse(record.content.police.filter(_.id == witness).map(_.dossier))
       result <- dossier match
         case Some(d) if d.knowledge.nonEmpty || d.privateContext.nonEmpty || d.policy.nonEmpty => IO.pure(d)
         case _ => LegacyDialogueKnowledge.load(caseId,revision,witness)

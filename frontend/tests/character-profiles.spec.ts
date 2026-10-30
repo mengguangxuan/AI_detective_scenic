@@ -31,3 +31,24 @@ test.describe('real pre-refactor revision 9 save', () => {
     await expect(page.getByRole('region', { name: '供述版本对照', exact: true })).toContainText('第 1 条记录');
   });
 });
+
+test.describe('real pre-merge revision 10 save', () => {
+  test.use({ storageState: '.build-cache/pre-police-v10-state.json' });
+  test.skip(!existsSync('.build-cache/pre-police-v10-state.json'), 'Requires a saved pre-merge investigation.');
+  test('embedded police data restores once through the unified profile list', async ({ page }) => {
+    await page.goto('/police');
+    await expect(page.getByRole('heading', { name: '警方交流', exact: true })).toBeVisible();
+    const saved = await page.evaluate(() => JSON.parse(localStorage.getItem('detective-scenic:server-session:v6')!));
+    const response = await page.request.post('/api/getinvestigationsnapshot', { data: { sessionId: saved.sessionId }, headers: { 'X-Detective-Client': 'web' } });
+    expect(response.status()).toBe(200);
+    const state = await response.json();
+    expect(state.caseRevision.value).toBe(10);
+    const officers = state.witnesses.filter((w: { point: string }) => w.point === state.police.point);
+    expect(officers).toHaveLength(1);
+    expect(state.police.sharedClues).toContain('clue_redding_revised');
+    expect(state.followUps.every((p: { started: boolean }) => p.started)).toBe(true);
+    expect(JSON.stringify(state)).not.toMatch(/privateContext|"dossier"/);
+    await page.reload();
+    await expect(page.getByRole('heading', { name: '警方交流', exact: true })).toBeVisible();
+  });
+});

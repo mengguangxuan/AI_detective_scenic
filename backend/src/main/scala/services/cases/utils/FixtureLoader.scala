@@ -171,7 +171,7 @@ private[cases] object FixtureLoader:
       _ <- check(occurred.isEmpty, "No scheduled history in this profile", c)
       common <- background.hcursor.get[Set[FactId]]("commonKnowledge")
       stage <- investigation.hcursor.get[Option[InvestigationStage]]("stage")
-      people <- CharacterConfiguration.decode(c,background,investigation)
+      people <- CharacterConfiguration.decode(c,background,investigation,routes,clues)
       areaMap <- background.hcursor.get[Option[AreaMap]]("areaMap")
       clock <- investigation.hcursor.get[Option[InvestigationClock]]("clock")
       checks <- investigation.hcursor.get[Option[Vector[ExternalCheckSpec]]]("externalChecks").map(_.getOrElse(Vector.empty))
@@ -292,18 +292,10 @@ private[cases] object FixtureLoader:
         for
           _ <- rule(p.id.value.matches("[a-z][a-z0-9_]{0,63}"), s"$path.id", "人物编号格式不合法")
           _ <- rule(Vector(p.name,p.identity,p.victimRelation,p.caseRelation).forall(_.trim.nonEmpty), path, "公开人物说明不能为空")
-          _ <- rule(p.witness.forall(id => f.witnesses.exists(_.id == id) || f.police.exists(_.id == id)), s"$path.witness", "引用了不存在的问询对象")
+          _ <- rule(p.witness.forall(id => f.witnesses.exists(_.id == id)), s"$path.witness", "引用了不存在的问询对象")
         yield ()
       }
-      _ <- f.police.traverse_ { p =>
-        for
-          _ <- rule(p.name.trim.nonEmpty && p.background.trim.nonEmpty, "investigation.police", "警方姓名和背景不能为空")
-          _ <- rule(f.points.exists(_.id == p.point) && !f.witnesses.exists(_.point == p.point), "investigation.police.point", "警方入口不存在或与人物入口重叠")
-          _ <- rule(!f.witnesses.exists(_.id == p.id), "investigation.police.id", "警方与人物问询ID不能重复")
-          _ <- rule(CharacterConfiguration.validDossier(p.dossier,false), "investigation.police.dossier", "人物资料条数或长度不合法")
-          _ <- validateAnswers(f,p.point,p.answers,"investigation.police.answers")
-        yield ()
-      }
+      _ <- rule(f.police.forall(id => f.witnesses.exists(_.id == id)), "investigation.police", "警方问询身份不存在")
       _ <- unique(f.witnesses.map(_.id), "investigation.witnesses")
       _ <- unique(f.witnesses.map(_.point), "investigation.witnesses.point")
       _ <- entries(f.witnesses, "investigation.witnesses") { (w, path) =>
@@ -311,7 +303,7 @@ private[cases] object FixtureLoader:
           _ <- rule(w.id.value.matches("[a-z][a-z0-9_]{0,63}"), s"$path.id", "问询对象编号格式不合法")
           _ <- rule(Vector(w.name,w.background,w.voice).forall(_.trim.nonEmpty), path, "人物姓名、背景和语气不能为空")
           _ <- rule(f.points.exists(_.id == w.point), s"$path.point", "人物入口不存在")
-          _ <- rule(w.answers.nonEmpty, s"$path.answers", "合法答复不能为空")
+          _ <- rule(w.answers.nonEmpty || f.police.contains(w.id), s"$path.answers", "合法答复不能为空")
           _ <- rule(CharacterConfiguration.validDossier(w.dossier,false), s"$path.dossier", "人物资料条数或长度不合法")
           _ <- validateAnswers(f,w.point,w.answers,s"$path.answers")
         yield ()
@@ -397,7 +389,7 @@ private[cases] object FixtureLoader:
         for
           _ <- rule(c.title.trim.nonEmpty && c.requestLabel.trim.nonEmpty, path, "核查名称和申请说明不能为空")
           _ <- rule(c.delaySeconds >= 60 && c.delaySeconds <= 7200 && c.delaySeconds % 60 == 0, s"$path.delaySeconds", "预计耗时必须为1至120分钟的整分钟")
-          _ <- rule(f.police.exists(_.point == c.point), s"$path.point", "核查入口必须属于警方")
+          _ <- rule(f.police.flatMap(id => f.witnesses.find(_.id == id)).exists(_.point == c.point), s"$path.point", "核查入口必须属于警方")
           _ <- rule(c.requiredClues.subsetOf(clues), s"$path.requiredClues", "所需线索不存在")
           _ <- rule(c.resultClues.nonEmpty && c.resultClues.subsetOf(clues), s"$path.resultClues", "核查结果为空或引用未知线索")
           _ <- rule(c.requiredClues.intersect(c.resultClues).isEmpty, s"$path.requiredClues", "核查不能依赖自身结果")

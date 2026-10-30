@@ -32,7 +32,7 @@ final case class ReportCluesMessage(userId: UserId,sessionId: SessionId,requestI
             _ <- IO.raiseUnless(evidence.subsetOf(state.clues))(GameError(ErrorCode.AccessDenied,"只能向警方出示已经取得的材料。"))
             revision <- CaseRevisionTable.find(connection,state.caseId,state.caseRevision).flatMap(value =>
               IO.fromOption(value)(GameError(ErrorCode.InvalidValue,"案件修订不存在。")))
-            contact <- IO.fromOption(revision.content.police)(GameError(ErrorCode.AccessDenied,"当前没有可接触的警方人员。"))
+            contact <- IO.fromOption(revision.content.police.flatMap(id => revision.content.witnesses.find(_.id == id)))(GameError(ErrorCode.AccessDenied,"当前没有可接触的警方人员。"))
             _ <- IO.raiseUnless(revision.content.points.exists(p => p.id == contact.point && FixtureRules.accessible(revision.content,state,p)))(
               GameError(ErrorCode.AccessDenied,"当前无法与警方交流。"))
             previous <- PoliceExchangeTable.list(connection,sessionId)

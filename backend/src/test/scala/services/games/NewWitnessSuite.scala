@@ -46,8 +46,8 @@ class NewWitnessSuite extends FunSuite:
         primaryClues = latest.content.routes.filter(r => newPoints(r.point)).flatMap(_.clues).toSet
         newRoutes = latest.content.routes.filter(r => newPoints(r.point) || r.requiredClues.intersect(primaryClues).nonEmpty)
         newClues = newRoutes.flatMap(_.clues).toSet
-        oldContent = LegacyFixture.withoutFollowUps(latest.content).copy(police=latest.content.police.map(p => p.copy(answers=Vector.empty)),publicPersons=Vector.empty,clock=None,externalChecks=Vector.empty,areaMap=None,
-          witnesses=latest.content.witnesses.filterNot(w => newPoints(w.point)),
+        oldContent = LegacyFixture.withoutFollowUps(latest.content).copy(publicPersons=Vector.empty,clock=None,externalChecks=Vector.empty,areaMap=None,
+          witnesses=latest.content.witnesses.filterNot(w => newPoints(w.point)).map(w => w.copy(answers=w.answers.filterNot(a => a.routes.exists(id => newRoutes.exists(_.id == id))))),
           points=latest.content.points.filterNot(p => newPoints(p.id)),
           routes=latest.content.routes.filterNot(r => newRoutes.exists(_.id == r.id)),
           operations=latest.content.operations.filterNot(o => o.requiredClues.intersect(newClues).nonEmpty),

@@ -14,6 +14,7 @@ private[games] object StudyProjection:
     if !supports(caseRecord.caseId,caseRecord.revision) then
       throw GameError(ErrorCode.ConflictingContent,"这份调查使用的场景版本暂不支持，请保留原存档；可以另建一次调查使用当前版本。")
     val content = caseRecord.content
+    val police = content.police.flatMap(id => content.witnesses.find(_.id == id))
     val points = content.points.filter(FixtureRules.accessible(content,state,_)).map { point =>
       val operations = content.operations.filter(o => o.point == point.id && FixtureRules.operationAvailable(state,o) && FollowUpRules.permitted(content,state,o.id,records,turns))
         .map(o => OperationChoiceView(o.id,o.label))
@@ -29,17 +30,15 @@ private[games] object StudyProjection:
     val observations = content.observations.filter(o => visible(o.node))
     val journal = records.filter(_.sequence.value <= state.sequence.value).map(r => InvestigationLogEntry(
       r.id,r.sequence,if content.clock.nonEmpty then ExternalCheckRules.timeLabel(content,r.storyTimeSeconds) else s"${content.timeOriginLabel} +${r.storyTimeSeconds - content.initialStoryTimeSeconds}秒",r.text,r.disclosedClues))
-    val accessibleWitnesses = content.witnesses.filter(w => points.exists(_.id == w.point)).map(_.id).toSet ++
-      content.police.filter(p => points.exists(_.id == p.point)).map(_.id)
+    val accessibleWitnesses = content.witnesses.filter(w => points.exists(_.id == w.point)).map(_.id).toSet
     val people = content.publicPersons.map(p => p.copy(witness=p.witness.filter(accessibleWitnesses)))
     InvestigationSnapshot(state.id,state.caseId,state.caseRevision,state.sequence,caseRecord.title,
       StudySceneView("study","4",content.placeName,state.opened(EntityId("drawer")),state.opened(EntityId("window")),
         content.sceneObjects.filter(o => visible(o.node) && o.point.forall(p => points.exists(_.id == p)))),points,clues,journal,observations,
       content.stage.map(s => InvestigationStageView(s.introduction,s.objective,state.clues(s.completionClue),s.nextObjective)),
-      content.witnesses.filter(w => points.exists(_.id == w.point)).map(w => WitnessView(w.id,w.point,w.name,w.background)) ++
-        content.police.filter(p => points.exists(_.id == p.point)).map(p => WitnessView(p.id,p.point,p.name,p.background)),
+      content.witnesses.filter(w => points.exists(_.id == w.point)).map(w => WitnessView(w.id,w.point,w.name,w.background)),
       turns.filter(_.sequence.value <= state.sequence.value).map(t => InterviewTurnView(t.requestId,t.sequence,t.witness,t.question,t.shownClues,t.reply,t.mode)),
-      content.police.filter(p => points.exists(_.id == p.point)).map { p =>
+      police.filter(p => points.exists(_.id == p.point)).map { p =>
         val visible = exchanges.filter(_.sequence.value <= state.sequence.value)
         PoliceDeskView(p.point,p.name,p.background,visible.flatMap(_.evidence).toSet,
           visible.map(e => PoliceExchangeView(e.requestId,e.sequence,e.evidence,e.reply)))
