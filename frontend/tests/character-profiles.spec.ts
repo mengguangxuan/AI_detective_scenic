@@ -8,7 +8,7 @@ test('unified character authoring keeps public profiles and the current browser 
   const response = await page.request.post('/api/getinvestigationsnapshot', { data: { sessionId: saved.sessionId }, headers: { 'X-Detective-Client': 'web' } });
   expect(response.status()).toBe(200);
   const state = await response.json();
-  expect(state.caseRevision.value).toBe(11);
+  expect(state.caseRevision.value).toBe(12);
   expect(state.people).toHaveLength(14);
   expect(state.witnesses.some((p: { id: string }) => p.id === 'melchett')).toBe(true);
   expect(JSON.stringify(state)).not.toMatch(/privateContext|"policy"|"dossier"/);
@@ -44,7 +44,7 @@ test.describe('real pre-merge revision 10 save', () => {
     const state = await response.json();
     expect(state.caseRevision.value).toBe(10);
     expect(state.people.some((p: { id: string }) => p.id === 'mrs_archer')).toBe(false);
-    await expect(page.getByRole('status').filter({ hasText: '若要继续阿彻太太相关调查' })).toBeVisible();
+    await expect(page.getByRole('status').filter({ hasText: '若要体验纸张原件检查' })).toBeVisible();
     const officers = state.witnesses.filter((w: { point: string }) => w.point === state.police.point);
     expect(officers).toHaveLength(1);
     expect(state.police.sharedClues).toContain('clue_redding_revised');
@@ -52,5 +52,23 @@ test.describe('real pre-merge revision 10 save', () => {
     expect(JSON.stringify(state)).not.toMatch(/privateContext|"dossier"/);
     await page.reload();
     await expect(page.getByRole('heading', { name: '警方交流', exact: true })).toBeVisible();
+  });
+});
+
+
+test.describe('real revision 11 investigation', () => {
+  test.use({ storageState: '.build-cache/pre-paper-v11-state.json' });
+  test.skip(!existsSync('.build-cache/pre-paper-v11-state.json'), 'Requires a saved revision 11 investigation.');
+  test('original Archer progress restores without new paper checks or a revision migration', async ({ page }) => {
+    await page.goto('/police');
+    await expect(page.getByRole('region', { name: '已联系的核查对象', exact: true })).toContainText('阿彻太太');
+    const saved = await page.evaluate(() => JSON.parse(localStorage.getItem('detective-scenic:server-session:v6')!));
+    const response = await page.request.post('/api/getinvestigationsnapshot', { data: { sessionId: saved.sessionId }, headers: { 'X-Detective-Client': 'web' } });
+    expect(response.status()).toBe(200);
+    const state = await response.json();
+    expect(state.caseRevision.value).toBe(11);
+    expect(state.externalChecks).toHaveLength(2);
+    expect(state.clues.some((c: { id: string }) => c.id === 'clue_police_archer_review')).toBe(true);
+    await expect(page.getByRole('button', { name: '申请检查纸张原件', exact: true })).toHaveCount(0);
   });
 });

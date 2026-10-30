@@ -62,6 +62,13 @@ const server = http.createServer(async (request, response) => {
       reply = context.shownEvidence.find(item => item.id === clue)?.text ?? context.knowledge.find(item => item.startsWith(title + '：')) ?? '这项还未受理。';
       id = undefined;
     }
+    if (context.witness.name === '梅尔切特' && /纸张|笔迹/.test(context.question)) {
+      const handwriting = /笔迹/.test(context.question);
+      const title = handwriting ? '纸张笔迹比对' : '纸张原件初检';
+      const clue = handwriting ? 'clue_paper_handwriting' : /指纹/.test(context.question) ? 'clue_paper_fingerprints' : 'clue_paper_ink';
+      reply = context.shownEvidence.find(item => item.id === clue)?.text ?? context.knowledge.find(item => item.startsWith(title + '：')) ?? '这项还未受理。';
+      id = allowed.has(clue.slice(5)) ? clue.slice(5) : undefined;
+    }
     const decision = context.question.includes('越界测试') ? { disclosureIds: ['future_confession'], reply: 'DO_NOT_RENDER_FUTURE' }
       : context.disclosures ? { reply, disclosureIds: id && allowed.has(id) ? [id] : [] } : { answerIds: id && allowed.has(id) ? [id] : [] };
     response.setHeader('Content-Type', 'application/json');

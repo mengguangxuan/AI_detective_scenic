@@ -42,17 +42,18 @@ class NewWitnessSuite extends FunSuite:
       _ <- DatabaseSession.connection(url).use(c => DatabaseSchema.initialize(c))
       _ <- tx(url) { c => for
         latest <- ImportCaseMessage(Paths.get("../docs/fixtures/browser_investigation.json")).plan(c)
+        base = LegacyFixture.withoutFollowUps(latest.content)
         newPoints = Set(PointId("point_redding"),PointId("point_marple"),PointId("point_anne"),PointId("point_valet"),PointId("point_stone"),PointId("point_hartnell"),PointId("point_archer"))
-        primaryClues = latest.content.routes.filter(r => newPoints(r.point)).flatMap(_.clues).toSet
-        newRoutes = latest.content.routes.filter(r => newPoints(r.point) || r.requiredClues.intersect(primaryClues).nonEmpty)
+        primaryClues = base.routes.filter(r => newPoints(r.point)).flatMap(_.clues).toSet
+        newRoutes = base.routes.filter(r => newPoints(r.point) || r.requiredClues.intersect(primaryClues).nonEmpty)
         newClues = newRoutes.flatMap(_.clues).toSet
-        oldContent = LegacyFixture.withoutFollowUps(latest.content).copy(publicPersons=Vector.empty,clock=None,externalChecks=Vector.empty,areaMap=None,
-          witnesses=latest.content.witnesses.filterNot(w => newPoints(w.point)).map(w => w.copy(answers=w.answers.filterNot(a => a.routes.exists(id => newRoutes.exists(_.id == id))))),
-          points=latest.content.points.filterNot(p => newPoints(p.id)),
-          routes=latest.content.routes.filterNot(r => newRoutes.exists(_.id == r.id)),
-          operations=latest.content.operations.filterNot(o => o.requiredClues.intersect(newClues).nonEmpty),
-          clues=latest.content.clues.filterNot(clue => newClues(clue.id)),
-          stage=latest.content.stage.map(_.copy(nextObjective=None)))
+        oldContent = base.copy(publicPersons=Vector.empty,clock=None,externalChecks=Vector.empty,areaMap=None,
+          witnesses=base.witnesses.filterNot(w => newPoints(w.point)).map(w => w.copy(answers=w.answers.filterNot(a => a.routes.exists(id => newRoutes.exists(_.id == id))))),
+          points=base.points.filterNot(p => newPoints(p.id)),
+          routes=base.routes.filterNot(r => newRoutes.exists(_.id == r.id)),
+          operations=base.operations.filterNot(o => o.requiredClues.intersect(newClues).nonEmpty),
+          clues=base.clues.filterNot(clue => newClues(clue.id)),
+          stage=base.stage.map(_.copy(nextObjective=None)))
         previous = latest.copy(revision=Revision(4),content=oldContent)
         _ <- CaseRevisionTable.insert(c,previous)
         _ <- StartGameMessage(owner,id,previous.caseId,previous.revision).plan(c)
@@ -75,7 +76,7 @@ class NewWitnessSuite extends FunSuite:
     (for
       _ <- setup(url,id)
       initial <- view(url,id)
-      _ = assertEquals(initial.caseRevision,Revision(11))
+      _ = assertEquals(initial.caseRevision,Revision(12))
       _ = assertEquals(initial.people.size,14)
       _ = assertEquals(initial.witnesses.map(_.id).toSet,Set("clement","mary","redding","marple","melchett").map(WitnessId.apply))
       _ = assert(initial.people.find(_.id == PersonId("anne")).get.victimRelation.contains("妻子"))

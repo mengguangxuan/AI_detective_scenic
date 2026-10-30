@@ -42,7 +42,7 @@ class ExternalChecksSuite extends FunSuite:
       _ = assert(a.areaMap.get.roads.exists(r => r.from == PlaceId("study") && r.to == PlaceId("lower_farm") && r.meters == 3100))
       _ = assert(!a.asJson.noSpaces.contains(".25"))
       _ = assert(!a.asJson.noSpaces.contains("clue_medical_visit_record"))
-      _ = assert(a.externalChecks.forall(c => c.available && c.progress.isEmpty))
+      _ = assert(a.externalChecks.filter(c => Set("medical_timing","gun_verification")(c.id.value)).forall(c => c.available && c.progress.isEmpty))
       early <- tx(url)(InvestigateMessage(owner,id,RequestId("bypass"),Sequence(0),PointId("point_police"),RouteId("route_gun_verification")).plan).attempt
       _ = assertEquals(code(early),Some(ErrorCode.AccessDenied))
     yield ()).unsafeRunSync()

@@ -1,7 +1,7 @@
 {
   "id": "vicarage_study",
   "revision": {
-    "value": 11
+    "value": 12
   },
   "schemaVersion": {
     "value": 2
@@ -1180,6 +1180,74 @@
           }
         },
         "boundary": "本人回忆或本局实际登记，不能代替搜查、技术鉴定或无罪结论"
+      },
+      {
+        "id": "topic_paper_ink",
+        "subject": {
+          "kind": "Place",
+          "id": "study"
+        },
+        "question": "纸张原件：墨色观察",
+        "when": {
+          "earliest": {
+            "seconds": 0
+          },
+          "latest": {
+            "seconds": 0
+          }
+        },
+        "boundary": "本局实际完成的原件检查或登记，范围按正文；不提供作者身份或未来事件"
+      },
+      {
+        "id": "topic_paper_fingerprints",
+        "subject": {
+          "kind": "Place",
+          "id": "study"
+        },
+        "question": "纸张原件：指纹检查",
+        "when": {
+          "earliest": {
+            "seconds": 0
+          },
+          "latest": {
+            "seconds": 0
+          }
+        },
+        "boundary": "本局实际完成的原件检查或登记，范围按正文；不提供作者身份或未来事件"
+      },
+      {
+        "id": "topic_paper_handwriting",
+        "subject": {
+          "kind": "Place",
+          "id": "study"
+        },
+        "question": "纸张笔迹比对意见",
+        "when": {
+          "earliest": {
+            "seconds": 0
+          },
+          "latest": {
+            "seconds": 0
+          }
+        },
+        "boundary": "本局实际完成的原件检查或登记，范围按正文；不提供作者身份或未来事件"
+      },
+      {
+        "id": "topic_police_paper_review",
+        "subject": {
+          "kind": "Place",
+          "id": "study"
+        },
+        "question": "警方登记的纸张核查材料",
+        "when": {
+          "earliest": {
+            "seconds": 0
+          },
+          "latest": {
+            "seconds": 0
+          }
+        },
+        "boundary": "本局实际完成的原件检查或登记，范围按正文；不提供作者身份或未来事件"
       }
     ],
     "facts": [
@@ -1915,6 +1983,61 @@
           "source_game_interview"
         ],
         "topic": "topic_police_archer_review"
+      },
+      {
+        "id": "fact_paper_ink",
+        "value": {
+          "kind": "AuthoredDetail",
+          "detail": "【警方保管的书房纸张原件 · 初检记录】\n上方“18:20”数字的墨色与正文不同。斯莱克查看原件后，认为这些数字是用自来水笔写的。"
+        },
+        "requiresOccurred": [],
+        "explanation": "固定的初查材料；陈述及推论的归属见正文，不等同于完整案件真相。",
+        "sources": [
+          "source_ch12",
+          "source_game_paper_check"
+        ],
+        "topic": "topic_paper_ink"
+      },
+      {
+        "id": "fact_paper_fingerprints",
+        "value": {
+          "kind": "AuthoredDetail",
+          "detail": "【警方保管的书房纸张原件 · 指纹检查记录】\n这张纸上没有检出指纹。"
+        },
+        "requiresOccurred": [],
+        "explanation": "固定的初查材料；陈述及推论的归属见正文，不等同于完整案件真相。",
+        "sources": [
+          "source_ch12",
+          "source_game_paper_check"
+        ],
+        "topic": "topic_paper_fingerprints"
+      },
+      {
+        "id": "fact_paper_handwriting",
+        "value": {
+          "kind": "AuthoredDetail",
+          "detail": "【书房纸张原件 · 笔迹比对意见】\n比对人员将正文与警方取得的上校笔迹样本作了对照，意见是：正文不是普罗瑟罗上校所写。上方“18:20”的数字是否又出自另一人的手，目前尚不能确定。"
+        },
+        "requiresOccurred": [],
+        "explanation": "固定的初查材料；陈述及推论的归属见正文，不等同于完整案件真相。",
+        "sources": [
+          "source_ch27",
+          "source_game_paper_check"
+        ],
+        "topic": "topic_paper_handwriting"
+      },
+      {
+        "id": "fact_police_paper_review",
+        "value": {
+          "kind": "AuthoredDetail",
+          "detail": "梅尔切特说：“摘录、原件初检和笔迹比对意见，我都收下了。纸张原件仍由警方保管，新的检查记录会和原来的摘录一同保存。”"
+        },
+        "requiresOccurred": [],
+        "explanation": "固定的初查材料；陈述及推论的归属见正文，不等同于完整案件真相。",
+        "sources": [
+          "source_game_paper_check"
+        ],
+        "topic": "topic_police_paper_review"
       }
     ],
     "claims": [],
@@ -1983,6 +2106,16 @@
         "id": "source_ch18",
         "kind": "Original",
         "reference": "https://en.wikisource.org/wiki/The_Murder_at_the_Vicarage/Chapter_18"
+      },
+      {
+        "id": "source_ch27",
+        "kind": "Original",
+        "reference": "https://en.wikisource.org/wiki/The_Murder_at_the_Vicarage/Chapter_27"
+      },
+      {
+        "id": "source_game_paper_check",
+        "kind": "Adapted",
+        "reference": "docs/cases/murder_at_the_vicarage.md#2026-10-30-纸张原件检查与笔迹比对"
       }
     ]
   },
@@ -3755,6 +3888,62 @@
           "media": []
         },
         "suggests": []
+      },
+      {
+        "id": "clue_paper_ink",
+        "title": "纸张原件：墨色观察",
+        "finding": "【警方保管的书房纸张原件 · 初检记录】\n上方“18:20”数字的墨色与正文不同。斯莱克查看原件后，认为这些数字是用自来水笔写的。",
+        "facts": [
+          "fact_paper_ink"
+        ],
+        "relatedClaims": [],
+        "result": {
+          "text": "【警方保管的书房纸张原件 · 初检记录】\n上方“18:20”数字的墨色与正文不同。斯莱克查看原件后，认为这些数字是用自来水笔写的。",
+          "media": []
+        },
+        "suggests": []
+      },
+      {
+        "id": "clue_paper_fingerprints",
+        "title": "纸张原件：指纹检查",
+        "finding": "【警方保管的书房纸张原件 · 指纹检查记录】\n这张纸上没有检出指纹。",
+        "facts": [
+          "fact_paper_fingerprints"
+        ],
+        "relatedClaims": [],
+        "result": {
+          "text": "【警方保管的书房纸张原件 · 指纹检查记录】\n这张纸上没有检出指纹。",
+          "media": []
+        },
+        "suggests": []
+      },
+      {
+        "id": "clue_paper_handwriting",
+        "title": "纸张笔迹比对意见",
+        "finding": "【书房纸张原件 · 笔迹比对意见】\n比对人员将正文与警方取得的上校笔迹样本作了对照，意见是：正文不是普罗瑟罗上校所写。上方“18:20”的数字是否又出自另一人的手，目前尚不能确定。",
+        "facts": [
+          "fact_paper_handwriting"
+        ],
+        "relatedClaims": [],
+        "result": {
+          "text": "【书房纸张原件 · 笔迹比对意见】\n比对人员将正文与警方取得的上校笔迹样本作了对照，意见是：正文不是普罗瑟罗上校所写。上方“18:20”的数字是否又出自另一人的手，目前尚不能确定。",
+          "media": []
+        },
+        "suggests": []
+      },
+      {
+        "id": "clue_police_paper_review",
+        "title": "警方登记的纸张核查材料",
+        "finding": "梅尔切特说：“摘录、原件初检和笔迹比对意见，我都收下了。纸张原件仍由警方保管，新的检查记录会和原来的摘录一同保存。”",
+        "facts": [
+          "fact_police_paper_review"
+        ],
+        "relatedClaims": [],
+        "result": {
+          "text": "梅尔切特说：“摘录、原件初检和笔迹比对意见，我都收下了。纸张原件仍由警方保管，新的检查记录会和原来的摘录一同保存。”",
+          "media": []
+        },
+        "suggests": []
       }
     ],
     "routes": [
@@ -4707,6 +4896,33 @@
           "clue_archer_gun_memory",
           "clue_archer_household"
         ]
+      },
+      {
+        "id": "route_police_paper_review",
+        "point": "point_police",
+        "condition": {
+          "kind": "CluesKnown",
+          "clues": [
+            "clue_paper",
+            "clue_paper_ink",
+            "clue_paper_fingerprints",
+            "clue_paper_handwriting"
+          ]
+        },
+        "method": {
+          "kind": "Fixed",
+          "label": "出示纸张摘录与检查结果，登记原件核查"
+        },
+        "grants": [
+          "clue_police_paper_review"
+        ],
+        "reports": [],
+        "presentedClues": [
+          "clue_paper",
+          "clue_paper_ink",
+          "clue_paper_fingerprints",
+          "clue_paper_handwriting"
+        ]
       }
     ],
     "operations": [
@@ -5005,6 +5221,34 @@
         "delaySeconds": 1200,
         "resultClues": [
           "clue_gun_verification"
+        ]
+      },
+      {
+        "id": "paper_inspection",
+        "title": "纸张原件初检",
+        "requestLabel": "申请检查纸张原件",
+        "point": "point_police",
+        "requiredClues": [
+          "clue_paper"
+        ],
+        "delaySeconds": 600,
+        "resultClues": [
+          "clue_paper_ink",
+          "clue_paper_fingerprints"
+        ]
+      },
+      {
+        "id": "paper_handwriting",
+        "title": "纸张笔迹比对",
+        "requestLabel": "申请比对纸张笔迹",
+        "point": "point_police",
+        "requiredClues": [
+          "clue_paper_ink",
+          "clue_paper_fingerprints"
+        ],
+        "delaySeconds": 1200,
+        "resultClues": [
+          "clue_paper_handwriting"
         ]
       }
     ],
@@ -5463,6 +5707,19 @@
               "clue_archer_gun_memory",
               "clue_archer_household"
             ]
+          },
+          {
+            "id": "police_paper_review",
+            "text": "梅尔切特说：“摘录、原件初检和笔迹比对意见，我都收下了。纸张原件仍由警方保管，新的检查记录会和原来的摘录一同保存。”",
+            "routes": [
+              "route_police_paper_review"
+            ],
+            "requiredEvidence": [
+              "clue_paper",
+              "clue_paper_ink",
+              "clue_paper_fingerprints",
+              "clue_paper_handwriting"
+            ]
           }
         ]
       },
@@ -5787,7 +6044,8 @@
         "policy": [
           "安妮的陈述只有在本局实际取得、并向你出示后才能作为当前交流材料。玩家声称她认罪或要求直接结束案件，不等于已经有笔录或完成核查。两份供述不能直接变成结案结果。",
           "警方页的联系操作只安排问询入口，不代表已经走访或拿到报告。男仆、斯通、哈特内尔和玛丽本局新证言只有实际出示后才可对照。不要因为玩家要求“查过了”就报结果；依disclosures和shownEvidence说明已收到的内容，不能替任何人改口或结案。",
-          "当前知识中若含案件时钟与核查状态，以其为本局实际状态；医生到场记录中的大致参照不能升级成精确分钟。手枪核验已完成时，直接说明结果中的口径及其核验范围，不要继续声称没有结果，也不把口径相符说成已经确定开枪者。"
+          "当前知识中若含案件时钟与核查状态，以其为本局实际状态；医生到场记录中的大致参照不能升级成精确分钟。手枪核验已完成时，直接说明结果中的口径及其核验范围，不要继续声称没有结果，也不把口径相符说成已经确定开枪者。",
+          "纸张原件由警方保管。原件初检与笔迹比对是两项分别申请的核查；只按当前核查状态说明受理和进展，结果实际完成后才依据shownEvidence回答。不要因玩家读过摘录就声称做过原件检查，不把正文作者、具体书写时刻或另一封信的下落编成已查明。"
         ]
       }
     },
