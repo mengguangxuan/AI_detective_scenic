@@ -218,3 +218,10 @@ TypeScript／生产构建、7项前端基础测试及12项真实浏览器测试�
 ## 2026-10-30：cases整理方案已编写
 
 用户要求的方案位于`docs/cases_cleanup_plan.md`。本轮只写方案，不实施重构。建议顺序：A清理依赖并拆清校验／错误定位；B复用已有DialogueDossier并保持旧codec；C按用途组织类型；D有消费者和收益证据后再删或统一。当前41个类型均有静态源码引用，暂不承诺删除数量。TimeAssessment同时用于cases中的标准答案，不能直接移games制造反向依赖。早期`docs/backend/refactor_plan.md`的数量目标不套用当前版本。用户现有课堂文档和交接修改继续保留。
+
+
+## 2026-10-30：cases整理A批已完成
+
+用户批准开始整理，按`docs/cases_cleanup_plan.md`先完成A批。修改前文档基线`2ec91e9`已推送。FixtureLoader原整串布尔校验拆成10组有名称的纯函数，内部validation返回首个失败路径，valid仍为Boolean兼容入口；作者条目解码补数组索引。CaseRevisionTable清理games跨模块无用导入，存取复用详细校验。无新增领域类型，41个类型及案件JSON定义不变，不改DB、旧修订／回执、模型配置、前端或服务进程。
+
+新增FixtureValidationSuite的7项边界与错误定位测试，原生Windows后端完整91项通过，含旧存档／回执和问询隔离回归。本批未运行前端全量或真实模型。B—D批尚未实施；下一批为WitnessProfile复用DialogueDossier，须保留旧扁平codec和冻结问询上下文。方案第9节已有具体记录。
