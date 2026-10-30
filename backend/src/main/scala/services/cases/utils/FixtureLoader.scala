@@ -5,6 +5,7 @@ import io.circe.{Decoder, DecodingFailure, HCursor, Json}
 import io.circe.parser.parse
 import services.cases.objects.*
 import services.system.objects.*
+import services.cases.objects.scene.{FixtureNode, FixturePoint, SceneObservation, SceneObjectBinding, AreaMap}
 
 private[cases] object FixtureLoader:
   private def check(ok: Boolean, message: String, cursor: HCursor): Decoder.Result[Unit] =

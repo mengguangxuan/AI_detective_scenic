@@ -4,6 +4,7 @@ import io.circe.{Decoder, Encoder}
 import io.circe.generic.semiauto.*
 import services.system.objects.*
 import services.cases.utils.LegacyPoliceProfile
+import services.cases.objects.scene.{FixtureNode, FixturePoint, SceneObservation, SceneObjectBinding, AreaMap}
 
 
 final case class CaseContent(place: PlaceId, placeName: String, initialStoryTimeSeconds: Long, timeOriginLabel: String,

@@ -3,6 +3,7 @@ import io.circe.{Decoder, Encoder}
 import io.circe.generic.semiauto.*
 import services.system.objects.*
 import services.cases.objects.*
+import services.cases.objects.scene.SceneObjectBinding
 final case class StudySceneView(bundleId: String, revision: String, placeName: String, drawerOpened: Boolean,
   windowOpened: Boolean, objects: Vector[SceneObjectBinding])
 object StudySceneView:

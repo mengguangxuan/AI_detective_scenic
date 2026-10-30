@@ -1,6 +1,7 @@
-package services.cases.objects
+package services.cases.objects.scene
 import io.circe.{Decoder,Encoder}
 import io.circe.generic.semiauto.*
+import services.cases.objects.PlaceId
 
 final case class MapRoad(id: String, from: PlaceId, to: PlaceId, meters: Int, label: String)
 object MapRoad:

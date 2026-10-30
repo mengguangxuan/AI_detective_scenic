@@ -83,6 +83,8 @@ detective_scenic/
 | `tables/` | 每张表的初始化、公开读写方法、私有SQL和行映射 | 调用方使用表方法，不自行拼接SQL |
 | `utils/` | 服务内部的规则计算和辅助逻辑 | 通过`private[games]`等可见性限制跨模块调用 |
 
+场景与地图的七个类型现在放在`cases/objects/scene/`：`FixtureNode`、`FixturePoint`、`SceneObservation`、`SceneObjectBinding`、`AreaMap`、`MapLocation`、`MapRoad`。ID类型仍在`cases/objects/`根目录。这里保存固定场景配置，前端`pages/Scene/`负责实际3D渲染。目录分组没有改变类型数量或存档字段。
+
 例如`games/tables/SessionTable/`内有`SessionTable.scala`与`SessionTableInitializer.scala`，分别管理会话表访问和表初始化。
 
 固定内容和本局状态也分开：`CaseContent`描述作者配置的案件内容；`GameSessionRecord`保存这次调查已完成的操作、已得线索和时间；`SessionRecord`保留行动与披露历史。更新本局进度不会改写原案件。

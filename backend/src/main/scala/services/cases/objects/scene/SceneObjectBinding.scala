@@ -1,7 +1,8 @@
-package services.cases.objects
+package services.cases.objects.scene
 
 import io.circe.{Decoder, Encoder}
 import io.circe.generic.semiauto.*
+import services.cases.objects.{EntityId, PointId, RouteId, SceneNodeId}
 
 // One authoring registration per interactive model. Operations live at its point.
 final case class SceneObjectBinding(node: SceneNodeId, entity: EntityId, label: String,

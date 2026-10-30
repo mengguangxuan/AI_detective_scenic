@@ -1,9 +1,9 @@
-package services.cases.objects
+package services.cases.objects.scene
 
 import io.circe.{Decoder, Encoder}
 import io.circe.generic.semiauto.*
-import services.system.objects.*
-import services.cases.objects.*
+import services.system.objects.Vec3
+import services.cases.objects.{PointId, SceneNodeId}
 
 
 final case class FixturePoint(id: PointId, node: SceneNodeId, localPoint: Vec3, radiusMeters: Double, label: String)
