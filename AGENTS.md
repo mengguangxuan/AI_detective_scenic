@@ -7,7 +7,7 @@
 ## 工作依据与文档入口
 
 - 开发与审查前阅读 [功能规划](plan.md) 和 [课程代码规范](../samples/samples/rules.txt)。用户最新明确指示优先；课程规范约束实现，规划中的技术栈、接口、排期仅为参考，不代表已经实现或获准裁剪功能。
-- 当前进度与下一步：[交接记录](docs/handoff/handoff_1028.md)、[前端实现](docs/frontend/implementation.md)。历史决定以最新明确指示为准，实际接口以源码为准。
+- 当前进度与下一步：[交接记录](docs/handoff/handoff_1030.md)、[前端实现](docs/frontend/implementation.md)。历史决定以最新明确指示为准，实际接口以源码为准。
 - 启动、模型配置与验收：[验收准备](docs/frontend/acceptance_preparation.md)；交互反馈与暂缓事项：[交互待办](docs/frontend/interaction_backlog.md)。
 - 原著依据与改编边界：[案件文档](docs/cases/murder_at_the_vicarage.md)；人物字段与配置：[人物配置](docs/cases/character_configuration.md)。案件文档含完整剧透，禁止整份下发玩家或 NPC。
 - 架构与文件职责：[课堂讲解](docs/classroom/code_walkthrough.md)；类型整理决策：[cases 整理方案](docs/cases_cleanup_plan.md)。
