@@ -3,7 +3,17 @@ import services.cases.objects.*
 
 // Test-only reconstruction of the preceding published feature set.
 private[games] object LegacyFixture:
-  def withoutPaperChecks(content: CaseContent): CaseContent =
+  def withoutSightline(content: CaseContent): CaseContent =
+    val clues=Set("clue_sightline_basis","clue_sightline_recheck","clue_anne_sightline_reply","clue_marple_sightline_reply","clue_police_sightline_review").map(ClueId.apply)
+    val routes=content.routes.filter(_.clues.exists(clues)).map(_.id).toSet
+    val facts=content.clues.filter(c => clues(c.id)).flatMap(_.facts).toSet
+    content.copy(externalChecks=content.externalChecks.filterNot(_.id == ExternalCheckId("sightline_recheck")),
+      routes=content.routes.filterNot(r => routes(r.id)),clues=content.clues.filterNot(c => clues(c.id)),
+      facts=content.facts.filterNot(f => facts(f.id)),
+      witnesses=content.witnesses.map(w => w.copy(answers=w.answers.filterNot(_.routes.exists(routes)))))
+
+  def withoutPaperChecks(current: CaseContent): CaseContent =
+    val content=withoutSightline(current)
     val clues=Set("clue_paper_ink","clue_paper_fingerprints","clue_paper_handwriting","clue_police_paper_review").map(ClueId.apply)
     val facts=content.clues.filter(c => clues(c.id)).flatMap(_.facts).toSet
     val route=RouteId("route_police_paper_review")

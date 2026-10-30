@@ -55,7 +55,7 @@ class IndependentChecksSuite extends FunSuite:
     (for
       _ <- setup(url,id)
       initial <- view(url,id)
-      _ = assertEquals(initial.caseRevision,Revision(12))
+      _ = assertEquals(initial.caseRevision,Revision(13))
       _ = assert(initial.people.filter(p => Set("valet","stone","hartnell")(p.id.value)).forall(_.witness.isEmpty))
       early <- execute(url,id,"open_movement_meetings").attempt
       hidden <- read(url,id,"point_valet","route_valet_gun").attempt

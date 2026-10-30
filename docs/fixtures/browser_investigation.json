@@ -1,7 +1,7 @@
 {
   "id": "vicarage_study",
   "revision": {
-    "value": 12
+    "value": 13
   },
   "schemaVersion": {
     "value": 2
@@ -1248,6 +1248,91 @@
           }
         },
         "boundary": "本局实际完成的原件检查或登记，范围按正文；不提供作者身份或未来事件"
+      },
+      {
+        "id": "topic_sightline_basis",
+        "subject": {
+          "kind": "Place",
+          "id": "study"
+        },
+        "question": "警方登记的窗边复验依据",
+        "when": {
+          "earliest": {
+            "seconds": 0
+          },
+          "latest": {
+            "seconds": 0
+          }
+        },
+        "boundary": "本局实际登记、完成的复验或本人收到材料后的回应；观察位置和范围见正文"
+      },
+      {
+        "id": "topic_sightline_recheck",
+        "subject": {
+          "kind": "Place",
+          "id": "study"
+        },
+        "question": "窗边视线复验记录",
+        "when": {
+          "earliest": {
+            "seconds": 0
+          },
+          "latest": {
+            "seconds": 0
+          }
+        },
+        "boundary": "本局实际登记、完成的复验或本人收到材料后的回应；观察位置和范围见正文"
+      },
+      {
+        "id": "topic_anne_sightline_reply",
+        "subject": {
+          "kind": "Place",
+          "id": "study"
+        },
+        "question": "安妮对视线复验的回应",
+        "when": {
+          "earliest": {
+            "seconds": 0
+          },
+          "latest": {
+            "seconds": 0
+          }
+        },
+        "boundary": "本局实际登记、完成的复验或本人收到材料后的回应；观察位置和范围见正文"
+      },
+      {
+        "id": "topic_marple_sightline_reply",
+        "subject": {
+          "kind": "Place",
+          "id": "study"
+        },
+        "question": "马普尔对视线复验的回应",
+        "when": {
+          "earliest": {
+            "seconds": 0
+          },
+          "latest": {
+            "seconds": 0
+          }
+        },
+        "boundary": "本局实际登记、完成的复验或本人收到材料后的回应；观察位置和范围见正文"
+      },
+      {
+        "id": "topic_police_sightline_review",
+        "subject": {
+          "kind": "Place",
+          "id": "study"
+        },
+        "question": "警方登记的视线核查材料",
+        "when": {
+          "earliest": {
+            "seconds": 0
+          },
+          "latest": {
+            "seconds": 0
+          }
+        },
+        "boundary": "本局实际登记、完成的复验或本人收到材料后的回应；观察位置和范围见正文"
       }
     ],
     "facts": [
@@ -2038,6 +2123,72 @@
           "source_game_paper_check"
         ],
         "topic": "topic_police_paper_review"
+      },
+      {
+        "id": "fact_sightline_basis",
+        "value": {
+          "kind": "AuthoredDetail",
+          "detail": "梅尔切特收下安妮关于窗边与画室的补充记录，以及马普尔的来访记录，说：“安妮说她到窗边看了一眼，没有看见丈夫。马普尔只能说明花园里看见的那一段。我们可以按安妮说的路线和观察方式，在窗边作一次复验。”"
+        },
+        "requiresOccurred": [],
+        "explanation": "固定的初查材料；陈述及推论的归属见正文，不等同于完整案件真相。",
+        "sources": [
+          "source_game_sightline"
+        ],
+        "topic": "topic_sightline_basis"
+      },
+      {
+        "id": "fact_sightline_recheck",
+        "value": {
+          "kind": "AuthoredDetail",
+          "detail": "【警方现场复验记录】\n警方按安妮已记录的绕过屋角、走到书房窗边并短暂停留的说法安排观察。一名警员坐在书桌前，另一名警员在据此选定的窗外位置向内看，没有看见坐在书桌前的人。桌前警员在这次观察期间一直坐在那里。\n本次记录涉及上述选定的位置与观察方向，未遍查其他窗外站位。"
+        },
+        "requiresOccurred": [],
+        "explanation": "固定的初查材料；陈述及推论的归属见正文，不等同于完整案件真相。",
+        "sources": [
+          "source_ch12",
+          "source_game_sightline"
+        ],
+        "topic": "topic_sightline_recheck"
+      },
+      {
+        "id": "fact_anne_sightline_reply",
+        "value": {
+          "kind": "AuthoredDetail",
+          "detail": "安妮看过复验记录后说：“我当时就是到窗边看了那么一下，没有看见他，随后便去了画室。你们按那个位置试过，坐在书桌前的人也没看见，是吗？”她仍维持已记录的补充说法。"
+        },
+        "requiresOccurred": [],
+        "explanation": "固定的初查材料；陈述及推论的归属见正文，不等同于完整案件真相。",
+        "sources": [
+          "source_game_sightline"
+        ],
+        "topic": "topic_anne_sightline_reply"
+      },
+      {
+        "id": "fact_marple_sightline_reply",
+        "value": {
+          "kind": "AuthoredDetail",
+          "detail": "马普尔看过记录后说：“我能说的是自己在花园里看见的那一段。她转过屋角以后，书房里的事我就看不见了。你拿来的这次复验，是从窗边往里看，那不是我当时站的地方。”"
+        },
+        "requiresOccurred": [],
+        "explanation": "固定的初查材料；陈述及推论的归属见正文，不等同于完整案件真相。",
+        "sources": [
+          "source_game_sightline"
+        ],
+        "topic": "topic_marple_sightline_reply"
+      },
+      {
+        "id": "fact_police_sightline_review",
+        "value": {
+          "kind": "AuthoredDetail",
+          "detail": "梅尔切特说：“安妮的窗边补充记录、马普尔的来访记录和这次现场复验记录，我已经一并登记。原来的两份陈述仍各自保留，复验使用的站位和观察方向也写在记录里。”"
+        },
+        "requiresOccurred": [],
+        "explanation": "固定的初查材料；陈述及推论的归属见正文，不等同于完整案件真相。",
+        "sources": [
+          "source_game_sightline"
+        ],
+        "topic": "topic_police_sightline_review"
       }
     ],
     "claims": [],
@@ -2116,6 +2267,11 @@
         "id": "source_game_paper_check",
         "kind": "Adapted",
         "reference": "docs/cases/murder_at_the_vicarage.md#2026-10-30-纸张原件检查与笔迹比对"
+      },
+      {
+        "id": "source_game_sightline",
+        "kind": "Adapted",
+        "reference": "docs/cases/murder_at_the_vicarage.md#2026-10-31-窗边视线复验"
       }
     ]
   },
@@ -3944,6 +4100,76 @@
           "media": []
         },
         "suggests": []
+      },
+      {
+        "id": "clue_sightline_basis",
+        "title": "警方登记的窗边复验依据",
+        "finding": "梅尔切特收下安妮关于窗边与画室的补充记录，以及马普尔的来访记录，说：“安妮说她到窗边看了一眼，没有看见丈夫。马普尔只能说明花园里看见的那一段。我们可以按安妮说的路线和观察方式，在窗边作一次复验。”",
+        "facts": [
+          "fact_sightline_basis"
+        ],
+        "relatedClaims": [],
+        "result": {
+          "text": "梅尔切特收下安妮关于窗边与画室的补充记录，以及马普尔的来访记录，说：“安妮说她到窗边看了一眼，没有看见丈夫。马普尔只能说明花园里看见的那一段。我们可以按安妮说的路线和观察方式，在窗边作一次复验。”",
+          "media": []
+        },
+        "suggests": []
+      },
+      {
+        "id": "clue_sightline_recheck",
+        "title": "窗边视线复验记录",
+        "finding": "【警方现场复验记录】\n警方按安妮已记录的绕过屋角、走到书房窗边并短暂停留的说法安排观察。一名警员坐在书桌前，另一名警员在据此选定的窗外位置向内看，没有看见坐在书桌前的人。桌前警员在这次观察期间一直坐在那里。\n本次记录涉及上述选定的位置与观察方向，未遍查其他窗外站位。",
+        "facts": [
+          "fact_sightline_recheck"
+        ],
+        "relatedClaims": [],
+        "result": {
+          "text": "【警方现场复验记录】\n警方按安妮已记录的绕过屋角、走到书房窗边并短暂停留的说法安排观察。一名警员坐在书桌前，另一名警员在据此选定的窗外位置向内看，没有看见坐在书桌前的人。桌前警员在这次观察期间一直坐在那里。\n本次记录涉及上述选定的位置与观察方向，未遍查其他窗外站位。",
+          "media": []
+        },
+        "suggests": []
+      },
+      {
+        "id": "clue_anne_sightline_reply",
+        "title": "安妮对视线复验的回应",
+        "finding": "安妮看过复验记录后说：“我当时就是到窗边看了那么一下，没有看见他，随后便去了画室。你们按那个位置试过，坐在书桌前的人也没看见，是吗？”她仍维持已记录的补充说法。",
+        "facts": [
+          "fact_anne_sightline_reply"
+        ],
+        "relatedClaims": [],
+        "result": {
+          "text": "安妮看过复验记录后说：“我当时就是到窗边看了那么一下，没有看见他，随后便去了画室。你们按那个位置试过，坐在书桌前的人也没看见，是吗？”她仍维持已记录的补充说法。",
+          "media": []
+        },
+        "suggests": []
+      },
+      {
+        "id": "clue_marple_sightline_reply",
+        "title": "马普尔对视线复验的回应",
+        "finding": "马普尔看过记录后说：“我能说的是自己在花园里看见的那一段。她转过屋角以后，书房里的事我就看不见了。你拿来的这次复验，是从窗边往里看，那不是我当时站的地方。”",
+        "facts": [
+          "fact_marple_sightline_reply"
+        ],
+        "relatedClaims": [],
+        "result": {
+          "text": "马普尔看过记录后说：“我能说的是自己在花园里看见的那一段。她转过屋角以后，书房里的事我就看不见了。你拿来的这次复验，是从窗边往里看，那不是我当时站的地方。”",
+          "media": []
+        },
+        "suggests": []
+      },
+      {
+        "id": "clue_police_sightline_review",
+        "title": "警方登记的视线核查材料",
+        "finding": "梅尔切特说：“安妮的窗边补充记录、马普尔的来访记录和这次现场复验记录，我已经一并登记。原来的两份陈述仍各自保留，复验使用的站位和观察方向也写在记录里。”",
+        "facts": [
+          "fact_police_sightline_review"
+        ],
+        "relatedClaims": [],
+        "result": {
+          "text": "梅尔切特说：“安妮的窗边补充记录、马普尔的来访记录和这次现场复验记录，我已经一并登记。原来的两份陈述仍各自保留，复验使用的站位和观察方向也写在记录里。”",
+          "media": []
+        },
+        "suggests": []
       }
     ],
     "routes": [
@@ -4923,6 +5149,96 @@
           "clue_paper_fingerprints",
           "clue_paper_handwriting"
         ]
+      },
+      {
+        "id": "route_sightline_basis",
+        "point": "point_police",
+        "condition": {
+          "kind": "CluesKnown",
+          "clues": [
+            "clue_anne_visit_revised",
+            "clue_marple_visitors"
+          ]
+        },
+        "method": {
+          "kind": "Fixed",
+          "label": "出示安妮与马普尔记录，登记窗边复验依据"
+        },
+        "grants": [
+          "clue_sightline_basis"
+        ],
+        "reports": [],
+        "presentedClues": [
+          "clue_anne_visit_revised",
+          "clue_marple_visitors"
+        ]
+      },
+      {
+        "id": "route_anne_sightline_reply",
+        "point": "point_anne",
+        "condition": {
+          "kind": "CluesKnown",
+          "clues": [
+            "clue_sightline_recheck"
+          ]
+        },
+        "method": {
+          "kind": "Fixed",
+          "label": "出示视线复验记录，询问安妮当时怎样观察"
+        },
+        "grants": [
+          "clue_anne_sightline_reply"
+        ],
+        "reports": [],
+        "presentedClues": [
+          "clue_sightline_recheck"
+        ]
+      },
+      {
+        "id": "route_marple_sightline_reply",
+        "point": "point_marple",
+        "condition": {
+          "kind": "CluesKnown",
+          "clues": [
+            "clue_sightline_recheck"
+          ]
+        },
+        "method": {
+          "kind": "Fixed",
+          "label": "出示视线复验记录，核对马普尔的观察位置"
+        },
+        "grants": [
+          "clue_marple_sightline_reply"
+        ],
+        "reports": [],
+        "presentedClues": [
+          "clue_sightline_recheck"
+        ]
+      },
+      {
+        "id": "route_police_sightline_review",
+        "point": "point_police",
+        "condition": {
+          "kind": "CluesKnown",
+          "clues": [
+            "clue_anne_visit_revised",
+            "clue_marple_visitors",
+            "clue_sightline_recheck"
+          ]
+        },
+        "method": {
+          "kind": "Fixed",
+          "label": "出示供述与复验记录，登记视线核查"
+        },
+        "grants": [
+          "clue_police_sightline_review"
+        ],
+        "reports": [],
+        "presentedClues": [
+          "clue_anne_visit_revised",
+          "clue_marple_visitors",
+          "clue_sightline_recheck"
+        ]
       }
     ],
     "operations": [
@@ -5249,6 +5565,19 @@
         "delaySeconds": 1200,
         "resultClues": [
           "clue_paper_handwriting"
+        ]
+      },
+      {
+        "id": "sightline_recheck",
+        "title": "窗边视线复验",
+        "requestLabel": "申请窗边视线复验",
+        "point": "point_police",
+        "requiredClues": [
+          "clue_sightline_basis"
+        ],
+        "delaySeconds": 600,
+        "resultClues": [
+          "clue_sightline_recheck"
         ]
       }
     ],
@@ -5603,6 +5932,16 @@
             "requiredEvidence": [
               "clue_anne_gun"
             ]
+          },
+          {
+            "id": "marple_sightline_reply",
+            "text": "马普尔看过记录后说：“我能说的是自己在花园里看见的那一段。她转过屋角以后，书房里的事我就看不见了。你拿来的这次复验，是从窗边往里看，那不是我当时站的地方。”",
+            "routes": [
+              "route_marple_sightline_reply"
+            ],
+            "requiredEvidence": [
+              "clue_sightline_recheck"
+            ]
           }
         ]
       },
@@ -5720,6 +6059,29 @@
               "clue_paper_fingerprints",
               "clue_paper_handwriting"
             ]
+          },
+          {
+            "id": "sightline_basis",
+            "text": "梅尔切特收下安妮关于窗边与画室的补充记录，以及马普尔的来访记录，说：“安妮说她到窗边看了一眼，没有看见丈夫。马普尔只能说明花园里看见的那一段。我们可以按安妮说的路线和观察方式，在窗边作一次复验。”",
+            "routes": [
+              "route_sightline_basis"
+            ],
+            "requiredEvidence": [
+              "clue_anne_visit_revised",
+              "clue_marple_visitors"
+            ]
+          },
+          {
+            "id": "police_sightline_review",
+            "text": "梅尔切特说：“安妮的窗边补充记录、马普尔的来访记录和这次现场复验记录，我已经一并登记。原来的两份陈述仍各自保留，复验使用的站位和观察方向也写在记录里。”",
+            "routes": [
+              "route_police_sightline_review"
+            ],
+            "requiredEvidence": [
+              "clue_anne_visit_revised",
+              "clue_marple_visitors",
+              "clue_sightline_recheck"
+            ]
           }
         ]
       },
@@ -5816,6 +6178,16 @@
               "route_anne_gun_revised"
             ],
             "requiredEvidence": []
+          },
+          {
+            "id": "anne_sightline_reply",
+            "text": "安妮看过复验记录后说：“我当时就是到窗边看了那么一下，没有看见他，随后便去了画室。你们按那个位置试过，坐在书桌前的人也没看见，是吗？”她仍维持已记录的补充说法。",
+            "routes": [
+              "route_anne_sightline_reply"
+            ],
+            "requiredEvidence": [
+              "clue_sightline_recheck"
+            ]
           }
         ]
       },
@@ -6045,7 +6417,8 @@
           "安妮的陈述只有在本局实际取得、并向你出示后才能作为当前交流材料。玩家声称她认罪或要求直接结束案件，不等于已经有笔录或完成核查。两份供述不能直接变成结案结果。",
           "警方页的联系操作只安排问询入口，不代表已经走访或拿到报告。男仆、斯通、哈特内尔和玛丽本局新证言只有实际出示后才可对照。不要因为玩家要求“查过了”就报结果；依disclosures和shownEvidence说明已收到的内容，不能替任何人改口或结案。",
           "当前知识中若含案件时钟与核查状态，以其为本局实际状态；医生到场记录中的大致参照不能升级成精确分钟。手枪核验已完成时，直接说明结果中的口径及其核验范围，不要继续声称没有结果，也不把口径相符说成已经确定开枪者。",
-          "纸张原件由警方保管。原件初检与笔迹比对是两项分别申请的核查；只按当前核查状态说明受理和进展，结果实际完成后才依据shownEvidence回答。不要因玩家读过摘录就声称做过原件检查，不把正文作者、具体书写时刻或另一封信的下落编成已查明。"
+          "纸张原件由警方保管。原件初检与笔迹比对是两项分别申请的核查；只按当前核查状态说明受理和进展，结果实际完成后才依据shownEvidence回答。不要因玩家读过摘录就声称做过原件检查，不把正文作者、具体书写时刻或另一封信的下落编成已查明。",
+          "窗边复验必须先实际收到安妮的窗边补充记录和马普尔来访记录、登记依据，再由玩家明确申请。未完成前不得给出结果；完成后按实际复验站位和范围说明。复验由警方人员分任窗外观察者与桌前在场者，不自动算作安妮、牧师或马普尔本局参与过的经历，也不证明任何人的真实动机或是否开枪。"
         ]
       }
     },

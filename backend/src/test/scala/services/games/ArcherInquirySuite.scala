@@ -82,7 +82,7 @@ class ArcherInquirySuite extends FunSuite:
     (for
       _ <- setup(url,id)
       initial <- view(url,id)
-      _ = assertEquals(initial.caseRevision,Revision(12))
+      _ = assertEquals(initial.caseRevision,Revision(13))
       _ = assert(initial.people.find(_.id == PersonId("mrs_archer")).get.witness.isEmpty)
       contact <- execute(url,id,"open_archer_meeting").attempt
       fixed <- read(url,id,"archer","route_archer_gun_memory").attempt

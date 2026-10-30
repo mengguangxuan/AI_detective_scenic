@@ -69,6 +69,15 @@ const server = http.createServer(async (request, response) => {
       reply = context.shownEvidence.find(item => item.id === clue)?.text ?? context.knowledge.find(item => item.startsWith(title + '：')) ?? '这项还未受理。';
       id = allowed.has(clue.slice(5)) ? clue.slice(5) : undefined;
     }
+    if (/视线|复验/.test(context.question)) {
+      if (context.witness.name === '梅尔切特') {
+        reply = context.shownEvidence.find(item => item.id === 'clue_sightline_recheck')?.text ?? context.knowledge.find(item => item.startsWith('窗边视线复验：')) ?? '这项还未受理。';
+        id = allowed.has('sightline_recheck') ? 'sightline_recheck' : undefined;
+      } else {
+        id = context.witness.name === '安妮·普罗瑟罗' ? 'anne_sightline_reply' : 'marple_sightline_reply';
+        reply = (context.disclosures ?? context.answers).find(answer => answer.id === id)?.text ?? '我还没有看过那份记录。';
+      }
+    }
     const decision = context.question.includes('越界测试') ? { disclosureIds: ['future_confession'], reply: 'DO_NOT_RENDER_FUTURE' }
       : context.disclosures ? { reply, disclosureIds: id && allowed.has(id) ? [id] : [] } : { answerIds: id && allowed.has(id) ? [id] : [] };
     response.setHeader('Content-Type', 'application/json');

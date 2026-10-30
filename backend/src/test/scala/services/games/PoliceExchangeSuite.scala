@@ -53,7 +53,7 @@ class PoliceExchangeSuite extends FunSuite:
       _ = assertEquals(restored,saved)
       newId = SessionId(UUID.randomUUID().toString)
       current <- tx(url)(OpenStudyMessage(owner,newId).plan)
-      _ = assertEquals(current.caseRevision,Revision(12))
+      _ = assertEquals(current.caseRevision,Revision(13))
       _ = assert(current.police.nonEmpty)
     yield ()).unsafeRunSync()
   }
