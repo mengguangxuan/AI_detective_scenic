@@ -21,6 +21,15 @@ private[cases] object FixtureLoader:
       decode(raw).left.map(error => DecodingFailure(s"$path[$index]: ${error.message}", error.history))
     }
 
+  private def observation(raw: Json, objects: Vector[SceneObjectBinding]): Decoder.Result[SceneObservation] =
+    val c = raw.hcursor
+    for
+      node <- c.get[SceneNodeId]("node")
+      label <- if c.downField("label").succeeded then c.get[String]("label")
+        else objects.find(_.node == node).map(_.label).toRight(DecodingFailure("label：未登记交互名称的外观节点必须显式提供名称",c.history))
+      description <- c.get[String]("description")
+    yield SceneObservation(node,label,description)
+
   private def node(raw: Json): Decoder.Result[FixtureNode] =
     val c = raw.hcursor
     for
@@ -148,8 +157,9 @@ private[cases] object FixtureLoader:
       origin <- c.get[String]("timeOriginLabel")
       rawNodes <- scene.hcursor.get[Vector[Json]]("nodes")
       nodes <- decodeEntries(rawNodes, "scene.nodes")(node)
-      observations <- scene.hcursor.get[Option[Vector[SceneObservation]]]("observations").map(_.getOrElse(Vector.empty))
       sceneObjects <- scene.hcursor.get[Option[Vector[SceneObjectBinding]]]("objects").map(_.getOrElse(Vector.empty))
+      rawObservations <- scene.hcursor.get[Option[Vector[Json]]]("observations").map(_.getOrElse(Vector.empty))
+      observations <- decodeEntries(rawObservations,"scene.observations")(raw => observation(raw,sceneObjects))
       represented <- rawNodes.traverse(raw => (raw.hcursor.get[SceneNodeId]("id"), raw.hcursor.get[Option[EntityId]]("represents")).tupled)
       _ <- check(sceneObjects.isEmpty || represented.collect { case (node, Some(entity)) => node -> entity }.toSet ==
         sceneObjects.map(o => o.node -> o.entity).toSet, "scene.objects：登记未覆盖模型或与模型实体不一致", c)

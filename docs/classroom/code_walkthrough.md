@@ -209,7 +209,7 @@ export type InvestigationPageState =
   private[games] def execute(f: CaseContent,state: GameSessionRecord,request: RequestId,operation: OperationId, records: Vector[SessionRecord] = Vector.empty, turns: Vector[InterviewTurnRecord] = Vector.empty): Either[GameError,ActionPlan] =
     for
       op <- f.operations.find(_.id==operation).toRight(denied)
-      _ <- f.points.find(_.id==op.point).filter(accessible(f,state,_)).toRight(denied)
+      _ <- f.points.find(_.id==op.point).filter(SceneAccessRules.accessible(f,state,_)).toRight(denied)
       _ <- Either.cond(operationAvailable(state,op) && FollowUpRules.permitted(f,state,operation,records,turns),(),GameError(ErrorCode.ConditionFailed,"当前状态不允许执行该操作。"))
     yield
       val changed=op.effects.foldLeft(state) { (s,effect) => effect match

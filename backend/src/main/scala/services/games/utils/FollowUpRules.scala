@@ -21,7 +21,7 @@ private[games] object FollowUpRules:
       p.requiredEvidence.subsetOf(evidence(content,p.witness,records,turns)) && p.requiredRoutes.subsetOf(responses(content,p.witness,records,turns)))
 
   private[games] def views(content: CaseContent,state: GameSessionRecord,records: Vector[SessionRecord],turns: Vector[InterviewTurnRecord]): Vector[WitnessFollowUpView] =
-    content.followUps.filter(p => content.witnesses.find(_.id == p.witness).exists(w => content.points.exists(point => point.id == w.point && FixtureRules.accessible(content,state,point)))).map { p =>
+    content.followUps.filter(p => content.witnesses.find(_.id == p.witness).exists(w => content.points.exists(point => point.id == w.point && SceneAccessRules.accessible(content,state,point)))).map { p =>
       val shown=evidence(content,p.witness,records,turns)
       val answered=responses(content,p.witness,records,turns)
       val op=content.operations.find(_.id == p.operation).get

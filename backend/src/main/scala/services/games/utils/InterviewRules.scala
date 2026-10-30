@@ -21,7 +21,7 @@ private[games] object InterviewRules:
     for
       _ <- Either.cond(question.trim.nonEmpty && question.length <= 1000 && evidence.size <= 20,(),GameError(ErrorCode.InvalidValue,"请填写1至1000字的问题，最多出示20份材料。"))
       profile <- content.witnesses.find(_.id == witness).toRight(denied)
-      _ <- content.points.find(_.id == profile.point).filter(FixtureRules.accessible(content,state,_)).toRight(denied)
+      _ <- content.points.find(_.id == profile.point).filter(SceneAccessRules.accessible(content,state,_)).toRight(denied)
       _ <- Either.cond(evidence.subsetOf(state.clues),(),denied)
     yield
       val history = turns.filter(_.witness == witness)

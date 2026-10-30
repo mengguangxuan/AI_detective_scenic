@@ -2742,37 +2742,30 @@
     "observations": [
       {
         "node": "node_desk",
-        "label": "书桌",
         "description": "一张木制书桌，右侧装有抽屉，桌面上放着座钟、台灯和电话。"
       },
       {
         "node": "node_lamp",
-        "label": "台灯",
         "description": "金属灯座，锥形灯罩，放在书桌左侧。"
       },
       {
         "node": "node_window",
-        "label": "窗户",
         "description": "一扇分格窗，窗外是花园。"
       },
       {
         "node": "node_bookshelf",
-        "label": "书架",
         "description": "木制书架，几层搁板上放着书。"
       },
       {
         "node": "node_clock",
-        "label": "座钟",
         "description": "木壳座钟，摆在桌面上。"
       },
       {
         "node": "node_paper",
-        "label": "纸张原位置",
         "description": "警方留下的纸张位置标记，旁边附有原件摘录。"
       },
       {
         "node": "node_telephone",
-        "label": "电话",
         "description": "旧式电话，听筒搁在机座上。"
       }
     ],

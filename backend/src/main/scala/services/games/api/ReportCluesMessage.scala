@@ -11,7 +11,7 @@ import services.games.objects.apiTypes.CommandResult
 import services.games.tables.SessionTable.SessionTable
 import services.games.tables.ReceiptTable.ReceiptTable
 import services.games.tables.PoliceExchangeTable.PoliceExchangeTable
-import services.games.utils.{FixtureRules,MutationSupport}
+import services.games.utils.{MutationSupport,SceneAccessRules}
 import services.system.api.APIMessage
 import services.system.objects.*
 
@@ -33,7 +33,7 @@ final case class ReportCluesMessage(userId: UserId,sessionId: SessionId,requestI
             revision <- CaseRevisionTable.find(connection,state.caseId,state.caseRevision).flatMap(value =>
               IO.fromOption(value)(GameError(ErrorCode.InvalidValue,"案件修订不存在。")))
             contact <- IO.fromOption(revision.content.police.flatMap(id => revision.content.witnesses.find(_.id == id)))(GameError(ErrorCode.AccessDenied,"当前没有可接触的警方人员。"))
-            _ <- IO.raiseUnless(revision.content.points.exists(p => p.id == contact.point && FixtureRules.accessible(revision.content,state,p)))(
+            _ <- IO.raiseUnless(revision.content.points.exists(p => p.id == contact.point && SceneAccessRules.accessible(revision.content,state,p)))(
               GameError(ErrorCode.AccessDenied,"当前无法与警方交流。"))
             previous <- PoliceExchangeTable.list(connection,sessionId)
             shared = previous.flatMap(_.evidence).toSet

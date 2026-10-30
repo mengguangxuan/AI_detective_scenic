@@ -15,7 +15,7 @@ private[games] object ExternalCheckRules:
   private[games] def request(content: CaseContent,state: GameSessionRecord,id: RequestId,checkId: ExternalCheckId): Either[GameError,ActionPlan] =
     for
       spec <- content.externalChecks.find(_.id == checkId).toRight(GameError(ErrorCode.AccessDenied,"没有这项可申请的核查。"))
-      _ <- Either.cond(content.points.exists(p => p.id == spec.point && FixtureRules.accessible(content,state,p)),(),GameError(ErrorCode.AccessDenied,"当前无法联系核查人员。"))
+      _ <- Either.cond(content.points.exists(p => p.id == spec.point && SceneAccessRules.accessible(content,state,p)),(),GameError(ErrorCode.AccessDenied,"当前无法联系核查人员。"))
       _ <- Either.cond(spec.requiredClues.subsetOf(state.clues),(),GameError(ErrorCode.ConditionFailed,"请先取得申请这项核查所需的材料。"))
       _ <- Either.cond(!state.externalChecks.exists(_.id == checkId),(),GameError(ErrorCode.ConditionFailed,"这项核查已经受理，请查看进展或已有结果。"))
     yield
@@ -57,6 +57,6 @@ private[games] object ExternalCheckRules:
     content.externalChecks.map { c =>
       val progress=state.externalChecks.find(_.id == c.id)
       ExternalCheckView(c.id,c.title,c.requestLabel,c.delaySeconds/60,
-        progress.isEmpty && c.requiredClues.subsetOf(state.clues) && content.points.exists(p => p.id == c.point && FixtureRules.accessible(content,state,p)),
+        progress.isEmpty && c.requiredClues.subsetOf(state.clues) && content.points.exists(p => p.id == c.point && SceneAccessRules.accessible(content,state,p)),
         progress.map(p => CheckProgressView(timeLabel(content,p.requestedAtSeconds),timeLabel(content,p.readyAtSeconds),p.completedAtSeconds.map(timeLabel(content,_)))))
     }
