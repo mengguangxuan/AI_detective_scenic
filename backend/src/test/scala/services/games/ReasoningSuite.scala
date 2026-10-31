@@ -73,7 +73,7 @@ class ReasoningSuite extends FunSuite:
     (for
       _ <- setup(url,id)
       first <- view(url,id)
-      _ = assertEquals(first.caseRevision,Revision(17))
+      _ = assertEquals(first.caseRevision,Revision(18))
       _ = assert(first.reasoning.nonEmpty && first.reasoning.get.attempts.isEmpty)
       _ = assert(!first.asJson.noSpaces.contains("预藏枪"))
       _ = assert(!first.asJson.noSpaces.contains("authorTruth"))

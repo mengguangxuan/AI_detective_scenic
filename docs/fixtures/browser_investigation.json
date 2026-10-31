@@ -1,7 +1,7 @@
 {
   "id": "vicarage_study",
   "revision": {
-    "value": 17
+    "value": 18
   },
   "schemaVersion": {
     "value": 2
@@ -216,6 +216,20 @@
         "initialPlace": "study",
         "owner": null,
         "background": "书房陈设；本局现场交互对象"
+      },
+      {
+        "id": "planter",
+        "name": "窗边盆栽",
+        "initialPlace": "study",
+        "owner": null,
+        "background": "书房窗边陈设；本局可在原位提起内盆检查，检查后放回。"
+      },
+      {
+        "id": "planter_interior",
+        "name": "外盆内部",
+        "initialPlace": "study",
+        "owner": null,
+        "background": "书房窗边陈设；本局可在原位提起内盆检查，检查后放回。"
       }
     ],
     "relationships": [],
@@ -1503,6 +1517,23 @@
           }
         },
         "boundary": "本局申请后实际完成的树林查访、样本初步辨认或实际出示后的登记；不确定声源、样本化学身份或责任人"
+      },
+      {
+        "id": "topic_planter",
+        "subject": {
+          "kind": "Entity",
+          "id": "planter"
+        },
+        "question": "窗边盆栽的内外盆",
+        "when": {
+          "earliest": {
+            "seconds": 0
+          },
+          "latest": {
+            "seconds": 0
+          }
+        },
+        "boundary": "本局提起内盆后的现场观察；内外盆结构及提起交互为游戏改编，不证明此前放过什么、由谁放置或取走。"
       }
     ],
     "facts": [
@@ -2494,6 +2525,20 @@
           "source_game_woodland"
         ],
         "topic": "topic_police_woodland_review"
+      },
+      {
+        "id": "fact_planter",
+        "value": {
+          "kind": "AuthoredDetail",
+          "detail": "提起种着棕榈的内盆后，可以看见下方的陶制外盆。内盆与外盆并不贴合，盆底和侧边留有空隙。本次查看时，露出的外盆内未见枪支。"
+        },
+        "requiresOccurred": [],
+        "explanation": "第30章提供窗边棕榈容器的原著依据；可提起的内外盆结构是游戏检查机制，不是原著明载的结构或历史痕迹。",
+        "sources": [
+          "source_ch30",
+          "source_game_planter"
+        ],
+        "topic": "topic_planter"
       }
     ],
     "claims": [],
@@ -2602,6 +2647,11 @@
         "id": "source_ch30",
         "kind": "Original",
         "reference": "https://en.wikisource.org/wiki/The_Murder_at_the_Vicarage/Chapter_30"
+      },
+      {
+        "id": "source_game_planter",
+        "kind": "Adapted",
+        "reference": "docs/cases/murder_at_the_vicarage.md#窗边盆栽检查修订18"
       }
     ]
   },
@@ -3171,6 +3221,56 @@
         "represents": null,
         "place": "study",
         "initiallyVisible": false
+      },
+      {
+        "id": "node_planter",
+        "asset": "model_placeholder",
+        "transform": {
+          "position": {
+            "x": 2.35,
+            "y": 0,
+            "z": -1.4
+          },
+          "rotation": {
+            "xRad": 0,
+            "yRad": 0,
+            "zRad": 0
+          },
+          "scale": {
+            "x": 1,
+            "y": 1,
+            "z": 1
+          }
+        },
+        "parent": null,
+        "represents": "planter",
+        "place": "study",
+        "initiallyVisible": true
+      },
+      {
+        "id": "node_planter_interior",
+        "asset": "model_placeholder",
+        "transform": {
+          "position": {
+            "x": 0,
+            "y": 1.05,
+            "z": 0
+          },
+          "rotation": {
+            "xRad": 0,
+            "yRad": 0,
+            "zRad": 0
+          },
+          "scale": {
+            "x": 1,
+            "y": 1,
+            "z": 1
+          }
+        },
+        "parent": "node_planter",
+        "represents": "planter_interior",
+        "place": "study",
+        "initiallyVisible": false
       }
     ],
     "cues": [],
@@ -3494,6 +3594,46 @@
         },
         "topics": [],
         "fallbackFinding": null
+      },
+      {
+        "id": "point_planter",
+        "subject": {
+          "kind": "Entity",
+          "id": "planter"
+        },
+        "label": "窗边盆栽",
+        "entry": {
+          "kind": "OnNode",
+          "node": "node_planter",
+          "localPoint": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "radiusMeters": 4
+        },
+        "topics": [],
+        "fallbackFinding": null
+      },
+      {
+        "id": "point_planter_interior",
+        "subject": {
+          "kind": "Entity",
+          "id": "planter_interior"
+        },
+        "label": "外盆内部",
+        "entry": {
+          "kind": "OnNode",
+          "node": "node_planter_interior",
+          "localPoint": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "radiusMeters": 4
+        },
+        "topics": [],
+        "fallbackFinding": null
       }
     ],
     "requirementBindings": [],
@@ -3528,6 +3668,10 @@
       {
         "node": "node_telephone",
         "description": "旧式电话，听筒搁在机座上。"
+      },
+      {
+        "node": "node_planter",
+        "description": "窗边的花架上放着一株棕榈，陶制外盆的边缘露在内盆周围。"
       }
     ],
     "objects": [
@@ -3586,6 +3730,20 @@
         "label": "电话",
         "point": null,
         "readRoute": null
+      },
+      {
+        "node": "node_planter",
+        "entity": "planter",
+        "label": "窗边盆栽",
+        "point": "point_planter",
+        "readRoute": null
+      },
+      {
+        "node": "node_planter_interior",
+        "entity": "planter_interior",
+        "label": "外盆内部",
+        "point": "point_planter_interior",
+        "readRoute": "route_planter_interior"
       }
     ]
   },
@@ -4637,6 +4795,20 @@
         "relatedClaims": [],
         "result": {
           "text": "梅尔切特说：“两份听闻、送鱼经过的时间回忆、树林收取样本的记录和医生的初步意见，都分别登记了。听见声音、找到样本、辨认外观，是三种不同的材料。声源、样本来历和用途还需要继续调查。”",
+          "media": []
+        },
+        "suggests": []
+      },
+      {
+        "id": "clue_planter",
+        "title": "窗边盆栽的内外盆",
+        "finding": "提起种着棕榈的内盆后，可以看见下方的陶制外盆。内盆与外盆并不贴合，盆底和侧边留有空隙。本次查看时，露出的外盆内未见枪支。",
+        "facts": [
+          "fact_planter"
+        ],
+        "relatedClaims": [],
+        "result": {
+          "text": "提起种着棕榈的内盆后，可以看见下方的陶制外盆。内盆与外盆并不贴合，盆底和侧边留有空隙。本次查看时，露出的外盆内未见枪支。",
           "media": []
         },
         "suggests": []
@@ -5828,6 +6000,21 @@
           "clue_woodland_sample",
           "clue_crystal_opinion"
         ]
+      },
+      {
+        "id": "route_planter_interior",
+        "point": "point_planter_interior",
+        "condition": {
+          "kind": "Always"
+        },
+        "method": {
+          "kind": "Fixed",
+          "label": "查看外盆内部"
+        },
+        "grants": [
+          "clue_planter"
+        ],
+        "reports": []
       }
     ],
     "operations": [
@@ -6053,6 +6240,64 @@
             }
           }
         ]
+      },
+      {
+        "id": "lift_planter",
+        "point": "point_planter",
+        "label": "提起内盆查看",
+        "condition": {
+          "kind": "EntityOpen",
+          "entity": "planter",
+          "opened": false
+        },
+        "effects": [
+          {
+            "kind": "World",
+            "effect": {
+              "kind": "SetOpened",
+              "entity": "planter",
+              "opened": true
+            }
+          },
+          {
+            "kind": "World",
+            "effect": {
+              "kind": "SetNodeVisible",
+              "node": "node_planter_interior",
+              "visible": true
+            }
+          }
+        ],
+        "repeatable": true
+      },
+      {
+        "id": "replace_planter",
+        "point": "point_planter",
+        "label": "放回内盆",
+        "condition": {
+          "kind": "EntityOpen",
+          "entity": "planter",
+          "opened": true
+        },
+        "effects": [
+          {
+            "kind": "World",
+            "effect": {
+              "kind": "SetOpened",
+              "entity": "planter",
+              "opened": false
+            }
+          },
+          {
+            "kind": "World",
+            "effect": {
+              "kind": "SetNodeVisible",
+              "node": "node_planter_interior",
+              "visible": false
+            }
+          }
+        ],
+        "repeatable": true
       }
     ],
     "rules": [],

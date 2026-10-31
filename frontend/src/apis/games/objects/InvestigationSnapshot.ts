@@ -28,7 +28,7 @@ export const investigationSnapshotSchema = z.object({
   externalChecks: z.array(externalCheckViewSchema).default([]),
   sessionId: sessionIdSchema, caseId: z.string().min(1), caseRevision: z.object({ value: z.number().int().positive().safe() }).strict().transform(v => v.value),
   sequence: sequenceSchema, title: z.string(),
-  scene: z.object({ bundleId: z.literal('study'), revision: z.literal('4'), placeName: z.string(), drawerOpened: z.boolean(), windowOpened: z.boolean(), objects: z.array(sceneObjectBindingSchema) }).strict(),
+  scene: z.object({ bundleId: z.literal('study'), revision: z.enum(['4', '5']), placeName: z.string(), drawerOpened: z.boolean(), windowOpened: z.boolean(), objects: z.array(sceneObjectBindingSchema) }).strict(),
   points: z.array(inquiryPointSchema), clues: z.array(clueViewSchema), journal: z.array(investigationLogSchema), observations: z.array(sceneObservationSchema),
   witnesses: z.array(witnessViewSchema), interviews: z.array(interviewTurnSchema),
   police: policeDeskSchema.nullable(),

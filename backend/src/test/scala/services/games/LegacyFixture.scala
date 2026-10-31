@@ -3,9 +3,19 @@ import services.cases.objects.*
 
 // Test-only reconstruction of the preceding published feature set.
 private[games] object LegacyFixture:
-  def withoutEvaluation(current: CaseContent): CaseContent = current.copy(conclusion=current.conclusion.map(_.copy(evaluation=None)))
+  def withoutPlanter(current: CaseContent): CaseContent =
+    val nodes=Set(SceneNodeId("node_planter"),SceneNodeId("node_planter_interior"))
+    val points=Set(PointId("point_planter"),PointId("point_planter_interior"))
+    current.copy(nodes=current.nodes.filterNot(n => nodes(n.id)),points=current.points.filterNot(p => points(p.id)),
+      operations=current.operations.filterNot(o => points(o.point)),routes=current.routes.filterNot(r => points(r.point)),
+      clues=current.clues.filterNot(_.id == ClueId("clue_planter")),facts=current.facts.filterNot(_.id == FactId("fact_planter")),
+      sceneObjects=current.sceneObjects.filterNot(o => nodes(o.node)),observations=current.observations.filterNot(o => nodes(o.node)))
 
-  def withoutConclusion(current: CaseContent): CaseContent = current.copy(conclusion=None)
+  def withoutEvaluation(latest: CaseContent): CaseContent =
+    val current=withoutPlanter(latest)
+    current.copy(conclusion=current.conclusion.map(_.copy(evaluation=None)))
+
+  def withoutConclusion(current: CaseContent): CaseContent = withoutPlanter(current).copy(conclusion=None)
 
   def withoutWoodland(latest: CaseContent): CaseContent =
     val current=withoutConclusion(latest)

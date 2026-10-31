@@ -136,7 +136,7 @@ class WebInvestigationSuite extends FunSuite:
       identity <- send(port,"openlocalidentity")
       id = UUID.randomUUID().toString
       initial <- send(port,"openstudy",payload(id),identity._3)
-      _ = assertEquals(initial._2.hcursor.downField("observations").focus.get.asArray.get.size,7)
+      _ = assertEquals(initial._2.hcursor.downField("observations").focus.get.asArray.get.size,8)
       badClose <- send(port,"executeoperation",execute(id,"bad-close",0).replace("open_drawer","close_drawer"),identity._3)
       _ = assertEquals(badClose._1,409)
       _ <- send(port,"executeoperation",execute(id),identity._3)
@@ -256,7 +256,7 @@ class WebInvestigationSuite extends FunSuite:
       identity <- send(port,"openlocalidentity")
       id = UUID.randomUUID().toString
       initial <- send(port,"openstudy",payload(id),identity._3)
-      _ = assertEquals(initial._2.hcursor.downField("scene").get[Vector[Json]]("objects").toOption.get.size,8)
+      _ = assertEquals(initial._2.hcursor.downField("scene").get[Vector[Json]]("objects").toOption.get.size,9)
       _ = assert(initial._2.hcursor.get[Vector[Json]]("points").toOption.get.forall(_.hcursor.get[Vector[Json]]("findings").toOption.get.isEmpty))
       learned <- send(port,"investigate",inquiry(id,"paper","paper",0,"paper"),identity._3)
       snapshot <- send(port,"getinvestigationsnapshot",payload(id),identity._3)

@@ -111,7 +111,7 @@ test.describe('Archer inquiry recovery', () => {
     expect(response.status()).toBe(200);
     const state = await response.json();
     expect(state).toEqual(JSON.parse(readFileSync('.build-cache/archer-inquiry-snapshot.json', 'utf8')));
-    expect(state.caseRevision.value).toBe(17);
+    expect(state.caseRevision.value).toBe(18);
     await page.getByRole('navigation', { name: '调查导航' }).getByRole('link', { name: '人物问询', exact: true }).click();
     await page.getByRole('button', { name: '与阿彻太太交谈', exact: true }).click();
     await expect(page.getByRole('log', { name: '自由问询记录', exact: true })).toContainText('十二点三刻');
@@ -197,3 +197,15 @@ for (const [name, outcome] of [['reasoning-open', null], ['reasoning-solved', 'S
     });
   });
 }
+
+test.describe('planter discovery recovery', () => {
+  test.use({ storageState: '.build-cache/planter-state.json' });
+  test('closed pot and discovered clue restore together after an actual backend restart', async ({ page }) => {
+    await page.goto('/scene');
+    await expect(page.getByRole('heading', { name: '当前阶段 · 书房初查', exact: true })).toBeVisible();
+    const saved = await page.evaluate(() => JSON.parse(localStorage.getItem('detective-scenic:server-session:v6')!));
+    const response = await page.request.post('/api/getinvestigationsnapshot', { data: { sessionId: saved.sessionId }, headers: { 'X-Detective-Client': 'web' } });
+    expect(response.status()).toBe(200);
+    expect(await response.json()).toEqual(JSON.parse(readFileSync('.build-cache/planter-snapshot.json', 'utf8')));
+  });
+});

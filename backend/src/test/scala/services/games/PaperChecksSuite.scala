@@ -52,7 +52,7 @@ class PaperChecksSuite extends FunSuite:
     (for
       _ <- setup(url,id)
       initial <- view(url,id)
-      _ = assertEquals(initial.caseRevision,Revision(17))
+      _ = assertEquals(initial.caseRevision,Revision(18))
       _ = assert(initial.externalChecks.filter(_.id.value.startsWith("paper_")).forall(!_.available))
       early <- request(url,id,"paper_inspection").attempt
       expert <- request(url,id,"paper_handwriting").attempt

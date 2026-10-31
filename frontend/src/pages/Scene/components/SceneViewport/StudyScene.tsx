@@ -8,6 +8,7 @@ import type { SceneObjectBinding } from '../../../../apis/games/objects/SceneObj
 import { studyNodes } from '../../objects/StudyNodes';
 import ObservationCamera from './ObservationCamera';
 import SceneItem from './SceneItem';
+import Planter from './Planter';
 
 type Props = { sessionId: SessionId; cameraMemory: RefObject<SceneCameraMemory | null>; scene: InvestigationSnapshot['scene']; resetVersion: number;
   onPick: (object: SceneObjectBinding, event: ThreeEvent<MouseEvent>) => void };
@@ -79,6 +80,7 @@ export default function StudyScene({ scene, resetVersion, onPick, sessionId, cam
       <mesh position={[-1, 1.95, 0.2]}><coneGeometry args={[0.38, 0.33, 24, 1, true]}/><meshStandardMaterial color="#b69a68" side={2}/></mesh>
       </SceneItem>
     </SceneItem>
+    {scene.objects.some(o => o.node === studyNodes.planter) && <Planter {...item}/>}
     <ObservationCamera resetVersion={resetVersion} sessionId={sessionId} memory={cameraMemory}/>
   </>;
 }

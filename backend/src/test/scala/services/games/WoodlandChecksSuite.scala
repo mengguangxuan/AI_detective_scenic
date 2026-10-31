@@ -62,7 +62,7 @@ class WoodlandChecksSuite extends FunSuite:
     (for
       _ <- setup(url,id)
       initial <- view(url,id)
-      _ = assertEquals(initial.caseRevision,Revision(17))
+      _ = assertEquals(initial.caseRevision,Revision(18))
       early <- request(url,id,"woodland_search").attempt
       _ = assertEquals(code(early),Some(ErrorCode.ConditionFailed))
       _ <- read(url,id,"point_mary","route_mary_sound")
