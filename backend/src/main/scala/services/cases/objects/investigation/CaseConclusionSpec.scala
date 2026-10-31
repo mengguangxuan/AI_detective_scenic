@@ -10,7 +10,7 @@ object ConclusionEvidenceGroup:
   given Decoder[ConclusionEvidenceGroup] = deriveDecoder[ConclusionEvidenceGroup]
 
 // Author-only answer and rubric; never included in an unfinished player view or NPC context.
-final case class CaseConclusionSpec(candidates: Set[PersonId], culprits: Set[PersonId], evidenceGroups: Vector[ConclusionEvidenceGroup], review: String)
+final case class CaseConclusionSpec(candidates: Set[PersonId], culprits: Set[PersonId], evidenceGroups: Vector[ConclusionEvidenceGroup], review: String, evaluation: Option[ReasoningEvaluationSpec] = None)
 object CaseConclusionSpec:
   given Encoder[CaseConclusionSpec] = deriveEncoder[CaseConclusionSpec]
   given Decoder[CaseConclusionSpec] = deriveDecoder[CaseConclusionSpec]

@@ -5,6 +5,7 @@ import services.system.api.RegisteredAPIMessage
 import services.models.api.ChatCompletionClient
 object GamesRoutes:
   val apiMessages: Vector[RegisteredAPIMessage] = Vector(
+    RegisteredAPIMessage.authenticated[RevealReasoningMessage,RevealReasoningInput,CommandResult](Set("sessionId","requestId","expectedSequence","abandon"))((input,user) => RevealReasoningMessage(user,input.sessionId,input.requestId,input.expectedSequence,input.abandon)),
     RegisteredAPIMessage.authenticated[SubmitConclusionMessage,SubmitConclusionInput,CommandResult](Set("sessionId","requestId","expectedSequence","suspects","evidence","explanation"))((input,user) => SubmitConclusionMessage(user,input.sessionId,input.requestId,input.expectedSequence,input.suspects,input.evidence,input.explanation)).copy(longTextFields=Set("explanation")),
     RegisteredAPIMessage.authenticated[RequestExternalCheckMessage,RequestExternalCheckInput,CommandResult](Set("sessionId","requestId","expectedSequence","check"))((input,user) => RequestExternalCheckMessage(user,input.sessionId,input.requestId,input.expectedSequence,input.check)),
     RegisteredAPIMessage.authenticated[AdvanceTimeMessage,AdvanceTimeInput,CommandResult](Set("sessionId","requestId","expectedSequence","minutes"))((input,user) => AdvanceTimeMessage(user,input.sessionId,input.requestId,input.expectedSequence,input.minutes)),
@@ -17,6 +18,10 @@ object GamesRoutes:
   )
 
   def interviewMessages(client: ChatCompletionClient): Vector[RegisteredAPIMessage] = Vector(
+    RegisteredAPIMessage.authenticatedWorkflow[EvaluateReasoningMessage,EvaluateReasoningInput,CommandResult](
+      Set("sessionId","requestId","expectedSequence","suspects","evidence","explanation"),Set("explanation")) { (input,user,url) =>
+      EvaluateReasoningMessage(user,input.sessionId,input.requestId,input.expectedSequence,input.suspects,input.evidence,input.explanation).run(url,client)
+    },
     RegisteredAPIMessage.authenticatedWorkflow[AskWitnessMessage,AskWitnessInput,CommandResult](
       Set("sessionId","requestId","expectedSequence","witness","question","evidence"),Set("question")) { (input,user,url) =>
       AskWitnessMessage(user,input.sessionId,input.requestId,input.expectedSequence,input.witness,input.question,input.evidence).run(url,client)

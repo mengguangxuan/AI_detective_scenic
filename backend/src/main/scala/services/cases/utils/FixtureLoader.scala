@@ -231,7 +231,10 @@ private[cases] object FixtureLoader:
         rule(spec.candidates.nonEmpty && spec.candidates.subsetOf(people) && spec.culprits.nonEmpty && spec.culprits.subsetOf(spec.candidates) &&
           spec.evidenceGroups.size == 5 && spec.evidenceGroups.map(_.label).distinct.size == 5 &&
           spec.evidenceGroups.forall(g => g.label.trim.nonEmpty && g.requiredClues.nonEmpty && g.requiredClues.subsetOf(clues)) &&
-          spec.review.trim.nonEmpty && spec.review.length <= 8000,
+          spec.review.trim.nonEmpty && spec.review.length <= 8000 && spec.evaluation.forall(e =>
+            e.truth.trim.nonEmpty && e.truth.length <= 40000 && e.criteria.nonEmpty && e.criteria.size <= 10 &&
+            e.criteria.map(_.id).distinct.size == e.criteria.size && e.criteria.forall(c =>
+              c.id.matches("[a-z][a-z0-9_]{0,59}") && c.label.trim.nonEmpty && c.label.length <= 100 && c.instruction.trim.nonEmpty && c.instruction.length <= 2000)),
           "investigation.conclusion", "人物、评分材料或复盘配置不合法")
       }
       _ <- validateHeader(record)

@@ -25,7 +25,12 @@ class ConclusionSuite extends FunSuite:
     DatabaseSession.connection(url).use(c => DatabaseSession.transaction(c)(f(c)))
   private def setup(url: String,id: SessionId): IO[Unit]=DatabaseSession.connection(url).use(c =>
     DatabaseSchema.initialize(c) *> DatabaseSession.transaction(c)(
-      ImportCaseMessage(Paths.get("../docs/fixtures/browser_investigation.json")).plan(c) *> OpenStudyMessage(owner,id).plan(c)).void)
+      (for
+        latest <- ImportCaseMessage(Paths.get("../docs/fixtures/browser_investigation.json")).plan(c)
+        old=latest.copy(revision=Revision(16),content=LegacyFixture.withoutEvaluation(latest.content))
+        _ <- CaseRevisionTable.insert(c,old)
+        _ <- StartGameMessage(owner,id,old.caseId,old.revision).plan(c)
+      yield ())).void)
   private def view(url: String,id: SessionId)=tx(url)(GetInvestigationSnapshotMessage(owner,id).plan)
   private def read(url: String,id: SessionId,point: String,route: String): IO[Unit]=for
     s <- view(url,id)
@@ -81,7 +86,8 @@ class ConclusionSuite extends FunSuite:
     val url=database;val id=SessionId(UUID.randomUUID().toString)
     (for
       _ <- DatabaseSession.connection(url).use(DatabaseSchema.initialize)
-      r <- tx(url)(ImportCaseMessage(Paths.get("../docs/fixtures/browser_investigation.json")).plan)
+      latest <- tx(url)(ImportCaseMessage(Paths.get("../docs/fixtures/browser_investigation.json")).plan)
+      r=latest.copy(content=LegacyFixture.withoutEvaluation(latest.content))
       spec=r.content.conclusion.get
       all=spec.evidenceGroups.flatMap(_.requiredClues).toSet
       state=FixtureRules.initial(r,id,owner).copy(clues=all)

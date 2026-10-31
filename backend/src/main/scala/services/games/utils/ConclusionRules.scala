@@ -10,6 +10,7 @@ private[games] object ConclusionRules:
       suspects: Set[PersonId], evidence: Set[ClueId], explanation: String): Either[GameError,ActionPlan] =
     for
       spec <- content.conclusion.toRight(GameError(ErrorCode.AccessDenied,"这份调查尚未开放推理提交。"))
+      _ <- Either.cond(spec.evaluation.isEmpty,(),GameError(ErrorCode.AccessDenied,"请先提交推理评审，再单独选择结案或查看解答。"))
       _ <- Either.cond(state.conclusion.isEmpty,(),GameError(ErrorCode.ConditionFailed,"本次推理已经提交，请查看已保存的复盘。"))
       _ <- Either.cond(suspects.nonEmpty && suspects.subsetOf(spec.candidates) && evidence.nonEmpty && evidence.size <= 50 &&
         explanation.trim.length >= 10 && explanation.length <= 1000 && !explanation.exists(c => c < ' ' && c != '\n' && c != '\t'),

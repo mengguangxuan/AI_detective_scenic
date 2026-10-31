@@ -54,7 +54,7 @@ test('independent witnesses are explicitly contacted, actually questioned and co
   await page.getByRole('button', { name: '联系男仆，核查枪的来源', exact: true }).click();
   await expect(page.getByRole('region', { name: '已联系的核查对象', exact: true })).toContainText('斯通博士');
   let state = await snapshot(page);
-  expect(state.caseRevision.value).toBe(16);
+  expect(state.caseRevision.value).toBe(17);
   expect(state.clues.some((c: { id: string }) => c.id === 'clue_valet_gun' || c.id === 'clue_stone_inn')).toBe(false);
   await page.getByRole('link', { name: '前往人物问询，核查证言', exact: true }).click();
   await choose(page, '上校的贴身男仆'); await expect(await send(page, '上校梳妆台的抽屉里有枪吗？')).toContainText('那里有的话我会看见');

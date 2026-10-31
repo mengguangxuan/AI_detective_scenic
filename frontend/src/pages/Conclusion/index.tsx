@@ -1,10 +1,12 @@
+import ReasoningPanel from './components/ReasoningPanel';
 import type { InvestigationSnapshot } from '../../apis/games/objects/InvestigationSnapshot';
 import type { useInvestigation } from '../../features/investigation/hooks/useInvestigation';
 import type { ConclusionDraft } from './objects/ConclusionDraft';
 import InvestigationLink from '../../app/components/InvestigationLink';
 type Props = { snapshot: InvestigationSnapshot; disabled: boolean; draft: ConclusionDraft;
-  onChange: (draft: ConclusionDraft) => void; onSubmit: ReturnType<typeof useInvestigation>['conclude'] };
-export default function ConclusionPage({ snapshot, disabled, draft, onChange, onSubmit }: Props) {
+  onChange: (draft: ConclusionDraft) => void; onSubmit: ReturnType<typeof useInvestigation>['conclude']; onEvaluate: ReturnType<typeof useInvestigation>['evaluate']; onReveal: ReturnType<typeof useInvestigation>['revealReasoning'] };
+export default function ConclusionPage({ snapshot, disabled, draft, onChange, onSubmit, onEvaluate, onReveal }: Props) {
+  if (snapshot.reasoning) return <ReasoningPanel snapshot={snapshot} progress={snapshot.reasoning} disabled={disabled} draft={draft} onChange={onChange} onEvaluate={onEvaluate} onReveal={onReveal}/>;
   const result = snapshot.conclusion;
   return <section aria-labelledby="conclusion-title" className="space-y-5">
     <div><h2 id="conclusion-title" className="text-xl font-medium">推理与复盘</h2><p className="mt-2 text-sm leading-7 text-stone-400">整理你的判断，决定何时提交本次推理。</p></div>

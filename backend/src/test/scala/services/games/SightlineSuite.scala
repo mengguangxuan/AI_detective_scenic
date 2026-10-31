@@ -93,7 +93,7 @@ class SightlineSuite extends FunSuite:
     (for
       _ <- setup(url,id)
       initial <- view(url,id)
-      _ = assertEquals(initial.caseRevision,Revision(16))
+      _ = assertEquals(initial.caseRevision,Revision(17))
       _ = assert(!initial.externalChecks.find(_.id == ExternalCheckId("sightline_recheck")).get.available)
       early <- request(url,id).attempt
       _ = assertEquals(code(early),Some(ErrorCode.ConditionFailed))

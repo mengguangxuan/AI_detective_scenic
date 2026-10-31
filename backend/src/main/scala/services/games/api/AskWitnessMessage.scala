@@ -14,6 +14,7 @@ import services.games.objects.apiTypes.CommandResult
 import services.games.tables.SessionTable.SessionTable
 import services.games.tables.ReceiptTable.ReceiptTable
 import services.games.tables.InterviewRequestTable.InterviewRequestTable
+import services.games.tables.ReasoningRequestTable.ReasoningRequestTable
 import services.games.tables.InterviewTurnTable.InterviewTurnTable
 import services.games.tables.SessionRecordTable.SessionRecordTable
 import services.games.tables.PoliceExchangeTable.PoliceExchangeTable
@@ -34,6 +35,8 @@ final case class AskWitnessMessage(userId: UserId,sessionId: SessionId,requestId
         case Some(saved) => MutationSupport.retry(saved,digest).map(InterviewPreparation.Cached.apply)
         case None =>
           for
+            other <- ReasoningRequestTable.find(connection,sessionId,requestId)
+            _ <- IO.raiseWhen(other.nonEmpty)(GameError(ErrorCode.RequestConflict,"该请求编号已用于推理评审。"))
             now <- IO.realTime.map(_.toMillis)
             existing <- InterviewRequestTable.find(connection,sessionId,requestId)
             prepared <- existing match
@@ -52,7 +55,8 @@ final case class AskWitnessMessage(userId: UserId,sessionId: SessionId,requestId
                 for
                   _ <- MutationSupport.checkSequence(session,expectedSequence)
                   active <- InterviewRequestTable.hasActive(connection,sessionId,now)
-                  _ <- IO.raiseWhen(active)(GameError(ErrorCode.RequestPending,"这场调查还有问询正在处理中，请稍后重试。"))
+                  evaluating <- ReasoningRequestTable.hasActive(connection,sessionId,now)
+                  _ <- IO.raiseWhen(active || evaluating)(GameError(ErrorCode.RequestPending,"这场调查还有问询正在处理中，请稍后重试。"))
                   revision <- CaseRevisionTable.find(connection,session.caseId,session.caseRevision).flatMap(value => IO.fromOption(value)(GameError(ErrorCode.InvalidValue,"案件修订不存在。")))
                   turns <- InterviewTurnTable.list(connection,sessionId)
                   records <- SessionRecordTable.list(connection,sessionId)

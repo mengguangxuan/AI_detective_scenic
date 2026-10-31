@@ -2,6 +2,7 @@ package services.system.api
 
 import cats.effect.IO
 import java.sql.Connection
+import services.games.tables.ReasoningRequestTable.ReasoningRequestTableInitializer
 import services.cases.tables.CaseRevisionTable.CaseRevisionTableInitializer
 import services.games.tables.SessionTable.SessionTableInitializer
 import services.games.tables.SessionRecordTable.SessionRecordTableInitializer
@@ -19,4 +20,5 @@ object DatabaseSchema:
       ReceiptTableInitializer.initialize(connection) *>
       InterviewRequestTableInitializer.initialize(connection) *>
       InterviewTurnTableInitializer.initialize(connection) *>
-      PoliceExchangeTableInitializer.initialize(connection)
+      PoliceExchangeTableInitializer.initialize(connection) *>
+      ReasoningRequestTableInitializer.initialize(connection)

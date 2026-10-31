@@ -12,6 +12,24 @@ const server = http.createServer(async (request, response) => {
     for await (const chunk of request) raw += chunk;
     const body = JSON.parse(raw);
     const context = JSON.parse(body.messages.find(message => message.role === 'user').content);
+    if (context.task === 'reasoning_judge' || context.task === 'reasoning_guidance') {
+      const explanation = context.playerSubmission.explanation;
+      if (explanation.includes('评审接口故障测试')) { response.writeHead(503).end('{}'); return; }
+      let payload;
+      if (context.task === 'reasoning_judge') {
+        // Protocol outcomes only, never a production semantic grader.
+        if (explanation.includes('评审非法输出测试')) payload = { checks: [], evidenceIds: [], review: 'PRIVATE-REVIEW' };
+        else {
+          const established = explanation.includes('协议验收：论证成立');
+          payload = { checks: context.criteria.map(c => ({ id: c.id, satisfied: established })), evidenceIds: context.citedEvidence.map(c => c.id) };
+        }
+      } else {
+        if ('authorTruth' in context || 'authorCulprits' in context || 'obtainableEvidence' in context) throw new Error('Guide received private truth');
+        payload = { feedback: context.checks.every(c => c.satisfied) ? '核心解释已得到现有材料支持。你可以选择结案，或继续核实细节。' : '请说明来电记录怎样支持你的行动时间推断，再核实尚未解释的环节。', evidenceIds: context.citedEvidence.map(c => c.id) };
+      }
+      response.writeHead(200, { 'Content-Type': 'application/json' });
+      response.end(JSON.stringify({ choices: [{ finish_reason: 'stop', message: { content: JSON.stringify(payload) } }] })); return;
+    }
     if (context.question.includes('接口故障测试')) { response.writeHead(503).end('{"error":"fixture unavailable"}'); return; }
     let id;
     if (/教堂|凭什么|时间依据/.test(context.question)) id = 'mary_time_basis';

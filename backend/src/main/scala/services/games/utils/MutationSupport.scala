@@ -14,6 +14,7 @@ import services.games.tables.SessionTable.SessionTable
 import services.games.tables.SessionRecordTable.SessionRecordTable
 import services.games.tables.ReceiptTable.ReceiptTable
 import services.games.tables.InterviewRequestTable.InterviewRequestTable
+import services.games.tables.ReasoningRequestTable.ReasoningRequestTable
 import services.system.objects.*
 import services.cases.objects.investigation.TimeAssessment
 
@@ -53,6 +54,14 @@ private[games] object MutationSupport:
     digest(user,session,request,expected,Json.obj("kind" -> Json.fromString("SubmitConclusion"),
       "suspects" -> suspects.toVector.sortBy(_.value).asJson,"evidence" -> evidence.toVector.sortBy(_.value).asJson,"explanation" -> explanation.asJson))
 
+  private[games] def reasoningDigest(user: UserId,session: SessionId,request: RequestId,expected: Sequence,
+      suspects: Set[PersonId],evidence: Set[ClueId],explanation: String): String =
+    digest(user,session,request,expected,Json.obj("kind" -> Json.fromString("EvaluateReasoning"),
+      "suspects" -> suspects.toVector.sortBy(_.value).asJson,"evidence" -> evidence.toVector.sortBy(_.value).asJson,"explanation" -> explanation.asJson))
+
+  private[games] def reasoningEndingDigest(user: UserId,session: SessionId,request: RequestId,expected: Sequence,abandon: Boolean): String =
+    digest(user,session,request,expected,Json.obj("kind" -> Json.fromString("RevealReasoning"),"abandon" -> abandon.asJson))
+
   // Keep the exact original JSON bytes so stored receipt digests remain valid.
   private def digest(user: UserId,session: SessionId,request: RequestId,expected: Sequence,command: Json): String =
     val payload=Json.obj("user" -> user.asJson,"session" -> session.asJson,"request" -> request.asJson,
@@ -67,10 +76,12 @@ private[games] object MutationSupport:
     IO.raiseUnless(row.sequence==expected)(GameError(ErrorCode.StaleState,"会话已发生变化，请刷新。"))
 
   private[games] def commit(connection: Connection,previous: GameSessionRecord,request: RequestId,digest: String,plan: ActionPlan,
-      pendingInterview: Boolean = false): IO[CommandResult] =
+      pendingInterview: Boolean = false, pendingReasoning: Boolean = false): IO[CommandResult] =
     for
       reserved <- InterviewRequestTable.find(connection,previous.id,request)
       _ <- IO.raiseWhen(reserved.nonEmpty && !pendingInterview)(GameError(ErrorCode.RequestConflict,"该请求编号已用于人物问询。"))
+      reasoning <- ReasoningRequestTable.find(connection,previous.id,request)
+      _ <- IO.raiseWhen(reasoning.nonEmpty && !pendingReasoning)(GameError(ErrorCode.RequestConflict,"该请求编号已用于推理评审。"))
       revision <- CaseRevisionTable.find(connection,previous.caseId,previous.caseRevision).flatMap(v => IO.fromOption(v)(GameError(ErrorCode.InvalidValue,"案件修订不存在。")))
       timed = ExternalCheckRules.afterAction(revision.content,previous,plan)
       _ <- SessionTable.update(connection,previous,timed.session)

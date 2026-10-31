@@ -111,7 +111,7 @@ test.describe('Archer inquiry recovery', () => {
     expect(response.status()).toBe(200);
     const state = await response.json();
     expect(state).toEqual(JSON.parse(readFileSync('.build-cache/archer-inquiry-snapshot.json', 'utf8')));
-    expect(state.caseRevision.value).toBe(16);
+    expect(state.caseRevision.value).toBe(17);
     await page.getByRole('navigation', { name: '调查导航' }).getByRole('link', { name: '人物问询', exact: true }).click();
     await page.getByRole('button', { name: '与阿彻太太交谈', exact: true }).click();
     await expect(page.getByRole('log', { name: '自由问询记录', exact: true })).toContainText('十二点三刻');
@@ -181,3 +181,19 @@ test.describe('conclusion recovery', () => {
     expect(await response.json()).toEqual(JSON.parse(readFileSync('.build-cache/conclusion-snapshot.json', 'utf8')));
   });
 });
+
+for (const [name, outcome] of [['reasoning-open', null], ['reasoning-solved', 'Solved'], ['reasoning-revealed', 'Revealed']] as const) {
+  test.describe(`${name} recovery`, () => {
+    test.use({ storageState: `.build-cache/${name}-state.json` });
+    test('assessment history and separate ending restore exactly after an actual process restart', async ({ page }) => {
+      await page.goto('/conclusion');
+      await expect(page.getByRole('region', { name: '推理评审记录', exact: true })).toBeVisible();
+      const saved = await page.evaluate(() => JSON.parse(localStorage.getItem('detective-scenic:server-session:v6')!));
+      const response = await page.request.post('/api/getinvestigationsnapshot', { data: { sessionId: saved.sessionId }, headers: { 'X-Detective-Client': 'web' } });
+      expect(response.status()).toBe(200);
+      const state = await response.json();
+      expect(state).toEqual(JSON.parse(readFileSync(`.build-cache/${name}-snapshot.json`, 'utf8')));
+      expect(state.reasoning.ending?.mode ?? null).toBe(outcome);
+    });
+  });
+}

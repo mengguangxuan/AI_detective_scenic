@@ -1,3 +1,4 @@
+import { reasoningProgressSchema } from './ReasoningProgress';
 import { caseConclusionSchema } from './CaseConclusionRecord';
 import { personIdSchema } from '../../../objects/PersonId';
 import { z } from 'zod';
@@ -17,6 +18,7 @@ import { clueViewSchema } from './ClueView';
 import { investigationLogSchema } from './InvestigationLogEntry';
 import { sceneObjectBindingSchema } from './SceneObjectBinding';
 export const investigationSnapshotSchema = z.object({
+  reasoning: reasoningProgressSchema.nullable().default(null),
   conclusionCandidates: z.array(personIdSchema).default([]),
   conclusion: caseConclusionSchema.nullable().default(null),
   followUps: z.array(witnessFollowUpSchema).default([]),
@@ -33,6 +35,19 @@ export const investigationSnapshotSchema = z.object({
   people: z.array(casePersonBriefSchema),
   stage: z.object({ introduction: z.string(), objective: z.string(), completed: z.boolean(), nextObjective: z.string().nullable() }).strict().nullable(),
 }).strict().superRefine((snapshot, context) => {
+  if (snapshot.reasoning) {
+    const attempts = snapshot.reasoning.attempts;
+    if (new Set(attempts.map(a => a.requestId)).size !== attempts.length || attempts.some((a, i) =>
+      a.sequence > snapshot.sequence || (i > 0 && a.sequence <= attempts[i - 1]!.sequence) ||
+      a.suspects.some(id => !snapshot.conclusionCandidates.includes(id)) || a.evidence.some(id => !snapshot.clues.some(c => c.id === id)) ||
+      (a.status === 'Established' && (!a.checks.length || a.checks.some(c => !c.satisfied))) ||
+      (['Unavailable', 'Rejected'].includes(a.status) && a.checks.length !== 0)))
+      context.addIssue({ code: 'custom', message: '推理评审记录与当前调查不一致' });
+    const ending = snapshot.reasoning.ending;
+    if (ending && (ending.sequence > snapshot.sequence || (attempts.length && ending.sequence <= attempts.at(-1)!.sequence) ||
+      (ending.mode === 'Solved' && attempts.at(-1)?.status !== 'Established')))
+      context.addIssue({ code: 'custom', message: '推理收尾与已保存评审不一致' });
+  }
   if (snapshot.conclusionCandidates.some(id => !snapshot.people.some(p => p.id === id))) context.addIssue({ code: 'custom', message: '推理人物不在公开资料中' });
   const result = snapshot.conclusion;
   if (result && (result.sequence > snapshot.sequence || result.suspects.some(id => !snapshot.conclusionCandidates.includes(id)) ||

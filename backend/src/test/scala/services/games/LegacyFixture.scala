@@ -3,6 +3,8 @@ import services.cases.objects.*
 
 // Test-only reconstruction of the preceding published feature set.
 private[games] object LegacyFixture:
+  def withoutEvaluation(current: CaseContent): CaseContent = current.copy(conclusion=current.conclusion.map(_.copy(evaluation=None)))
+
   def withoutConclusion(current: CaseContent): CaseContent = current.copy(conclusion=None)
 
   def withoutWoodland(latest: CaseContent): CaseContent =
