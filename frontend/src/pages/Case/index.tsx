@@ -6,7 +6,7 @@ import type { PointId } from '../../objects/PointId';
 export default function CasePage({ snapshot, onSelect }: { snapshot: InvestigationSnapshot; onSelect: (point: PointId) => void }) {
   return <section aria-labelledby="case-page-title" className="space-y-5">
     <div><h2 id="case-page-title" className="text-xl font-medium">案件简介</h2><p className="mt-2 text-sm leading-6 text-stone-400">先了解眼前的案情，再决定从哪里开始调查。</p></div>
-    <StagePanel stage={snapshot.stage}/>
+    <StagePanel snapshot={snapshot}/>
     <section aria-labelledby="case-progress-title" className="rounded-2xl border border-white/10 bg-[#182421] p-5 sm:p-7">
       <div className="flex flex-wrap items-start justify-between gap-5">
         <div><h3 id="case-progress-title" className="text-lg font-medium">这次调查</h3><p className="mt-3 text-sm text-stone-300">当前现场：{snapshot.scene.placeName}</p></div>

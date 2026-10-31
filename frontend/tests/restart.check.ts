@@ -251,3 +251,19 @@ test.describe('frozen review comparison recovery', () => {
     expect(await response.json()).toEqual(JSON.parse(readFileSync('.build-cache/review-comparison-snapshot.json', 'utf8')));
   });
 });
+
+test.describe('case-wide ending status recovery', () => {
+  test.use({ storageState: '.build-cache/progress-solved-state.json' });
+  test('continued investigation keeps its saved ending and progress banner after a real restart', async ({ page }) => {
+    await page.goto('/case');
+    await expect(page.getByLabel('调查状态', { exact: true })).toContainText('推理已结案');
+    await expect(page.getByRole('heading', { name: '本次推理已结案', exact: true })).toBeVisible();
+    await expect(page.getByRole('heading', { name: '当前阶段 · 书房初查', exact: true })).toHaveCount(0);
+    await page.getByRole('link', { name: '查看结案复盘', exact: true }).click();
+    await expect(page.getByRole('region', { name: '本案收尾与复盘', exact: true })).toBeVisible();
+    const saved = await page.evaluate(() => JSON.parse(localStorage.getItem('detective-scenic:server-session:v6')!));
+    const response = await page.request.post('/api/getinvestigationsnapshot', { data: { sessionId: saved.sessionId }, headers: { 'X-Detective-Client': 'web' } });
+    expect(response.status()).toBe(200);
+    expect(await response.json()).toEqual(JSON.parse(readFileSync('.build-cache/progress-solved-snapshot.json', 'utf8')));
+  });
+});

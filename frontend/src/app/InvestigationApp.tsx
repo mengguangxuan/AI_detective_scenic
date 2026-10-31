@@ -15,6 +15,7 @@ import PolicePage from '../pages/Police';
 import type { SceneCameraMemory } from '../pages/Scene/objects/SceneCameraMemory';
 import { emptyTimeComparisonDraft, type TimeComparisonDraft } from '../pages/Clues/objects/TimeComparisonDraft';
 import StagePanel from './components/StagePanel';
+import { investigationOutcome } from './functions/investigationOutcome';
 import InvestigationNavigation from './components/InvestigationNavigation';
 import { useInvestigationPage } from './hooks/useInvestigationPage';
 import { investigationPages } from './objects/InvestigationPage';
@@ -25,6 +26,7 @@ export default function InvestigationApp() {
   const page = useInvestigationPage();
   const ready = state.kind === 'ready' ? state : null;
   const disabled = ready?.mutation.kind !== 'idle';
+  const outcome = ready ? investigationOutcome(ready.snapshot) : null;
   const cameraMemory = useRef<SceneCameraMemory | null>(null);
   const [clueDraft, setClueDraft] = useState<{ sessionId: SessionId; value: TimeComparisonDraft } | null>(null);
   const [conclusionDraft, setConclusionDraft] = useState<{ sessionId: SessionId; value: ConclusionDraft } | null>(null);
@@ -39,7 +41,7 @@ export default function InvestigationApp() {
         <div><p className="text-xs tracking-[0.3em] text-amber-200">AI DETECTIVE THEATRE</p><h1 className="mt-2 text-2xl font-medium tracking-wide sm:text-3xl">AI 侦探剧场</h1></div>
         <button type="button" onClick={reset} disabled={state.kind === 'loading' || (ready !== null && disabled)} className="rounded-lg border border-white/20 px-4 py-2 text-sm text-stone-300 hover:bg-white/10 disabled:opacity-40">新建调查</button>
       </header>
-      {ready ? <div className="mt-6 flex flex-wrap items-end justify-between gap-4"><div><p className="text-xs tracking-widest text-stone-400">{ready.snapshot.clock?.label ?? '周五上午'} / 警方初查</p><h2 className="mt-2 text-xl">{ready.snapshot.title}</h2></div><p className="text-sm text-stone-400">材料 {ready.snapshot.clues.length} 份 · 调查记录 {ready.snapshot.sequence} 条</p></div> : null}
+      {ready ? <div className="mt-6 flex flex-wrap items-end justify-between gap-4"><div><div role="group" aria-label="调查状态" className="text-xs tracking-widest text-stone-400">{ready.snapshot.clock?.label ?? '周五上午'} / {outcome?.label ?? '调查进行中'}</div><h2 className="mt-2 text-xl">{ready.snapshot.title}</h2></div><p className="text-sm text-stone-400">材料 {ready.snapshot.clues.length} 份 · 调查记录 {ready.snapshot.sequence} 条</p></div> : null}
       <InvestigationNavigation page={page}/>
       {page === null ? <section className="rounded-xl border border-white/15 p-6"><h2 className="text-xl">找不到这个页面</h2><p className="mt-3 text-sm text-stone-400">请从上方导航选择要进入的调查页面。</p></section> : <>
         {state.kind === 'loading' ? <p role="status" className="py-12 text-stone-300">正在连接后端并恢复调查…</p> : null}
@@ -49,7 +51,7 @@ export default function InvestigationApp() {
           {ready.mutation.kind === 'outcomeUnknown' ? <section role="alert" className="mb-5 rounded-xl border border-amber-200/30 p-4"><p>{ready.mutation.problem}</p><button type="button" onClick={retry} className="mt-3 rounded-lg border border-amber-200 px-4 py-2">用原请求重试</button></section> : null}
           {ready.mutation.kind === 'awaitingSnapshot' ? <section role="status" className="mb-5 rounded-xl border border-amber-200/30 p-4"><p>{ready.mutation.problem}</p><button type="button" onClick={() => void reconnect()} className="mt-3 rounded-lg border border-amber-200 px-4 py-2">重新读取视图</button></section> : null}
           <CaseClockPanel clock={ready.snapshot.clock} disabled={disabled} onWait={investigation.advanceTime}/>
-          {page !== '/case' ? <StagePanel stage={ready.snapshot.stage} compact/> : null}
+          {page !== '/case' ? <StagePanel snapshot={ready.snapshot} compact reviewLink={page !== '/conclusion'}/> : null}
           <div ref={content} tabIndex={-1} className="outline-none">
             {page === '/conclusion' ? <ConclusionPage snapshot={ready.snapshot} disabled={disabled} onSubmit={investigation.conclude} onEvaluate={investigation.evaluate} onReveal={investigation.revealReasoning}
               draft={conclusionDraft?.sessionId === ready.snapshot.sessionId ? conclusionDraft.value : emptyConclusionDraft}
