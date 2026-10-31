@@ -33,7 +33,7 @@ test('independent woodland route collects a sample, obtains a tentative opinion 
   const errors: string[] = []; page.on('pageerror', error => errors.push(error.message));
   await page.goto('/police');
   await expect(page.getByRole('heading', { name: '警方交流', exact: true })).toBeVisible();
-  expect((await snapshot(page)).caseRevision.value).toBe(20);
+  expect((await snapshot(page)).caseRevision.value).toBe(21);
   await expect(page.getByRole('button', { name: '申请查访树林声响附近现场', exact: true })).toBeDisabled();
   await expect(page.getByRole('region', { name: '核查进展', exact: true })).not.toContainText('苦味酸');
   await fixedPerson(page, '玛丽', '询问：树林方向那声响是什么时候？');
@@ -45,6 +45,7 @@ test('independent woodland route collects a sample, obtains a tentative opinion 
   const original = (await snapshot(page)).clues;
   await expect(page.getByRole('button', { name: '申请请海多克辨认树林样本', exact: true })).toBeDisabled();
   await page.getByRole('button', { name: '申请查访树林声响附近现场', exact: true }).click();
+  await expect(page.getByRole('article', { name: '树林声响现场查访', exact: true })).toContainText('办理中');
   await waitForTime(page, 5);
   expect((await snapshot(page)).clues.some((c: { id: string }) => c.id === 'clue_woodland_sample')).toBe(false);
   await page.reload();
@@ -53,12 +54,13 @@ test('independent woodland route collects a sample, obtains a tentative opinion 
   await expect(page.getByRole('article', { name: '树林声响现场查访', exact: true })).toContainText('已完成');
   expect((await snapshot(page)).clues.some((c: { id: string }) => c.id === 'clue_crystal_opinion')).toBe(false);
   await page.getByRole('button', { name: '申请请海多克辨认树林样本', exact: true }).click();
+  await expect(page.getByRole('article', { name: '树林样本初步辨认', exact: true })).toContainText('办理中');
   await waitForTime(page, 5);
   expect((await snapshot(page)).clues.some((c: { id: string }) => c.id === 'clue_crystal_opinion')).toBe(false);
   await waitForTime(page, 5);
   await fixedPolice(page, '出示响声回忆、树林样本记录与医生意见');
   const state = await snapshot(page);
-  expect(state.clues).toHaveLength(7);
+  expect(state.clues).toHaveLength(6);
   expect(state.clues.filter((c: { id: string }) => original.some((o: { id: string }) => o.id === c.id))).toEqual(original);
   expect(state.clues.find((c: { id: string }) => c.id === 'clue_crystal_opinion').text).toContain('并非化验确认');
   expect(state.police.sharedClues).toEqual(expect.arrayContaining(['clue_woodland_sample', 'clue_crystal_opinion']));

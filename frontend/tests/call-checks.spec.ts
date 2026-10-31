@@ -26,7 +26,7 @@ async function fixedPolice(page: Page, label: string) {
 async function basis(page: Page) {
   await page.goto('/police');
   await expect(page.getByRole('heading', { name: '警方交流', exact: true })).toBeVisible();
-  expect((await snapshot(page)).caseRevision.value).toBe(20);
+  expect((await snapshot(page)).caseRevision.value).toBe(21);
   await fixedPerson(page, '克莱门特牧师', '询问：你为什么离开寓所？');
   await fixedPolice(page, '出示牧师的来电陈述，登记追查依据');
 }
@@ -79,7 +79,7 @@ test('a short fixed route traces the call, separately inspects the site, present
   await fixedPerson(page, '劳伦斯·雷丁', '出示来电来源记录，询问雷丁与老宅的来往');
   await fixedPolice(page, '出示来电陈述与两次核查结果，登记电话核查');
   const state = await snapshot(page);
-  expect(state.clues).toHaveLength(8);
+  expect(state.clues).toHaveLength(7);
   expect(state.clues.find((c: { id: string }) => c.id === 'clue_call')).toEqual(original);
   expect(state.police.sharedClues).toEqual(expect.arrayContaining(['clue_call', 'clue_call_origin', 'clue_call_lodge_scene', 'clue_call_lodge_phone']));
   expect(state.stage.completed).toBe(false);

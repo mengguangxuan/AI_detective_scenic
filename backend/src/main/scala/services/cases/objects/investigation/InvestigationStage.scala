@@ -5,7 +5,7 @@ import io.circe.generic.semiauto.*
 import services.cases.objects.ClueId
 
 // Authored goal for an investigation slice; completion does not resolve the case.
-final case class InvestigationStage(introduction: String, objective: String, completionClue: ClueId,
+final case class InvestigationStage(introduction: String, objective: String, completionClue: Option[ClueId],
   comparison: Option[TimeComparisonSpec] = None, nextObjective: Option[String] = None)
 object InvestigationStage:
   given Encoder[InvestigationStage] = deriveEncoder[InvestigationStage]

@@ -15,7 +15,7 @@ const operation = (page: Page, name: string) => command(page, 'executeoperation'
 async function prepare(page: Page) {
   await page.goto('/police');
   await expect(page.getByRole('heading', { name: '警方交流', exact: true })).toBeVisible();
-  expect((await snapshot(page)).caseRevision.value).toBe(20);
+  expect((await snapshot(page)).caseRevision.value).toBe(21);
   await expect(page.getByRole('button', { name: '联系阿彻太太，核实雷丁住处的情况', exact: true })).toHaveCount(0);
   await read(page, 'redding', 'redding_account'); await read(page, 'redding', 'redding_gun');
   await read(page, 'police', 'police_medical');
@@ -88,7 +88,7 @@ test('sightline basis is explicitly submitted, the check finishes, and witnesses
   await page.getByText('固定问答与材料登记（备用）', { exact: true }).click();
   await page.getByRole('button', { name: '出示供述与复验记录，登记视线核查', exact: true }).click();
   state = await snapshot(page);
-  for (const id of ['clue_sightline_recheck', 'clue_anne_sightline_reply', 'clue_marple_sightline_reply', 'clue_police_sightline_review']) expect(state.clues.some((c: { id: string }) => c.id === id)).toBe(true);
+  for (const id of ['clue_sightline_recheck', 'clue_anne_sightline_reply', 'clue_marple_sightline_reply']) expect(state.clues.some((c: { id: string }) => c.id === id)).toBe(true);
   expect(state.clues.filter((c: { id: string }) => ['clue_anne_visit_revised', 'clue_marple_visitors'].includes(c.id))).toEqual(original);
   expect(state.stage.completed).toBe(false);
   await page.reload(); expect(await snapshot(page)).toEqual(state);

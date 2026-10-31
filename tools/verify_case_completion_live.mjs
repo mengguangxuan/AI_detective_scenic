@@ -18,7 +18,7 @@ class Investigation {
     return r.json();
   }
   async refresh() { this.state = await this.post('getinvestigationsnapshot', { sessionId: this.sessionId }); return this.state; }
-  async start() { await this.post('openlocalidentity'); this.state = await this.post('openstudy', { sessionId: this.sessionId }); assert.equal(this.state.caseRevision.value, 20); }
+  async start() { await this.post('openlocalidentity'); this.state = await this.post('openstudy', { sessionId: this.sessionId }); assert.equal(this.state.caseRevision.value, 21); }
   async change(name, payload) {
     const request = { sessionId: this.sessionId, requestId: randomUUID(), expectedSequence: this.state.sequence, ...payload };
     const receipt = await this.post(name, request); await this.refresh(); return { request, receipt };

@@ -48,6 +48,16 @@ describe('selection after a scene state change', () => {
 
 
 describe('registered item views', () => {
+  it('keeps legacy views readable and validates presentation references without treating a reply as evidence', () => {
+    const point = { id: 'point_mary', label: '玛丽', operations: [], routes: [], findings: [] };
+    const clue = { id: 'clue_paper', title: '纸张摘录', text: '纸张内容' };
+    const presentation = { sequence: { value: 1 }, evidence: ['clue_paper'], reply: '我当时没看过这张纸。' };
+    expect(investigationSnapshotSchema.parse({ ...wire, points: [point] }).points[0]!.presentations).toEqual([]);
+    const current = { ...wire, clues: [clue], points: [{ ...point, presentations: [presentation] }] };
+    expect(investigationSnapshotSchema.parse(current).clues).toHaveLength(1);
+    expect(investigationSnapshotSchema.safeParse({ ...current, clues: [] }).success).toBe(false);
+    expect(investigationSnapshotSchema.safeParse({ ...current, sequence: { value: 0 } }).success).toBe(false);
+  });
   it('rejects an item without its source entry and undiscovered content in an item', () => {
     const unbound = { ...wire, scene: { ...wire.scene, objects: [{ node: 'node_clock', entity: 'clock', label: '座钟', point: 'point_clock', readRoute: 'route_clock' }] } };
     expect(investigationSnapshotSchema.safeParse(unbound).success).toBe(false);

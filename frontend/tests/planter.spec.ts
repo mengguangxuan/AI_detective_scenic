@@ -31,9 +31,9 @@ async function model(page: Page, position: [number, number, number], label: stri
 test('player lifts the real planter model, inspects the exposed cavity and retains the discovery after replacing it', async ({ page }) => {
   const errors: string[] = []; page.on('pageerror', e => errors.push(e.message));
   await page.goto('/scene');
-  await expect(page.getByRole('heading', { name: '当前阶段 · 书房初查', exact: true })).toBeVisible();
+  await expect(page.getByRole('heading', { name: '调查目标', exact: true })).toBeVisible();
   const first = await snapshot(page);
-  expect(first.caseRevision.value).toBe(20); expect(first.scene.revision).toBe('5');
+  expect(first.caseRevision.value).toBe(21); expect(first.scene.revision).toBe('5');
   expect(first.scene.objects.some((o: { node: string }) => o.node === 'node_planter_interior')).toBe(false);
   await model(page, [2.35, 1.15, -1.08], '窗边盆栽');
   await page.getByRole('button', { name: '提起内盆查看', exact: true }).click();
@@ -49,6 +49,7 @@ test('player lifts the real planter model, inspects the exposed cavity and retai
   await page.keyboard.press('Escape');
   const menu = await item(page, '窗边盆栽');
   await menu.getByRole('button', { name: '放回内盆', exact: true }).click();
+  await expect(menu.getByRole('button', { name: '提起内盆查看', exact: true })).toBeVisible();
   const closed = await snapshot(page);
   expect(closed.scene.objects.some((o: { node: string }) => o.node === 'node_planter_interior')).toBe(false);
   expect(closed.clues).toEqual(found.clues);

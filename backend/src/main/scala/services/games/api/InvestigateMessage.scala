@@ -11,6 +11,8 @@ import services.games.objects.apiTypes.CommandResult
 import services.games.tables.SessionTable.SessionTable
 import services.games.tables.ReceiptTable.ReceiptTable
 import services.games.tables.PoliceExchangeTable.PoliceExchangeTable
+import services.games.tables.SessionRecordTable.SessionRecordTable
+import services.games.tables.InterviewTurnTable.InterviewTurnTable
 import services.games.utils.{FixtureRules,MutationSupport}
 import services.system.api.APIMessage
 import services.system.objects.*
@@ -28,7 +30,9 @@ final case class InvestigateMessage(userId: UserId,sessionId: SessionId,requestI
           for
             _ <- MutationSupport.checkSequence(session,expectedSequence)
             revision <- CaseRevisionTable.find(connection,session.caseId,session.caseRevision).flatMap(value => IO.fromOption(value)(GameError(ErrorCode.InvalidValue,"案件修订不存在。")))
-            plan <- IO.fromEither(FixtureRules.investigate(revision.content,session,requestId,point,route))
+            records <- SessionRecordTable.list(connection,sessionId)
+            turns <- InterviewTurnTable.list(connection,sessionId)
+            plan <- IO.fromEither(FixtureRules.investigate(revision.content,session,requestId,point,route,records,turns))
             presented = revision.content.routes.find(_.id == route).map(_.presentedClues).getOrElse(Set.empty)
             _ <- if revision.content.police.flatMap(id => revision.content.witnesses.find(_.id == id)).exists(_.point == point) && presented.nonEmpty then
               PoliceExchangeTable.insert(connection,PoliceExchangeRecord(sessionId,requestId,plan.session.sequence,presented,plan.record.text)) else IO.unit

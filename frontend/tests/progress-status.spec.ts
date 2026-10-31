@@ -19,15 +19,15 @@ async function fixed(page: Page, label: string) {
 
 test.describe('first-stage completion', () => {
   test.use({ storageState: '.build-cache/browser-restart-state.json' });
-  test('a completed time comparison remains an investigation and does not become a case ending', async ({ page }) => {
+  test('gathering time evidence remains an investigation and does not become a case ending', async ({ page }) => {
     await page.goto('/case');
-    await expect(page.getByRole('heading', { name: '阶段完成 · 书房初查', exact: true })).toBeVisible();
+    await expect(page.getByRole('heading', { name: '调查目标', exact: true })).toBeVisible();
     await expect(page.getByLabel('调查状态', { exact: true })).toContainText('调查进行中');
     await expect(page.getByRole('region', { name: '调查进度', exact: true })).toHaveCount(0);
     const before = await snapshot(page);
-    expect(before.stage.completed).toBe(true); expect(before.reasoning.ending).toBeNull();
+    expect(before.stage.hasTimeComparison).toBe(false); expect(before.reasoning.ending).toBeNull();
     await go(page, '线索整理'); await page.reload();
-    await expect(page.getByRole('heading', { name: '阶段完成 · 书房初查', exact: true })).toBeVisible();
+    await expect(page.getByRole('heading', { name: '调查目标', exact: true })).toBeVisible();
     expect(await snapshot(page)).toEqual(before);
   });
 });

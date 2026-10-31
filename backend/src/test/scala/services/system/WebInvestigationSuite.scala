@@ -173,8 +173,8 @@ class WebInvestigationSuite extends FunSuite:
       assessment: String = "conflict", evidence: String = "\"clue_clock\",\"clue_habit\",\"clue_arrival_basis\""): String =
     s"""{"sessionId":"$id","requestId":"$request","expectedSequence":{"value":$seq},"evidence":[$evidence],"convertedTimeMinutes":$minutes,"assessment":"$assessment"}"""
 
-  test("player calculation and evidence complete the stage and survive an actual HTTP restart") {
-    val directory = Files.createTempDirectory("vicarage-stage-")
+  test("current investigation has no time quiz or generated conclusion and restores after an HTTP restart") {
+    val directory = Files.createTempDirectory("vicarage-no-time-quiz-")
     val url = s"jdbc:h2:file:${directory.resolve("case")};LOCK_TIMEOUT=10000"
     val id = UUID.randomUUID().toString
     (for
@@ -184,47 +184,21 @@ class WebInvestigationSuite extends FunSuite:
         for
           identity <- send(port,"openlocalidentity")
           initial <- send(port,"openstudy",payload(id),identity._3)
-          _ = assert(!initial._2.noSpaces.contains("18:22"))
-          _ = assert(!initial._2.noSpaces.contains("18:07"))
-          _ = assert(!initial._2.noSpaces.contains("convertedTimeMinutes"))
-          early <- send(port,"comparetimes",comparison(id,seq=0),identity._3)
-          oldShortcut <- send(port,"investigate",inquiry(id,"compare","time_contradiction",0,"old-shortcut"),identity._3)
-          _ = assertEquals(early._1,403)
-          _ = assertEquals(oldShortcut._1,403)
+          _ = assertEquals(initial._2.hcursor.downField("stage").get[Boolean]("hasTimeComparison"),Right(false))
           _ <- requiredPath.zipWithIndex.traverse_ { case ((point,route),index) =>
             send(port,"investigate",inquiry(id,point,route,index.toLong,s"step-$index"),identity._3).map(reply => assertEquals(reply._1,200))
           }
-          before <- send(port,"getinvestigationsnapshot",payload(id),identity._3)
-          _ = assertEquals(before._2.hcursor.downField("stage").get[Boolean]("completed"),Right(false))
-          _ = assert(!before._2.noSpaces.contains("18:07"))
-          wrongTime <- send(port,"comparetimes",comparison(id,request="wrong-time",minutes=1102),identity._3)
-          wrongAssessment <- send(port,"comparetimes",comparison(id,request="wrong-assessment",assessment="consistent"),identity._3)
-          missingBasis <- send(port,"comparetimes",comparison(id,request="missing-basis",evidence="\"clue_clock\",\"clue_habit\""),identity._3)
-          invented <- send(port,"comparetimes",comparison(id,request="invented",evidence="\"clue_future_report\""),identity._3)
-          _ = assertEquals(Vector(wrongTime._1,wrongAssessment._1,missingBasis._1,invented._1),Vector(409,409,409,403))
-          _ = assert(!wrongTime._2.noSpaces.contains("18:07"))
-          doneBody = comparison(id)
-          done <- send(port,"comparetimes",doneBody,identity._3)
-          retry <- send(port,"comparetimes",doneBody,identity._3)
-          conflict <- send(port,"comparetimes",comparison(id,minutes=1102),identity._3)
-          repeated <- send(port,"comparetimes",comparison(id,seq=7,request="again"),identity._3)
-          _ = assertEquals(done._1,200)
-          _ = assertEquals(retry._2,done._2)
-          _ = assertEquals(Vector(conflict._1,repeated._1),Vector(409,409))
+          denied <- send(port,"comparetimes",comparison(id),identity._3)
           snapshot <- send(port,"getinvestigationsnapshot",payload(id),identity._3)
-          _ = assertEquals(snapshot._2.hcursor.downField("stage").get[Boolean]("completed"),Right(true))
-          _ = assertEquals(snapshot._2.hcursor.downField("sequence").get[Long]("value"),Right(7L))
-          _ = assertEquals(snapshot._2.hcursor.downField("journal").focus.get.asArray.get.size,7)
-          _ = assert(snapshot._2.noSpaces.contains("18:07"))
-          _ = assert(!snapshot._2.noSpaces.contains("今晚九点见"))
-          _ = assert(!snapshot._2.noSpaces.contains("霍斯"))
-        yield (identity._3,snapshot._2,doneBody,done._2)
+          _ = assertEquals(denied._1,403)
+          _ = assertEquals(snapshot._2.hcursor.downField("sequence").get[Long]("value"),Right(6L))
+          _ = assert(!snapshot._2.noSpaces.contains("18:07"))
+          _ = assert(!snapshot._2.noSpaces.contains("clue_time_contradiction"))
+        yield (identity._3,snapshot._2)
       }
       _ <- LocalHttpServer.resource(url,0).use { server => for
         restored <- send(server.getAddress.getPort,"getinvestigationsnapshot",payload(id),saved._1)
-        retry <- send(server.getAddress.getPort,"comparetimes",saved._3,saved._1)
         _ = assertEquals(restored._2,saved._2)
-        _ = assertEquals(retry._2,saved._4)
       yield () }
     yield ()).unsafeRunSync()
   }

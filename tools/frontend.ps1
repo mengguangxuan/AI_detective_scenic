@@ -1,4 +1,5 @@
-param([ValidateSet('doctor','install','dev','build','test','preview','browser-test','browser-install','browser-restore')][string]$Task = 'doctor')
+param([ValidateSet('doctor','install','dev','build','test','preview','browser-test','browser-install','browser-restore')][string]$Task = 'doctor',
+    [string]$TestFilter = '')
 $ErrorActionPreference = 'Stop'
 $nodeRoot = 'E:\dev\nodejs'
 $node = Join-Path $nodeRoot 'node.exe'
@@ -35,7 +36,10 @@ try {
     }
     elseif ($Task -eq 'browser-restore') { & $node $npm run test:restore }
     elseif ($Task -eq 'browser-install') { & $node 'node_modules\playwright\cli.js' install chromium --only-shell }
-    elseif ($Task -eq 'browser-test') { & $node $npm run test:browser }
+    elseif ($Task -eq 'browser-test') {
+        if ($TestFilter) { & $node $npm run test:browser -- --grep $TestFilter }
+        else { & $node $npm run test:browser }
+    }
     else { & $node $npm run $Task }
     if ($LASTEXITCODE -ne 0) { throw "Frontend task failed: $Task (exit $LASTEXITCODE)" }
 } finally { Pop-Location }

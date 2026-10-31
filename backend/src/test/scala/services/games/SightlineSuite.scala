@@ -93,7 +93,7 @@ class SightlineSuite extends FunSuite:
     (for
       _ <- setup(url,id)
       initial <- view(url,id)
-      _ = assertEquals(initial.caseRevision,Revision(20))
+      _ = assertEquals(initial.caseRevision,Revision(21))
       _ = assert(!initial.externalChecks.find(_.id == ExternalCheckId("sightline_recheck")).get.available)
       early <- request(url,id).attempt
       _ = assertEquals(code(early),Some(ErrorCode.ConditionFailed))
@@ -179,7 +179,9 @@ class SightlineSuite extends FunSuite:
       saved <- view(url,id)
       _ = assert(saved.clues.exists(_.id == ClueId("clue_anne_sightline_reply")))
       _ = assert(saved.clues.exists(_.id == ClueId("clue_marple_sightline_reply")))
-      _ = assert(saved.clues.exists(_.id == ClueId("clue_police_sightline_review")))
+      _ = assert(!saved.clues.exists(_.id == ClueId("clue_police_sightline_review")))
+      _ = assert(saved.police.get.exchanges.nonEmpty)
+      _ = assert(!saved.points.find(_.id == PointId("point_police")).get.routes.exists(_.id == RouteId("route_police_sightline_review")))
       _ = assert(saved.police.get.sharedClues(ClueId("clue_sightline_recheck")))
       _ = assert(!saved.asJson.noSpaces.contains("privateContext"))
     yield ()).unsafeRunSync()

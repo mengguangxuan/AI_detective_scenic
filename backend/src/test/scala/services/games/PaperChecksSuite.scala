@@ -52,7 +52,7 @@ class PaperChecksSuite extends FunSuite:
     (for
       _ <- setup(url,id)
       initial <- view(url,id)
-      _ = assertEquals(initial.caseRevision,Revision(20))
+      _ = assertEquals(initial.caseRevision,Revision(21))
       _ = assert(initial.externalChecks.filter(_.id.value.startsWith("paper_")).forall(!_.available))
       early <- request(url,id,"paper_inspection").attempt
       expert <- request(url,id,"paper_handwriting").attempt
@@ -141,7 +141,9 @@ class PaperChecksSuite extends FunSuite:
       _ = assertEquals(unshared.interviews.last.mode,InterviewReplyMode.Rejected)
       _ <- read(url,id,"point_police","route_police_paper_review")
       saved <- view(url,id)
-      _ = assert(saved.clues.exists(_.id == ClueId("clue_police_paper_review")))
+      _ = assert(!saved.clues.exists(_.id == ClueId("clue_police_paper_review")))
+      _ = assert(saved.police.get.exchanges.nonEmpty)
+      _ = assert(!saved.points.find(_.id == PointId("point_police")).get.routes.exists(_.id == RouteId("route_police_paper_review")))
       _ = assert(Set("clue_paper","clue_paper_ink","clue_paper_fingerprints","clue_paper_handwriting").map(ClueId.apply).subsetOf(saved.police.get.sharedClues))
       _ = assert(!saved.asJson.noSpaces.contains("privateContext"))
     yield ()).unsafeRunSync()

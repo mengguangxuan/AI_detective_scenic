@@ -64,7 +64,7 @@ test('a lost free-question response retries the exact question and stores only o
 
 test.describe('local model protocol fixture', () => {
   test.skip(process.env.DETECTIVE_TEST_MODEL !== '1', 'Requires the documented local model fixture, never a live paid model.');
-  test('free questions can complete the existing stage without preset question buttons', async ({ page }) => {
+  test('free questions can gather time evidence without preset question buttons', async ({ page }) => {
     await page.goto('/scene');
     await page.getByText('物品列表（备用入口）', { exact: true }).click();
     for (const [name, content] of [['书桌','上校被发现伏在书桌前'], ['座钟','18:22'], ['纸张原位置','18:20']]) {
@@ -77,15 +77,10 @@ test.describe('local model protocol fixture', () => {
     const mary = await ask(page, '玛丽', '你凭什么记住上校到达的时间，看的哪座钟？');
     await expect(mary).toContainText('教堂报六点一刻');
     await page.getByRole('navigation', { name: '调查导航' }).getByRole('link', { name: '线索整理', exact: true }).click();
-    const comparison = page.getByRole('region', { name: '我的时间核对', exact: true });
-    for (const title of ['座钟读数','牧师谈座钟','玛丽的时间依据']) await comparison.getByRole('checkbox', { name: title, exact: true }).check();
-    await comparison.getByLabel('换算后的时刻（24小时制）').fill('18:07');
-    await comparison.getByLabel('我的判断', { exact: true }).selectOption('conflict');
-    await comparison.getByRole('button', { name: '提交核对' }).click();
-    await expect(page.getByRole('heading', { name: '阶段完成 · 书房初查' })).toBeVisible();
+    await expect(page.getByRole('region', { name: '我的时间核对', exact: true })).toHaveCount(0);
     const result = await snapshot(page);
     expect(result.interviews).toHaveLength(2);
-    expect(result.stage.completed).toBe(true);
+    expect(result.stage.hasTimeComparison).toBe(false);
     await page.screenshot({ path: 'test-results/free-interview-stage.png', fullPage: true });
     await page.context().storageState({ path: '.build-cache/free-interview-browser-state.json' });
   });

@@ -32,7 +32,7 @@ class ReviewComparisonSuite extends FunSuite:
     val url=database;val id=SessionId(UUID.randomUUID().toString)
     (for
       first <- setup(url,id)
-      _ = assertEquals(first.caseRevision,Revision(20))
+      _ = assertEquals(first.caseRevision,Revision(21))
       _ = assert(!first.asJson.noSpaces.contains("人物关系与共同动机"))
       _ <- read(url,id,"route_call")
       before <- view(url,id)

@@ -19,6 +19,7 @@ object WebDemo extends IOApp.Simple:
       _ <- DatabaseSession.connection(url).use { c => for
         _ <- DatabaseSchema.initialize(c)
         _ <- LocalIdentityTableInitializer.initialize(c)
+        _ <- DatabaseSession.transaction(c)(ImportCaseMessage(Paths.get("../docs/fixtures/browser_investigation_v20.json")).plan(c))
         _ <- DatabaseSession.transaction(c)(ImportCaseMessage(Paths.get("../docs/fixtures/browser_investigation.json")).plan(c))
       yield () }
       modelPath = Option(System.getenv("DETECTIVE_MODEL_CONFIG")).filter(_.trim.nonEmpty)

@@ -62,7 +62,7 @@ class CallChecksSuite extends FunSuite:
     (for
       _ <- setup(url,id)
       initial <- view(url,id)
-      _ = assertEquals(initial.caseRevision,Revision(20))
+      _ = assertEquals(initial.caseRevision,Revision(21))
       _ = assert(initial.externalChecks.filter(_.id.value.startsWith("call_")).forall(!_.available))
       early <- request(url,id,"call_origin").attempt
       _ = assertEquals(code(early),Some(ErrorCode.ConditionFailed))
@@ -156,7 +156,9 @@ class CallChecksSuite extends FunSuite:
       saved <- view(url,id)
       _ = assert(saved.clues.exists(_.id == ClueId("clue_clement_call_origin_reply")))
       _ = assert(saved.clues.exists(_.id == ClueId("clue_redding_call_origin_reply")))
-      _ = assert(saved.clues.exists(_.id == ClueId("clue_police_call_review")))
+      _ = assert(!saved.clues.exists(_.id == ClueId("clue_police_call_review")))
+      _ = assert(saved.police.get.exchanges.nonEmpty)
+      _ = assert(!saved.points.find(_.id == PointId("point_police")).get.routes.exists(_.id == RouteId("route_police_call_review")))
       _ = assert(Set("clue_call","clue_call_origin","clue_call_lodge_scene","clue_call_lodge_phone").map(ClueId.apply).subsetOf(saved.police.get.sharedClues))
       _ = assert(!saved.asJson.noSpaces.contains("伪装女声"))
       _ = assert(!saved.asJson.noSpaces.contains("privateContext"))

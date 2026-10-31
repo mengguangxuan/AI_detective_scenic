@@ -41,14 +41,6 @@ async function gather(page: Page) {
   await question(page, '玛丽', '询问：上校什么时候到？');
   await question(page, '玛丽', '追问：18:15是看哪一座钟？');
 }
-async function fillComparison(page: Page, time: string, assessment: string) {
-  await go(page, '线索整理');
-  const panel = page.getByRole('region', { name: '我的时间核对', exact: true });
-  for (const name of ['座钟读数', '牧师谈座钟', '玛丽的时间依据']) await panel.getByRole('checkbox', { name, exact: true }).check();
-  await panel.getByLabel('换算后的时刻（24小时制）').fill(time);
-  await panel.getByLabel('我的判断', { exact: true }).selectOption(assessment);
-  await panel.getByRole('button', { name: '提交核对' }).click();
-}
 async function modelPosition(page: Page, position: [number, number, number]) {
   const canvas = page.locator('canvas');
   await canvas.scrollIntoViewIfNeeded();
@@ -73,35 +65,25 @@ async function clickModel(page: Page, position: [number, number, number], label:
   }).toPass({ timeout: 5000 });
 }
 
-test('player investigates, calculates and makes a judgment without a prewritten answer', async ({ page }) => {
+test('player gathers time evidence without a compulsory calculation or prewritten conclusion', async ({ page }) => {
   const errors: string[] = [];
   page.on('pageerror', error => errors.push(error.message));
   await page.goto('/');
-  await expect(page.getByRole('heading', { name: '当前阶段 · 书房初查' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: '调查目标', exact: true })).toBeVisible();
   const initial = await snapshot(page);
-  expect(JSON.stringify(initial)).not.toContain('18:07');
-  expect(JSON.stringify(initial)).not.toContain('convertedTimeMinutes');
   expect(initial.clues).toHaveLength(0);
-  await expect(page.getByText('座钟不能直接确定死亡时间', { exact: false })).toHaveCount(0);
+  expect(initial.stage.hasTimeComparison).toBe(false);
   await gather(page);
-  const gathered = await snapshot(page);
-  expect(JSON.stringify(gathered)).not.toContain('18:07');
-  expect(JSON.stringify(gathered)).not.toContain('不能保证');
-  await fillComparison(page, '18:22', 'conflict');
-  await expect(page.getByRole('region', { name: '我的时间核对', exact: true })).toContainText('这份核对还未完成');
-  await expect(page.getByRole('heading', { name: '阶段完成 · 书房初查' })).toHaveCount(0);
-  expect((await snapshot(page)).sequence.value).toBe(6);
-  await fillComparison(page, '18:07', 'conflict');
-  await expect(page.getByRole('heading', { name: '阶段完成 · 书房初查' })).toBeVisible();
+  await go(page, '线索整理');
+  await expect(page.getByRole('region', { name: '我的时间核对', exact: true })).toHaveCount(0);
+  await expect(page.getByRole('button', { name: '提交核对', exact: true })).toHaveCount(0);
   const finished = await snapshot(page);
-  expect(finished.stage.completed).toBe(true);
-  expect(finished.clues).toHaveLength(7);
-  expect(finished.journal).toHaveLength(7);
+  expect(finished.clues).toHaveLength(6);
+  expect(finished.sequence.value).toBe(6);
+  expect(JSON.stringify(finished)).not.toContain('18:07');
   await page.reload();
-  await expect(page.getByRole('heading', { name: '阶段完成 · 书房初查' })).toBeVisible();
   expect(await snapshot(page)).toEqual(finished);
   await page.context().storageState({ path: '.build-cache/browser-restart-state.json' });
-  await page.screenshot({ path: 'test-results/study-interactions-complete.png', fullPage: true });
   expect(errors).toEqual([]);
 });
 
@@ -125,7 +107,7 @@ test('clicking models opens live drawer and window menus, and paper opens its co
   expect(saved.clues).toHaveLength(1);
   await page.screenshot({ path: 'test-results/study-item-menu.png', fullPage: true });
   await page.reload();
-  await expect(page.getByRole('heading', { name: '当前阶段 · 书房初查' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: '调查目标' })).toBeVisible();
   expect(await snapshot(page)).toEqual(saved);
   const window = await objectMenu(page, '窗户');
   await window.getByRole('button', { name: '关上窗户', exact: true }).click();
@@ -186,32 +168,39 @@ test('lost automatic reading response retries the same request after reload', as
   expect(saved.journal).toHaveLength(1);
 });
 
-test('lost player-comparison response also retries the exact judgment and evidence', async ({ page }) => {
+test('lost evidence-presentation response retries once without creating a duplicate clue', async ({ page }) => {
   await page.goto('/');
   await gather(page);
+  const before = await snapshot(page);
+  await go(page, '人物问询');
+  await page.getByRole('button', { name: '与玛丽交谈', exact: true }).click();
+  const fallback = page.locator('details').filter({ has: page.getByText('固定问答与材料笔记（备用）', { exact: true }) });
+  if (await fallback.getAttribute('open') === null) await fallback.locator('summary').click();
   const payloads: string[] = [];
   let drop = true;
-  await page.route('**/api/comparetimes', async route => {
+  await page.route('**/api/investigate', async route => {
     payloads.push(route.request().postData()!);
     if (drop) { drop = false; await route.fetch(); await route.abort('failed'); }
     else await route.continue();
   });
-  await fillComparison(page, '18:07', 'conflict');
+  await page.getByRole('button', { name: '出示纸张摘录', exact: true }).click();
   await expect(page.getByRole('button', { name: '用原请求重试' })).toBeVisible();
   await page.reload();
   await page.getByRole('button', { name: '用原请求重试' }).click();
   await expect(page.getByRole('button', { name: '用原请求重试' })).toHaveCount(0);
-  expect(payloads).toHaveLength(2);
-  expect(payloads[0]).toBe(payloads[1]);
+  expect(payloads).toHaveLength(2); expect(payloads[0]).toBe(payloads[1]);
+  await page.getByRole('button', { name: '与玛丽交谈', exact: true }).click();
+  await expect(page.getByRole('region', { name: '已出示的材料', exact: true })).toContainText('纸张摘录');
   const saved = await snapshot(page);
-  expect(saved.sequence.value).toBe(7);
-  expect(saved.journal).toHaveLength(7);
-  expect(saved.stage.completed).toBe(true);
+  expect(saved.clues).toEqual(before.clues);
+  expect(saved.points.find((p: { id: string }) => p.id === 'point_mary').presentations).toHaveLength(1);
+  expect(saved.sequence.value).toBe(before.sequence.value + 1);
+  await page.context().storageState({ path: '.build-cache/presentation-state.json' });
 });
 
 test('post-commit view failure only rereads the view', async ({ page }) => {
   await page.goto('/');
-  await expect(page.getByRole('heading', { name: '当前阶段 · 书房初查' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: '调查目标' })).toBeVisible();
   let writes = 0;
   await page.route('**/api/investigate', async route => { writes++; await route.continue(); });
   let fail = true;
@@ -256,7 +245,8 @@ test('witness-first investigation and optional evidence presentation remain avai
   const fallback = page.locator('details').filter({ has: page.getByText('固定问答与材料笔记（备用）', { exact: true }) });
   if (await fallback.getAttribute('open') === null) await fallback.locator('summary').click();
   await page.getByRole('button', { name: '克莱门特牧师', exact: true }).click();
-  await expect(page.getByRole('heading', { name: '向牧师出示座钟记录', exact: true })).toBeVisible();
+  await expect(page.getByRole('region', { name: '已出示的材料', exact: true })).toContainText('座钟读数');
+  expect(partial.clues.some((c: { id: string }) => c.id === 'clue_clock_presented')).toBe(false);
   expect(await snapshot(page)).toEqual(partial);
 });
 
@@ -264,11 +254,11 @@ test('backend unavailable does not fabricate local progress', async ({ page }) =
   await page.route('**/api/**', route => route.abort('failed'));
   await page.goto('/');
   await expect(page.getByRole('button', { name: '重新连接' })).toBeVisible();
-  await expect(page.getByRole('heading', { name: '当前阶段 · 书房初查' })).toHaveCount(0);
+  await expect(page.getByRole('heading', { name: '调查目标' })).toHaveCount(0);
 });
 
 
-test('independent pages share one session and preserve a comparison draft during navigation', async ({ page }) => {
+test('independent pages share material sources and one session without a comparison form', async ({ page }) => {
   await page.goto('/clues');
   await expect(page.getByRole('heading', { name: '线索整理', exact: true })).toBeVisible();
   await expect(page.locator('canvas')).toHaveCount(0);
@@ -277,17 +267,11 @@ test('independent pages share one session and preserve a comparison draft during
   await read(page, '座钟', '18:22');
   await expect(page.getByRole('region', { name: '我的时间核对', exact: true })).toHaveCount(0);
   await go(page, '线索整理');
-  const form = page.getByRole('region', { name: '我的时间核对', exact: true });
-  await form.getByRole('checkbox', { name: '座钟读数', exact: true }).check();
-  await form.getByLabel('换算后的时刻（24小时制）').fill('18:11');
-  await form.getByLabel('我的判断', { exact: true }).selectOption('uncertain');
+  await expect(page.getByRole('region', { name: '我的时间核对', exact: true })).toHaveCount(0);
   await question(page, '克莱门特牧师', '询问：座钟平时准吗？');
   await expect(page.locator('canvas')).toHaveCount(0);
   await expect(page.getByRole('region', { name: '我的时间核对', exact: true })).toHaveCount(0);
   await go(page, '线索整理');
-  await expect(form.getByLabel('换算后的时刻（24小时制）')).toHaveValue('18:11');
-  await expect(form.getByLabel('我的判断', { exact: true })).toHaveValue('uncertain');
-  await expect(form.getByRole('checkbox', { name: '座钟读数', exact: true })).toBeChecked();
   const saved = await snapshot(page);
   expect(saved.sessionId).toBe(initial.sessionId);
   expect(saved.sequence.value).toBe(2);
@@ -300,7 +284,6 @@ test('independent pages share one session and preserve a comparison draft during
   await expect(page.getByRole('region', { name: '已记录的答复', exact: true })).toContainText('拨快一刻钟');
   await page.goForward();
   await expect(page).toHaveURL(/\/clues$/);
-  await expect(form.getByLabel('换算后的时刻（24小时制）')).toHaveValue('18:11');
   await page.reload();
   await expect(page.getByRole('heading', { name: '线索整理', exact: true })).toBeVisible();
   expect(await snapshot(page)).toEqual(saved);
@@ -332,7 +315,8 @@ test('navigation during an in-flight reading keeps the pending request and its r
   await objectMenu(page, '纸张原位置');
   await started;
   await go(page, '线索整理');
-  await expect(page.getByRole('button', { name: '提交核对', exact: true })).toBeDisabled();
+  await expect(page.getByRole('button', { name: '新建调查', exact: true })).toBeDisabled();
+  await expect(page.getByRole('button', { name: '提交核对', exact: true })).toHaveCount(0);
   release();
   await expect(page.getByRole('heading', { name: '纸张摘录', exact: true })).toBeVisible();
   expect(writes).toBe(1);

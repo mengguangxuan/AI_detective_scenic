@@ -1,9 +1,21 @@
 package services.games
 import services.cases.objects.*
+import cats.effect.unsafe.implicits.global
+import services.cases.api.ImportCaseMessage
+import services.system.api.{DatabaseSession, DatabaseSchema}
+import java.nio.file.Paths
+import java.util.UUID
 
 // Test-only reconstruction of the preceding published feature set.
 private[games] object LegacyFixture:
-  def withoutReview(current: CaseContent): CaseContent = current.copy(conclusion=current.conclusion.map(s =>
+  private lazy val published: CaseContent =
+    val url=s"jdbc:h2:mem:legacy-${UUID.randomUUID()};DB_CLOSE_DELAY=-1"
+    DatabaseSession.connection(url).use(c => DatabaseSchema.initialize(c) *> DatabaseSession.transaction(c)(
+      ImportCaseMessage(Paths.get("../docs/fixtures/browser_investigation_v20.json")).plan(c))).unsafeRunSync().content
+
+  def withoutReview(latest: CaseContent): CaseContent =
+    val current=published
+    current.copy(conclusion=current.conclusion.map(s =>
     s.copy(reviewSections=Vector.empty,review=s.review.replace("已保存的原文、引用和评审反馈保持不变。","已提交的原文、引用和分数保持不变。"))))
 
   def withoutBeforeCrime(latest: CaseContent): CaseContent =

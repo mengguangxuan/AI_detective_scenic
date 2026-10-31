@@ -40,21 +40,30 @@ private[games] object FixtureRules:
       ActionPlan(next,record,CommandResult(next.sequence,Vector.empty,Set.empty))
 
   private[games] def investigate(f: CaseContent,state: GameSessionRecord,request: RequestId,
-      pointId: PointId,routeId: RouteId): Either[GameError,ActionPlan] =
+      pointId: PointId,routeId: RouteId, records: Vector[SessionRecord] = Vector.empty, turns: Vector[InterviewTurnRecord] = Vector.empty): Either[GameError,ActionPlan] =
     for
       _ <- f.points.find(_.id==pointId).filter(SceneAccessRules.accessible(f,state,_)).toRight(denied)
       route <- f.routes.find(r => r.id==routeId && r.point==pointId).toRight(denied)
       _ <- Either.cond(routeAvailable(state,route),(),GameError(ErrorCode.ConditionFailed,"需要先取得所需材料或完成前置操作。"))
-      _ <- Either.cond(!route.clues.forall(state.clues.contains),(),GameError(ErrorCode.ConditionFailed,"该途径的信息已经记录。"))
+      _ <- Either.cond(routePending(f,state,route,records,turns),(),GameError(ErrorCode.ConditionFailed,"该途径的信息已经记录。"))
     yield
       val disclosed=f.clues.filter(c => route.clues.contains(c.id) && !state.clues(c.id))
       val clues=disclosed.map(_.id).toSet
       val facts=disclosed.flatMap(_.facts).toSet
-      val text=disclosed.map(_.text.value).mkString("\n")
+      val text=route.reply.getOrElse(disclosed.map(_.text.value).mkString("\n"))
       val next=state.copy(sequence=Sequence(state.sequence.value+1),clues=state.clues++clues,facts=state.facts++facts)
       val record=SessionRecord(RecordId(s"${request.value}:investigation"),state.id,request,next.sequence,next.storyTimeSeconds,
         pointId,Some(routeId),None,text,clues,facts)
       ActionPlan(next,record,CommandResult(next.sequence,Vector(Text(text)),clues))
+
+  private[games] def routePending(f: CaseContent,state: GameSessionRecord,route: FixtureRoute,
+      records: Vector[SessionRecord],turns: Vector[InterviewTurnRecord]): Boolean =
+    if route.clues.nonEmpty then !route.clues.forall(state.clues.contains)
+    else
+      val fixed = records.exists(r => r.point == route.point && r.route.contains(route.id))
+      val answered = turns.exists(t => t.mode == InterviewReplyMode.Answered && f.witnesses.find(_.id == t.witness).exists(w =>
+        w.point == route.point && w.answers.exists(a => t.answerIds.contains(a.id) && a.routes.contains(route.id))))
+      !fixed && !answered
 
   private[games] def view(f: CaseContent,state: GameSessionRecord): GetGameStateResponse =
     GetGameStateResponse(state.sequence,f.points.filter(SceneAccessRules.accessible(f,state,_)).map(_.id),state.clues,state.facts)
@@ -65,12 +74,13 @@ private[games] object FixtureRules:
     for
       stage <- f.stage.toRight(denied)
       spec <- stage.comparison.toRight(denied)
+      completion <- stage.completionClue.toRight(denied)
       _ <- f.points.find(_.id == spec.point).filter(SceneAccessRules.accessible(f,state,_)).toRight(denied)
-      _ <- Either.cond(!state.clues(stage.completionClue),(),GameError(ErrorCode.ConditionFailed,"这份核对已经记录。"))
+      _ <- Either.cond(!state.clues(completion),(),GameError(ErrorCode.ConditionFailed,"这份核对已经记录。"))
       _ <- Either.cond(evidence.subsetOf(state.clues),(),denied)
       _ <- Either.cond(spec.requiredClues.subsetOf(state.clues) && spec.evidenceClues.subsetOf(evidence) &&
         minutes == spec.convertedTimeMinutes && assessment == spec.assessment,(),incomplete)
-      clue <- f.clues.find(_.id == stage.completionClue).toRight(denied)
+      clue <- f.clues.find(_.id == completion).toRight(denied)
     yield
       val next = state.copy(sequence=Sequence(state.sequence.value+1),clues=state.clues+clue.id,facts=state.facts++clue.facts)
       val cited = evidence.toVector.sortBy(_.value).flatMap(id => f.clues.find(_.id == id).map(_.title.value)).mkString("、")

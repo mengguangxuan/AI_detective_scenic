@@ -14,7 +14,7 @@ async function paper(page: Page) {
   await page.getByRole('button', { name: '纸张原位置', exact: true }).click();
   await expect(page.getByRole('dialog', { name: '纸张原位置操作', exact: true })).toContainText('原件由警方保管');
   await page.keyboard.press('Escape');
-  expect((await snapshot(page)).caseRevision.value).toBe(20);
+  expect((await snapshot(page)).caseRevision.value).toBe(21);
   await go(page, '警方交流');
 }
 async function waitForTime(page: Page, minutes: number, label: string) {
@@ -68,7 +68,7 @@ test('paper checks need the excerpt, finish separately, preserve it and retry a 
   await page.getByRole('button', { name: '出示纸张摘录与检查结果，登记原件核查', exact: true }).click();
   await expect(page.getByRole('region', { name: '向警方出示材料', exact: true })).toContainText('已向警方出示 4 份');
   state = await snapshot(page);
-  expect(state.clues).toHaveLength(5);
+  expect(state.clues).toHaveLength(4);
   expect(state.clues.find((c: { id: string }) => c.id === 'clue_paper')).toEqual(excerpt);
   expect(state.stage.completed).toBe(false);
   await page.reload(); expect(await snapshot(page)).toEqual(state);

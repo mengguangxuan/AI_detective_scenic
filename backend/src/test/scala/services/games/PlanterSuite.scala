@@ -30,7 +30,7 @@ class PlanterSuite extends FunSuite:
     val url=database;val id=SessionId(UUID.randomUUID().toString)
     (for
       first <- setup(url,id)
-      _ = assertEquals(first.caseRevision,Revision(20))
+      _ = assertEquals(first.caseRevision,Revision(21))
       _ = assertEquals(first.scene.revision,"5")
       _ = assert(!first.scene.objects.exists(_.node == SceneNodeId("node_planter_interior")))
       denied <- tx(url)(read(id,first.sequence).plan).attempt

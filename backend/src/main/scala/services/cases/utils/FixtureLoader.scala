@@ -95,9 +95,10 @@ private[cases] object FixtureLoader:
       disabledAfter <- c.get[Option[OperationId]]("disabledAfter")
       clues <- c.get[Vector[ClueId]]("grants")
       presented <- c.get[Option[Set[ClueId]]]("presentedClues").map(_.getOrElse(Set.empty))
-      _ <- check(clues.nonEmpty, "Empty grants", c)
+      reply <- c.get[Option[String]]("reply")
+      _ <- check(clues.nonEmpty || (presented.nonEmpty && reply.exists(_.trim.nonEmpty)), "Route requires grants or a presentation reply", c)
       _ <- empty(c, "reports")
-    yield FixtureRoute(id, point, prerequisite, clues, c.downField("method").get[String]("label").getOrElse(id.value), required, presented, disabledAfter)
+    yield FixtureRoute(id, point, prerequisite, clues, c.downField("method").get[String]("label").getOrElse(id.value), required, presented, disabledAfter, reply)
 
   private def operation(raw: Json): Decoder.Result[FixtureOperation] =
     val c = raw.hcursor
@@ -367,6 +368,8 @@ private[cases] object FixtureLoader:
           _ <- rule(r.clues.forall(clues.contains) && r.requiredClues.subsetOf(clues), path, "授予或所需线索不存在")
           _ <- rule(r.requiredClues.intersect(r.clues.toSet).isEmpty, s"$path.requiredClues", "不能要求先取得本路线授予的线索")
           _ <- rule(r.presentedClues.subsetOf(r.requiredClues), s"$path.presentedClues", "出示材料必须包含在所需材料中")
+          _ <- rule(r.clues.nonEmpty || (r.presentedClues.nonEmpty && r.reply.exists(_.trim.nonEmpty)), path, "无新材料的路线须记录实际出示与答复")
+          _ <- rule(r.reply.forall(text => text.trim.nonEmpty && text.length <= 2000), s"$path.reply", "答复不能为空或超过2000字")
         yield ()
       }
       _ <- entries(f.operations, "investigation.operations") { (o, path) =>
@@ -387,7 +390,7 @@ private[cases] object FixtureLoader:
     f.stage.traverse_ { s =>
       for
         _ <- rule(s.introduction.trim.nonEmpty && s.objective.trim.nonEmpty, "investigation.stage", "阶段简介和目标不能为空")
-        _ <- rule(clues(s.completionClue), "investigation.stage.completionClue", "完成材料不存在")
+        _ <- rule(s.completionClue.forall(clues.contains), "investigation.stage.completionClue", "完成材料不存在")
         _ <- s.comparison.traverse_ { c =>
           val path = "investigation.stage.comparison"
           for
@@ -395,9 +398,9 @@ private[cases] object FixtureLoader:
             _ <- rule(!f.routes.exists(_.id == c.route), s"$path.route", "比较路线不能与普通路线重名")
             _ <- rule(c.requiredClues.nonEmpty && c.evidenceClues.nonEmpty, path, "比较前提和证据不能为空")
             _ <- rule(c.evidenceClues.subsetOf(c.requiredClues) && c.requiredClues.subsetOf(clues), path, "比较证据未包含于前提或引用未知线索")
-            _ <- rule(!c.requiredClues(s.completionClue), s"$path.requiredClues", "不能把比较结果作为自身前提")
+            _ <- rule(s.completionClue.exists(id => !c.requiredClues(id)), s"$path.requiredClues", "比较须有独立的完成材料")
             _ <- rule(c.convertedTimeMinutes >= 0 && c.convertedTimeMinutes < 1440, s"$path.convertedTimeMinutes", "分钟数必须在一天内")
-            _ <- rule(!f.routes.exists(_.clues.contains(s.completionClue)), "investigation.stage.completionClue", "比较结果不能从普通路线提前取得")
+            _ <- rule(!f.routes.exists(r => s.completionClue.exists(r.clues.contains)), "investigation.stage.completionClue", "比较结果不能从普通路线提前取得")
           yield ()
         }
       yield ()

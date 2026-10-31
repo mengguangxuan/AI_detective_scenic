@@ -33,7 +33,7 @@ export const investigationSnapshotSchema = z.object({
   witnesses: z.array(witnessViewSchema), interviews: z.array(interviewTurnSchema),
   police: policeDeskSchema.nullable(),
   people: z.array(casePersonBriefSchema),
-  stage: z.object({ introduction: z.string(), objective: z.string(), completed: z.boolean(), nextObjective: z.string().nullable() }).strict().nullable(),
+  stage: z.object({ introduction: z.string(), objective: z.string(), completed: z.boolean(), nextObjective: z.string().nullable(), hasTimeComparison: z.boolean().default(true) }).strict().nullable(),
 }).strict().superRefine((snapshot, context) => {
   if (snapshot.reasoning) {
     const attempts = snapshot.reasoning.attempts;
@@ -72,6 +72,8 @@ export const investigationSnapshotSchema = z.object({
       context.addIssue({ code: 'custom', message: '供述对照超出实际已获记录' });
   }
   if (snapshot.journal.some(v => v.sequence > snapshot.sequence)) context.addIssue({ code: 'custom', message: '日志超出当前序号' });
+  if (snapshot.points.some(point => point.presentations.some(item => item.sequence > snapshot.sequence || item.evidence.some(id => !snapshot.clues.some(clue => clue.id === id)))))
+    context.addIssue({ code: 'custom', message: '出示记录超出当前调查材料' });
   if (snapshot.people.some(person => person.witness !== null && !snapshot.witnesses.some(witness => witness.id === person.witness)))
     context.addIssue({ code: 'custom', message: '公开人物绑定的问询对象不可用' });
   if (snapshot.interviews.some(t => t.sequence > snapshot.sequence || !snapshot.witnesses.some(w => w.id === t.witness) || t.shownClues.some(id => !snapshot.clues.some(c => c.id === id))))
