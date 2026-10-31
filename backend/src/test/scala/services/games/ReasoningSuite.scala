@@ -108,6 +108,8 @@ class ReasoningSuite extends FunSuite:
         else
           assert(!input.user.contains("authorTruth"));assert(!input.user.contains("预藏枪"))
           assert(!input.user.contains("authorCulprits"));assert(!input.user.contains("obtainableEvidence"))
+          assert(input.user.contains("publicPeople"));assert(input.user.contains("牧师"))
+          assert(input.system.contains("不能先写进问题当成前提"))
       }
       underlying=model(false,inspect)
       counted=new ChatCompletionClient:
