@@ -78,6 +78,18 @@ const server = http.createServer(async (request, response) => {
         reply = (context.disclosures ?? context.answers).find(answer => answer.id === id)?.text ?? '我还没有看过那份记录。';
       }
     }
+    if (/来电来源|接出地点|北门房/.test(context.question)) {
+      if (context.witness.name === '梅尔切特') {
+        const site = /现场|接出地点|北门房/.test(context.question);
+        const title = site ? '来电接出地点现场核查' : '牧师来电来源追查';
+        const clue = site ? /指纹|电话.*检查/.test(context.question) ? 'clue_call_lodge_phone' : 'clue_call_lodge_scene' : 'clue_call_origin';
+        reply = context.shownEvidence.find(item => item.id === clue)?.text ?? context.knowledge.find(item => item.startsWith(title + '：')) ?? '这项还未受理。';
+        id = allowed.has(clue.slice(5)) ? clue.slice(5) : undefined;
+      } else {
+        id = context.witness.name === '克莱门特牧师' ? 'clement_call_origin_reply' : 'redding_call_origin_reply';
+        reply = (context.disclosures ?? context.answers).find(answer => answer.id === id)?.text ?? '我还没有看过那份记录。';
+      }
+    }
     const decision = context.question.includes('越界测试') ? { disclosureIds: ['future_confession'], reply: 'DO_NOT_RENDER_FUTURE' }
       : context.disclosures ? { reply, disclosureIds: id && allowed.has(id) ? [id] : [] } : { answerIds: id && allowed.has(id) ? [id] : [] };
     response.setHeader('Content-Type', 'application/json');

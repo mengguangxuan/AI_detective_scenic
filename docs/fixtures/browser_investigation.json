@@ -1,7 +1,7 @@
 {
   "id": "vicarage_study",
   "revision": {
-    "value": 13
+    "value": 14
   },
   "schemaVersion": {
     "value": 2
@@ -1333,6 +1333,125 @@
           }
         },
         "boundary": "本局实际登记、完成的复验或本人收到材料后的回应；观察位置和范围见正文"
+      },
+      {
+        "id": "topic_call_basis",
+        "subject": {
+          "kind": "Place",
+          "id": "study"
+        },
+        "question": "警方登记的来电核查依据",
+        "when": {
+          "earliest": {
+            "seconds": 0
+          },
+          "latest": {
+            "seconds": 0
+          }
+        },
+        "boundary": "本局实际完成的来电追查、现场检查或实际出示后的本人回应；不凭地点或指纹情况认定身份"
+      },
+      {
+        "id": "topic_call_origin",
+        "subject": {
+          "kind": "Place",
+          "id": "study"
+        },
+        "question": "牧师来电的接出地点",
+        "when": {
+          "earliest": {
+            "seconds": 0
+          },
+          "latest": {
+            "seconds": 0
+          }
+        },
+        "boundary": "本局实际完成的来电追查、现场检查或实际出示后的本人回应；不凭地点或指纹情况认定身份"
+      },
+      {
+        "id": "topic_call_lodge_scene",
+        "subject": {
+          "kind": "Place",
+          "id": "study"
+        },
+        "question": "接出地点：北门房现场记录",
+        "when": {
+          "earliest": {
+            "seconds": 0
+          },
+          "latest": {
+            "seconds": 0
+          }
+        },
+        "boundary": "本局实际完成的来电追查、现场检查或实际出示后的本人回应；不凭地点或指纹情况认定身份"
+      },
+      {
+        "id": "topic_call_lodge_phone",
+        "subject": {
+          "kind": "Place",
+          "id": "study"
+        },
+        "question": "接出地点：电话检查记录",
+        "when": {
+          "earliest": {
+            "seconds": 0
+          },
+          "latest": {
+            "seconds": 0
+          }
+        },
+        "boundary": "本局实际完成的来电追查、现场检查或实际出示后的本人回应；不凭地点或指纹情况认定身份"
+      },
+      {
+        "id": "topic_clement_call_origin_reply",
+        "subject": {
+          "kind": "Place",
+          "id": "study"
+        },
+        "question": "牧师对来电来源的回应",
+        "when": {
+          "earliest": {
+            "seconds": 0
+          },
+          "latest": {
+            "seconds": 0
+          }
+        },
+        "boundary": "本局实际完成的来电追查、现场检查或实际出示后的本人回应；不凭地点或指纹情况认定身份"
+      },
+      {
+        "id": "topic_redding_call_origin_reply",
+        "subject": {
+          "kind": "Place",
+          "id": "study"
+        },
+        "question": "雷丁对来电来源的回应",
+        "when": {
+          "earliest": {
+            "seconds": 0
+          },
+          "latest": {
+            "seconds": 0
+          }
+        },
+        "boundary": "本局实际完成的来电追查、现场检查或实际出示后的本人回应；不凭地点或指纹情况认定身份"
+      },
+      {
+        "id": "topic_police_call_review",
+        "subject": {
+          "kind": "Place",
+          "id": "study"
+        },
+        "question": "警方登记的电话核查材料",
+        "when": {
+          "earliest": {
+            "seconds": 0
+          },
+          "latest": {
+            "seconds": 0
+          }
+        },
+        "boundary": "本局实际完成的来电追查、现场检查或实际出示后的本人回应；不凭地点或指纹情况认定身份"
       }
     ],
     "facts": [
@@ -2189,6 +2308,100 @@
           "source_game_sightline"
         ],
         "topic": "topic_police_sightline_review"
+      },
+      {
+        "id": "fact_call_basis",
+        "value": {
+          "kind": "AuthoredDetail",
+          "detail": "梅尔切特收下牧师的来电陈述，说：“我们先追查这通以阿博特先生病情为由叫你过去的电话，看看它究竟从哪里接出。”"
+        },
+        "requiresOccurred": [],
+        "explanation": "固定的初查材料；陈述及推论的归属见正文，不等同于完整案件真相。",
+        "sources": [
+          "source_game_call"
+        ],
+        "topic": "topic_call_basis"
+      },
+      {
+        "id": "fact_call_origin",
+        "value": {
+          "kind": "AuthoredDetail",
+          "detail": "【警方来电追查记录】\n牧师周四约五点半接到、以阿博特先生病情为由请他去下农场的那通电话，是从老宅北门房接出的。本项追查确认接出地点，尚未确认实际使用电话的人。"
+        },
+        "requiresOccurred": [],
+        "explanation": "固定的初查材料；陈述及推论的归属见正文，不等同于完整案件真相。",
+        "sources": [
+          "source_ch17",
+          "source_game_call"
+        ],
+        "topic": "topic_call_origin"
+      },
+      {
+        "id": "fact_call_lodge_scene",
+        "value": {
+          "kind": "AuthoredDetail",
+          "detail": "【警方现场查访记录】\n本次查访时，老宅北门房空着。原看门人已退休，新看门人还没有入住；屋后有一扇窗开着。"
+        },
+        "requiresOccurred": [],
+        "explanation": "固定的初查材料；陈述及推论的归属见正文，不等同于完整案件真相。",
+        "sources": [
+          "source_ch17",
+          "source_game_call"
+        ],
+        "topic": "topic_call_lodge_scene"
+      },
+      {
+        "id": "fact_call_lodge_phone",
+        "value": {
+          "kind": "AuthoredDetail",
+          "detail": "【北门房电话检查记录】\n检查人员记录：电话机被擦拭干净，未检出指纹。"
+        },
+        "requiresOccurred": [],
+        "explanation": "固定的初查材料；陈述及推论的归属见正文，不等同于完整案件真相。",
+        "sources": [
+          "source_ch17",
+          "source_game_call"
+        ],
+        "topic": "topic_call_lodge_phone"
+      },
+      {
+        "id": "fact_clement_call_origin_reply",
+        "value": {
+          "kind": "AuthoredDetail",
+          "detail": "克莱门特看过来电来源记录后说：“北门房？我当时以为来电的是阿博特太太，便赶去了下农场。到了那里，她说根本没打过电话。我没认真辨认那个声音，也说不出是谁。”"
+        },
+        "requiresOccurred": [],
+        "explanation": "固定的初查材料；陈述及推论的归属见正文，不等同于完整案件真相。",
+        "sources": [
+          "source_game_call"
+        ],
+        "topic": "topic_clement_call_origin_reply"
+      },
+      {
+        "id": "fact_redding_call_origin_reply",
+        "value": {
+          "kind": "AuthoredDetail",
+          "detail": "雷丁看过来电来源记录后说：“我去老宅画过画。可是谁用那里的电话找了牧师，我没看见。你们还想问我什么？”这是他对所示记录的回答。"
+        },
+        "requiresOccurred": [],
+        "explanation": "固定的初查材料；陈述及推论的归属见正文，不等同于完整案件真相。",
+        "sources": [
+          "source_game_call"
+        ],
+        "topic": "topic_redding_call_origin_reply"
+      },
+      {
+        "id": "fact_police_call_review",
+        "value": {
+          "kind": "AuthoredDetail",
+          "detail": "梅尔切特说：“牧师的来电陈述、接出地点的追查记录，还有北门房的现场和电话检查记录，我都登记了。原陈述与后来取得的检查材料分别保存。”"
+        },
+        "requiresOccurred": [],
+        "explanation": "固定的初查材料；陈述及推论的归属见正文，不等同于完整案件真相。",
+        "sources": [
+          "source_game_call"
+        ],
+        "topic": "topic_police_call_review"
       }
     ],
     "claims": [],
@@ -2254,11 +2467,6 @@
         "reference": "docs/cases/murder_at_the_vicarage.md#地图与案件时钟"
       },
       {
-        "id": "source_ch18",
-        "kind": "Original",
-        "reference": "https://en.wikisource.org/wiki/The_Murder_at_the_Vicarage/Chapter_18"
-      },
-      {
         "id": "source_ch27",
         "kind": "Original",
         "reference": "https://en.wikisource.org/wiki/The_Murder_at_the_Vicarage/Chapter_27"
@@ -2272,6 +2480,16 @@
         "id": "source_game_sightline",
         "kind": "Adapted",
         "reference": "docs/cases/murder_at_the_vicarage.md#2026-10-31-窗边视线复验"
+      },
+      {
+        "id": "source_ch17",
+        "kind": "Original",
+        "reference": "https://en.wikisource.org/wiki/The_Murder_at_the_Vicarage/Chapter_17"
+      },
+      {
+        "id": "source_game_call",
+        "kind": "Adapted",
+        "reference": "docs/cases/murder_at_the_vicarage.md#2026-10-31-牧师来电来源与接出地点核查"
       }
     ]
   },
@@ -4170,6 +4388,104 @@
           "media": []
         },
         "suggests": []
+      },
+      {
+        "id": "clue_call_basis",
+        "title": "警方登记的来电核查依据",
+        "finding": "梅尔切特收下牧师的来电陈述，说：“我们先追查这通以阿博特先生病情为由叫你过去的电话，看看它究竟从哪里接出。”",
+        "facts": [
+          "fact_call_basis"
+        ],
+        "relatedClaims": [],
+        "result": {
+          "text": "梅尔切特收下牧师的来电陈述，说：“我们先追查这通以阿博特先生病情为由叫你过去的电话，看看它究竟从哪里接出。”",
+          "media": []
+        },
+        "suggests": []
+      },
+      {
+        "id": "clue_call_origin",
+        "title": "牧师来电的接出地点",
+        "finding": "【警方来电追查记录】\n牧师周四约五点半接到、以阿博特先生病情为由请他去下农场的那通电话，是从老宅北门房接出的。本项追查确认接出地点，尚未确认实际使用电话的人。",
+        "facts": [
+          "fact_call_origin"
+        ],
+        "relatedClaims": [],
+        "result": {
+          "text": "【警方来电追查记录】\n牧师周四约五点半接到、以阿博特先生病情为由请他去下农场的那通电话，是从老宅北门房接出的。本项追查确认接出地点，尚未确认实际使用电话的人。",
+          "media": []
+        },
+        "suggests": []
+      },
+      {
+        "id": "clue_call_lodge_scene",
+        "title": "接出地点：北门房现场记录",
+        "finding": "【警方现场查访记录】\n本次查访时，老宅北门房空着。原看门人已退休，新看门人还没有入住；屋后有一扇窗开着。",
+        "facts": [
+          "fact_call_lodge_scene"
+        ],
+        "relatedClaims": [],
+        "result": {
+          "text": "【警方现场查访记录】\n本次查访时，老宅北门房空着。原看门人已退休，新看门人还没有入住；屋后有一扇窗开着。",
+          "media": []
+        },
+        "suggests": []
+      },
+      {
+        "id": "clue_call_lodge_phone",
+        "title": "接出地点：电话检查记录",
+        "finding": "【北门房电话检查记录】\n检查人员记录：电话机被擦拭干净，未检出指纹。",
+        "facts": [
+          "fact_call_lodge_phone"
+        ],
+        "relatedClaims": [],
+        "result": {
+          "text": "【北门房电话检查记录】\n检查人员记录：电话机被擦拭干净，未检出指纹。",
+          "media": []
+        },
+        "suggests": []
+      },
+      {
+        "id": "clue_clement_call_origin_reply",
+        "title": "牧师对来电来源的回应",
+        "finding": "克莱门特看过来电来源记录后说：“北门房？我当时以为来电的是阿博特太太，便赶去了下农场。到了那里，她说根本没打过电话。我没认真辨认那个声音，也说不出是谁。”",
+        "facts": [
+          "fact_clement_call_origin_reply"
+        ],
+        "relatedClaims": [],
+        "result": {
+          "text": "克莱门特看过来电来源记录后说：“北门房？我当时以为来电的是阿博特太太，便赶去了下农场。到了那里，她说根本没打过电话。我没认真辨认那个声音，也说不出是谁。”",
+          "media": []
+        },
+        "suggests": []
+      },
+      {
+        "id": "clue_redding_call_origin_reply",
+        "title": "雷丁对来电来源的回应",
+        "finding": "雷丁看过来电来源记录后说：“我去老宅画过画。可是谁用那里的电话找了牧师，我没看见。你们还想问我什么？”这是他对所示记录的回答。",
+        "facts": [
+          "fact_redding_call_origin_reply"
+        ],
+        "relatedClaims": [],
+        "result": {
+          "text": "雷丁看过来电来源记录后说：“我去老宅画过画。可是谁用那里的电话找了牧师，我没看见。你们还想问我什么？”这是他对所示记录的回答。",
+          "media": []
+        },
+        "suggests": []
+      },
+      {
+        "id": "clue_police_call_review",
+        "title": "警方登记的电话核查材料",
+        "finding": "梅尔切特说：“牧师的来电陈述、接出地点的追查记录，还有北门房的现场和电话检查记录，我都登记了。原陈述与后来取得的检查材料分别保存。”",
+        "facts": [
+          "fact_police_call_review"
+        ],
+        "relatedClaims": [],
+        "result": {
+          "text": "梅尔切特说：“牧师的来电陈述、接出地点的追查记录，还有北门房的现场和电话检查记录，我都登记了。原陈述与后来取得的检查材料分别保存。”",
+          "media": []
+        },
+        "suggests": []
       }
     ],
     "routes": [
@@ -5239,6 +5555,96 @@
           "clue_marple_visitors",
           "clue_sightline_recheck"
         ]
+      },
+      {
+        "id": "route_call_basis",
+        "point": "point_police",
+        "condition": {
+          "kind": "CluesKnown",
+          "clues": [
+            "clue_call"
+          ]
+        },
+        "method": {
+          "kind": "Fixed",
+          "label": "出示牧师的来电陈述，登记追查依据"
+        },
+        "grants": [
+          "clue_call_basis"
+        ],
+        "reports": [],
+        "presentedClues": [
+          "clue_call"
+        ]
+      },
+      {
+        "id": "route_clement_call_origin_reply",
+        "point": "point_clement",
+        "condition": {
+          "kind": "CluesKnown",
+          "clues": [
+            "clue_call_origin"
+          ]
+        },
+        "method": {
+          "kind": "Fixed",
+          "label": "出示来电来源记录，询问牧师能否辨认来电者"
+        },
+        "grants": [
+          "clue_clement_call_origin_reply"
+        ],
+        "reports": [],
+        "presentedClues": [
+          "clue_call_origin"
+        ]
+      },
+      {
+        "id": "route_redding_call_origin_reply",
+        "point": "point_redding",
+        "condition": {
+          "kind": "CluesKnown",
+          "clues": [
+            "clue_call_origin"
+          ]
+        },
+        "method": {
+          "kind": "Fixed",
+          "label": "出示来电来源记录，询问雷丁与老宅的来往"
+        },
+        "grants": [
+          "clue_redding_call_origin_reply"
+        ],
+        "reports": [],
+        "presentedClues": [
+          "clue_call_origin"
+        ]
+      },
+      {
+        "id": "route_police_call_review",
+        "point": "point_police",
+        "condition": {
+          "kind": "CluesKnown",
+          "clues": [
+            "clue_call",
+            "clue_call_origin",
+            "clue_call_lodge_scene",
+            "clue_call_lodge_phone"
+          ]
+        },
+        "method": {
+          "kind": "Fixed",
+          "label": "出示来电陈述与两次核查结果，登记电话核查"
+        },
+        "grants": [
+          "clue_police_call_review"
+        ],
+        "reports": [],
+        "presentedClues": [
+          "clue_call",
+          "clue_call_origin",
+          "clue_call_lodge_scene",
+          "clue_call_lodge_phone"
+        ]
       }
     ],
     "operations": [
@@ -5579,6 +5985,33 @@
         "resultClues": [
           "clue_sightline_recheck"
         ]
+      },
+      {
+        "id": "call_origin",
+        "title": "牧师来电来源追查",
+        "requestLabel": "申请追查牧师接到的电话",
+        "point": "point_police",
+        "requiredClues": [
+          "clue_call_basis"
+        ],
+        "delaySeconds": 900,
+        "resultClues": [
+          "clue_call_origin"
+        ]
+      },
+      {
+        "id": "call_lodge_inspection",
+        "title": "来电接出地点现场核查",
+        "requestLabel": "申请核查来电接出地点",
+        "point": "point_police",
+        "requiredClues": [
+          "clue_call_origin"
+        ],
+        "delaySeconds": 600,
+        "resultClues": [
+          "clue_call_lodge_scene",
+          "clue_call_lodge_phone"
+        ]
       }
     ],
     "followUps": [
@@ -5732,6 +6165,16 @@
             "requiredEvidence": [
               "clue_clock"
             ]
+          },
+          {
+            "id": "clement_call_origin_reply",
+            "text": "克莱门特看过来电来源记录后说：“北门房？我当时以为来电的是阿博特太太，便赶去了下农场。到了那里，她说根本没打过电话。我没认真辨认那个声音，也说不出是谁。”",
+            "routes": [
+              "route_clement_call_origin_reply"
+            ],
+            "requiredEvidence": [
+              "clue_call_origin"
+            ]
           }
         ]
       },
@@ -5881,6 +6324,16 @@
               "route_redding_scene_revised"
             ],
             "requiredEvidence": []
+          },
+          {
+            "id": "redding_call_origin_reply",
+            "text": "雷丁看过来电来源记录后说：“我去老宅画过画。可是谁用那里的电话找了牧师，我没看见。你们还想问我什么？”这是他对所示记录的回答。",
+            "routes": [
+              "route_redding_call_origin_reply"
+            ],
+            "requiredEvidence": [
+              "clue_call_origin"
+            ]
           }
         ]
       },
@@ -6081,6 +6534,29 @@
               "clue_anne_visit_revised",
               "clue_marple_visitors",
               "clue_sightline_recheck"
+            ]
+          },
+          {
+            "id": "call_basis",
+            "text": "梅尔切特收下牧师的来电陈述，说：“我们先追查这通以阿博特先生病情为由叫你过去的电话，看看它究竟从哪里接出。”",
+            "routes": [
+              "route_call_basis"
+            ],
+            "requiredEvidence": [
+              "clue_call"
+            ]
+          },
+          {
+            "id": "police_call_review",
+            "text": "梅尔切特说：“牧师的来电陈述、接出地点的追查记录，还有北门房的现场和电话检查记录，我都登记了。原陈述与后来取得的检查材料分别保存。”",
+            "routes": [
+              "route_police_call_review"
+            ],
+            "requiredEvidence": [
+              "clue_call",
+              "clue_call_origin",
+              "clue_call_lodge_scene",
+              "clue_call_lodge_phone"
             ]
           }
         ]
@@ -6359,7 +6835,8 @@
         ],
         "privateContext": [
           "你知道自己与安妮有私情并参与这宗命案的共谋；自首和首供中的独自行凶版本是对外策略，不能当作你真实相信的全部经过。",
-          "你自己参与过诱离牧师、预先安排武器以及事后进入书房处理枪、纸张和钟等安排。这些仅用于维持人物内心与应对，不属于此时允许向玩家披露的信息。你并非书房枪击的全程目击者，不拥有另一个人未告诉你的每个动作细节。"
+          "你自己参与过诱离牧师、预先安排武器以及事后进入书房处理枪、纸张和钟等安排。这些仅用于维持人物内心与应对，不属于此时允许向玩家披露的信息。你并非书房枪击的全程目击者，不拥有另一个人未告诉你的每个动作细节。",
+          "你知道召走牧师的那通电话是你从老宅北门房用伪装女声打出的。这是你参与安排的私人内情，继续按当前对外策略隐瞒，不能自动说出，也不能变成警方或玩家已经掌握的证据。"
         ],
         "policy": [
           "此阶段对外坚持18:45左右自己杀人的首供。不要泄露共谋、安妮参与、诱离和现场处理目的，不说“我在保护她”并进入后续改口版本；被猜中或要求坦白时回避、坚持原说法或拒答。",
@@ -6418,7 +6895,8 @@
           "警方页的联系操作只安排问询入口，不代表已经走访或拿到报告。男仆、斯通、哈特内尔和玛丽本局新证言只有实际出示后才可对照。不要因为玩家要求“查过了”就报结果；依disclosures和shownEvidence说明已收到的内容，不能替任何人改口或结案。",
           "当前知识中若含案件时钟与核查状态，以其为本局实际状态；医生到场记录中的大致参照不能升级成精确分钟。手枪核验已完成时，直接说明结果中的口径及其核验范围，不要继续声称没有结果，也不把口径相符说成已经确定开枪者。",
           "纸张原件由警方保管。原件初检与笔迹比对是两项分别申请的核查；只按当前核查状态说明受理和进展，结果实际完成后才依据shownEvidence回答。不要因玩家读过摘录就声称做过原件检查，不把正文作者、具体书写时刻或另一封信的下落编成已查明。",
-          "窗边复验必须先实际收到安妮的窗边补充记录和马普尔来访记录、登记依据，再由玩家明确申请。未完成前不得给出结果；完成后按实际复验站位和范围说明。复验由警方人员分任窗外观察者与桌前在场者，不自动算作安妮、牧师或马普尔本局参与过的经历，也不证明任何人的真实动机或是否开枪。"
+          "窗边复验必须先实际收到安妮的窗边补充记录和马普尔来访记录、登记依据，再由玩家明确申请。未完成前不得给出结果；完成后按实际复验站位和范围说明。复验由警方人员分任窗外观察者与桌前在场者，不自动算作安妮、牧师或马普尔本局参与过的经历，也不证明任何人的真实动机或是否开枪。",
+          "本轮追查的是叫牧师去下农场的那通电话。先实际收到牧师陈述并登记依据，再由玩家申请追查；来源追查完成后才可核查接出地点。只能依据已经完成的报告回答，不预先知道地点或把另一通骚扰电话混入。接出地点、查访时空置或窗户状态、电话指纹情况均不直接确定使用者；不编造录音、精确接线记录或已确认的来电者身份。"
         ]
       }
     },

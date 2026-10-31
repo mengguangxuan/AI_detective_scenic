@@ -111,7 +111,7 @@ test.describe('Archer inquiry recovery', () => {
     expect(response.status()).toBe(200);
     const state = await response.json();
     expect(state).toEqual(JSON.parse(readFileSync('.build-cache/archer-inquiry-snapshot.json', 'utf8')));
-    expect(state.caseRevision.value).toBe(13);
+    expect(state.caseRevision.value).toBe(14);
     await page.getByRole('navigation', { name: '调查导航' }).getByRole('link', { name: '人物问询', exact: true }).click();
     await page.getByRole('button', { name: '与阿彻太太交谈', exact: true }).click();
     await expect(page.getByRole('log', { name: '自由问询记录', exact: true })).toContainText('十二点三刻');
@@ -141,5 +141,18 @@ test.describe('sightline recovery', () => {
     const response = await page.request.post('/api/getinvestigationsnapshot', { data: { sessionId: saved.sessionId }, headers: { 'X-Detective-Client': 'web' } });
     expect(response.status()).toBe(200);
     expect(await response.json()).toEqual(JSON.parse(readFileSync('.build-cache/sightline-snapshot.json', 'utf8')));
+  });
+});
+
+
+test.describe('call checks recovery', () => {
+  test.use({ storageState: '.build-cache/call-checks-state.json' });
+  test('traced origin, site inspection, original account and witness responses restore exactly after restart', async ({ page }) => {
+    await page.goto('/police');
+    await expect(page.getByRole('article', { name: '来电接出地点现场核查', exact: true })).toContainText('已完成');
+    const saved = await page.evaluate(() => JSON.parse(localStorage.getItem('detective-scenic:server-session:v6')!));
+    const response = await page.request.post('/api/getinvestigationsnapshot', { data: { sessionId: saved.sessionId }, headers: { 'X-Detective-Client': 'web' } });
+    expect(response.status()).toBe(200);
+    expect(await response.json()).toEqual(JSON.parse(readFileSync('.build-cache/call-checks-snapshot.json', 'utf8')));
   });
 });
