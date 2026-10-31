@@ -1,5 +1,20 @@
 import { browserSessionSchema, type BrowserSession } from '../objects/BrowserSession';
-const key = 'detective-scenic:server-session:v6';
+export const browserSessionKey = 'detective-scenic:server-session:v6';
+const key = browserSessionKey;
+export function parseBrowserSessionSnapshot(raw: string) {
+  if (!raw) return null;
+  try { return browserSessionSchema.safeParse(JSON.parse(raw)); }
+  catch { return browserSessionSchema.safeParse(null); }
+}
+export function browserSessionSnapshot(): string {
+  try { return localStorage.getItem(key) ?? localStorage.getItem('detective-scenic:server-session:v5') ?? ''; }
+  catch { return '!unreadable'; }
+}
+export function subscribeBrowserSession(notify: () => void) {
+  window.addEventListener('investigation-session-changed', notify);
+  window.addEventListener('storage', notify);
+  return () => { window.removeEventListener('investigation-session-changed', notify); window.removeEventListener('storage', notify); };
+}
 export function loadBrowserSession(): BrowserSession | null {
   const raw = localStorage.getItem(key);
   if (raw) return browserSessionSchema.parse(JSON.parse(raw));
@@ -11,5 +26,6 @@ export function loadBrowserSession(): BrowserSession | null {
   return saved;
 }
 export function saveBrowserSession(session: BrowserSession): void {
-  localStorage.setItem(key, JSON.stringify(session));
+  localStorage.setItem(key, JSON.stringify(browserSessionSchema.parse(session)));
+  if (typeof window !== 'undefined') window.dispatchEvent(new Event('investigation-session-changed'));
 }

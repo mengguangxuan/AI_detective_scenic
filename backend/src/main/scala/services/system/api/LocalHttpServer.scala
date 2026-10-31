@@ -6,6 +6,7 @@ import java.net.InetSocketAddress
 import java.util.concurrent.Executors
 import services.accounts.routes.AccountsRoutes
 import services.games.routes.GamesRoutes
+import services.cases.routes.CasesRoutes
 import services.models.api.ChatCompletionClient
 object LocalHttpServer:
   def resource(databaseUrl: String,port: Int,modelClient: ChatCompletionClient = ChatCompletionClient.unconfigured)(using IORuntime): Resource[IO,HttpServer] =
@@ -14,7 +15,7 @@ object LocalHttpServer:
       val executor = Executors.newFixedThreadPool(8)
       try
         server.setExecutor(executor)
-        server.createContext("/api/",APIMessageRouter.handler(databaseUrl,AccountsRoutes.apiMessages ++ GamesRoutes.apiMessages ++ GamesRoutes.interviewMessages(modelClient),server.getAddress.getPort))
+        server.createContext("/api/",APIMessageRouter.handler(databaseUrl,AccountsRoutes.apiMessages ++ CasesRoutes.apiMessages ++ GamesRoutes.apiMessages ++ GamesRoutes.interviewMessages(modelClient),server.getAddress.getPort))
         server.start()
         (server,executor)
       catch

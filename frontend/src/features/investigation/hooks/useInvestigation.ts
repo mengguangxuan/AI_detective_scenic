@@ -28,7 +28,7 @@ import type { InvestigationPageState } from '../objects/InvestigationPageState';
 import type { PendingCommand } from '../objects/PendingCommand';
 import type { BrowserSession } from '../objects/BrowserSession';
 import { acceptSnapshot } from '../functions/acceptSnapshot';
-import { connectInvestigation, newBrowserSession } from '../utils/investigationConnection';
+import { connectInvestigation } from '../utils/investigationConnection';
 import { saveBrowserSession } from '../utils/browserSessionStorage';
 
 function problem(error: unknown): string {
@@ -206,9 +206,9 @@ export function useInvestigation() {
   }
   function reset() {
     if (inFlight.current || (state.kind === 'ready' && state.mutation.kind !== 'idle')) return;
-    if (!window.confirm('新建一次调查？原会话保留在服务器，当前页面将切换到新会话。')) return;
-    try { newBrowserSession(); void reconnect(); }
-    catch { setState({ kind: 'failed', message: '无法保存新会话编号；没有提交新建请求。' }); }
+    if (state.kind !== 'ready') return;
+    window.history.pushState(null, '', `/cases/${encodeURIComponent(state.snapshot.caseId)}`);
+    window.dispatchEvent(new PopStateEvent('popstate'));
   }
   return { state, evaluate, revealReasoning, conclude, requestCheck, advanceTime, lastReply, select, observe, overview, inspect, compare, ask, report, execute, investigate, reconnect, retry, reset };
 }

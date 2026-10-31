@@ -1,5 +1,5 @@
 import { writeFileSync } from 'node:fs';
-import { test, expect, type Page } from '@playwright/test';
+import { test, expect, type Page } from './support/investigation-test';
 import { PerspectiveCamera, Vector3 } from 'three';
 async function snapshot(page: Page) {
   const saved = await page.evaluate(() => JSON.parse(localStorage.getItem('detective-scenic:server-session:v6')!));
@@ -90,7 +90,7 @@ test.describe('actual previous revision compatibility', () => {
   test.use({ storageState: '.build-cache/pre-planter-v17-state.json' });
   test('revision 17 keeps its assessment history and original study without new planter bindings', async ({ page }) => {
     await page.goto('/scene');
-    await expect(page.getByRole('status').filter({ hasText: '已恢复原修订的调查' })).toBeVisible();
+    await expect(page.getByText(/修订17 · 材料/)).toBeVisible();
     const state = await snapshot(page);
     expect(state.caseRevision.value).toBe(17); expect(state.scene.revision).toBe('4');
     expect(state.reasoning.attempts.length).toBeGreaterThan(0);

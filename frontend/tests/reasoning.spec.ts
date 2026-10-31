@@ -1,5 +1,5 @@
 import { writeFileSync } from 'node:fs';
-import { test, expect, type Page } from '@playwright/test';
+import { test, expect, type Page } from './support/investigation-test';
 test.skip(process.env.DETECTIVE_TEST_MODEL !== '1', 'Uses the local two-stage model protocol fixture.');
 async function snapshot(page: Page) {
   const saved = await page.evaluate(() => JSON.parse(localStorage.getItem('detective-scenic:server-session:v6')!));

@@ -11,7 +11,7 @@ import services.games.objects.*
 import services.games.objects.apiTypes.*
 
 object SessionTable:
-  private val insertSql = "INSERT INTO game_sessions(session_id,owner_id,case_id,case_revision,state_schema_version,sequence_no,story_time_seconds,player_place,player_x,player_y,player_z,opened_json,unlocked_json,visible_nodes_json,completed_operations_json,clues_json,facts_json,checks_json,conclusion_json,reasoning_json) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"
+  private val insertSql = "INSERT INTO game_sessions(session_id,owner_id,case_id,case_revision,state_schema_version,sequence_no,story_time_seconds,player_place,player_x,player_y,player_z,opened_json,unlocked_json,visible_nodes_json,completed_operations_json,clues_json,facts_json,checks_json,conclusion_json,reasoning_json,updated_at_ms) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"
   def insert(connection: Connection, row: GameSessionRecord): IO[Unit] = IO.blocking {
     require(row.stateSchemaVersion == 1 && row.sequence.value >= 0)
     Using.resource(connection.prepareStatement(insertSql)) { s =>
@@ -35,6 +35,7 @@ object SessionTable:
       s.setString(18,row.externalChecks.asJson.noSpaces)
       s.setString(19,row.conclusion.asJson.noSpaces)
       s.setString(20,row.reasoning.asJson.noSpaces)
+      s.setLong(21,System.currentTimeMillis())
       s.executeUpdate()
     }
     ()
@@ -65,7 +66,7 @@ object SessionTable:
       decode[Option[CaseConclusionRecord]](r.getString("conclusion_json")).fold(throw _,identity),
       decode[ReasoningProgress](r.getString("reasoning_json")).fold(throw _,identity))
 
-  private val updateSql = "UPDATE game_sessions SET state_schema_version=?,sequence_no=?,story_time_seconds=?,player_place=?,player_x=?,player_y=?,player_z=?,opened_json=?,unlocked_json=?,visible_nodes_json=?,completed_operations_json=?,clues_json=?,facts_json=?,checks_json=?,conclusion_json=?,reasoning_json=? WHERE session_id=? AND sequence_no=?"
+  private val updateSql = "UPDATE game_sessions SET state_schema_version=?,sequence_no=?,story_time_seconds=?,player_place=?,player_x=?,player_y=?,player_z=?,opened_json=?,unlocked_json=?,visible_nodes_json=?,completed_operations_json=?,clues_json=?,facts_json=?,checks_json=?,conclusion_json=?,reasoning_json=?,updated_at_ms=GREATEST(updated_at_ms,?) WHERE session_id=? AND sequence_no=?"
   def update(connection: Connection, previous: GameSessionRecord, row: GameSessionRecord): IO[Unit] = IO.blocking {
     require(row.id==previous.id && row.owner==previous.owner && row.caseId==previous.caseId && row.caseRevision==previous.caseRevision && row.stateSchemaVersion==1 && row.sequence.value==previous.sequence.value+1)
     Using.resource(connection.prepareStatement(updateSql)) { s =>
@@ -85,7 +86,25 @@ object SessionTable:
       s.setString(14,row.externalChecks.asJson.noSpaces)
       s.setString(15,row.conclusion.asJson.noSpaces)
       s.setString(16,row.reasoning.asJson.noSpaces)
-      s.setString(17,row.id.value); s.setLong(18,previous.sequence.value)
+      s.setLong(17,System.currentTimeMillis()); s.setString(18,row.id.value); s.setLong(19,previous.sequence.value)
       if s.executeUpdate()!=1 then throw GameError(ErrorCode.StaleState,"会话已发生变化。")
+    }
+  }
+
+  private val listOwnedSql = """SELECT s.session_id,s.case_id,s.case_revision,s.sequence_no,s.updated_at_ms,s.reasoning_json,s.conclusion_json,c.title
+    FROM game_sessions s JOIN case_revisions c ON c.case_id=s.case_id AND c.revision=s.case_revision
+    WHERE s.owner_id=? ORDER BY s.updated_at_ms DESC,s.session_id"""
+  def listOwned(connection: Connection,owner: UserId): IO[Vector[InvestigationListRecord]] = IO.blocking {
+    Using.resource(connection.prepareStatement(listOwnedSql)) { s =>
+      s.setString(1,owner.value)
+      Using.resource(s.executeQuery()) { rows =>
+        val result=Vector.newBuilder[InvestigationListRecord]
+        while rows.next() do
+          result += InvestigationListRecord(SessionId(rows.getString("session_id")),CaseId(rows.getString("case_id")),Revision(rows.getInt("case_revision")),
+            rows.getString("title"),Sequence(rows.getLong("sequence_no")),Option.when(rows.getLong("updated_at_ms") > 0)(rows.getLong("updated_at_ms")),
+            decode[ReasoningProgress](rows.getString("reasoning_json")).fold(throw _,identity),
+            decode[Option[CaseConclusionRecord]](rows.getString("conclusion_json")).fold(throw _,identity).nonEmpty)
+        result.result()
+      }
     }
   }

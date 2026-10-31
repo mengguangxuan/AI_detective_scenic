@@ -1,5 +1,5 @@
 import { readFileSync, writeFileSync } from 'node:fs';
-import { test, expect } from '@playwright/test';
+import { test, expect } from './support/investigation-test';
 test.use({ storageState: '.build-cache/pre-evaluation-v16-state.json' });
 test('actual revision 16 keeps its frozen one-shot submission and author review', async ({ page }) => {
   await page.goto('/conclusion');

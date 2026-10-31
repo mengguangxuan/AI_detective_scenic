@@ -13,6 +13,5 @@ export const investigationPages = [
 export type InvestigationPage = typeof investigationPages[number]['path'];
 export function resolveInvestigationPage(pathname: string): InvestigationPage | null {
   const path = pathname.replace(/\/+$/, '') || '/';
-  if (path === '/') return '/scene';
   return investigationPages.find(page => page.path === path)?.path ?? null;
 }

@@ -1,4 +1,4 @@
-import { test, expect, type Page } from '@playwright/test';
+import { test, expect, type Page } from './support/investigation-test';
 test.skip(process.env.DETECTIVE_TEST_MODEL !== '1', 'Requires the local model fixture.');
 async function send(page: Page, question: string) {
   const panel = page.getByRole('region', { name: '自由问询', exact: true });

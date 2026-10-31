@@ -3,8 +3,21 @@ import services.games.api.*
 import services.games.objects.apiTypes.*
 import services.system.api.RegisteredAPIMessage
 import services.models.api.ChatCompletionClient
+import cats.effect.IO
+import io.circe.syntax.*
+import services.accounts.api.ResolveLocalIdentityMessage
+import services.system.objects.{ErrorCode, GameError}
+import services.system.objects.apiTypes.HttpReply
 object GamesRoutes:
   val apiMessages: Vector[RegisteredAPIMessage] = Vector(
+    RegisteredAPIMessage.transactional(RegisteredAPIMessage.nameOf[ListInvestigationsMessage],Set.empty) { (_,token,connection) =>
+      for
+        credential <- IO.fromOption(token)(GameError(ErrorCode.Unauthenticated,"请先建立本地演示身份。"))
+        user <- ResolveLocalIdentityMessage(credential).plan(connection)
+        result <- ListInvestigationsMessage(user).plan(connection)
+      yield HttpReply(result.asJson)
+    },
+    RegisteredAPIMessage.authenticated[OpenInvestigationMessage,OpenInvestigationInput,InvestigationSnapshot](Set("sessionId","caseId","revision"))((input,user) => OpenInvestigationMessage(user,input.sessionId,input.caseId,input.revision)),
     RegisteredAPIMessage.authenticated[RevealReasoningMessage,RevealReasoningInput,CommandResult](Set("sessionId","requestId","expectedSequence","abandon"))((input,user) => RevealReasoningMessage(user,input.sessionId,input.requestId,input.expectedSequence,input.abandon)),
     RegisteredAPIMessage.authenticated[SubmitConclusionMessage,SubmitConclusionInput,CommandResult](Set("sessionId","requestId","expectedSequence","suspects","evidence","explanation"))((input,user) => SubmitConclusionMessage(user,input.sessionId,input.requestId,input.expectedSequence,input.suspects,input.evidence,input.explanation)).copy(longTextFields=Set("explanation")),
     RegisteredAPIMessage.authenticated[RequestExternalCheckMessage,RequestExternalCheckInput,CommandResult](Set("sessionId","requestId","expectedSequence","check"))((input,user) => RequestExternalCheckMessage(user,input.sessionId,input.requestId,input.expectedSequence,input.check)),

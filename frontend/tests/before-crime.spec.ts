@@ -1,5 +1,5 @@
 import { writeFileSync } from 'node:fs';
-import { test, expect, type Page } from '@playwright/test';
+import { test, expect, type Page } from './support/investigation-test';
 async function snapshot(page: Page) {
   const saved = await page.evaluate(() => JSON.parse(localStorage.getItem('detective-scenic:server-session:v6')!));
   const response = await page.request.post('/api/getinvestigationsnapshot', { data: { sessionId: saved.sessionId }, headers: { 'X-Detective-Client': 'web' } });
@@ -37,7 +37,7 @@ test.describe('actual revision 18 compatibility', () => {
   test.use({ storageState: '.build-cache/pre-before-crime-v18-state.json' });
   test('planter discovery remains in revision 18 without the new recollections', async ({ page }) => {
     await page.goto('/interviews');
-    await expect(page.getByRole('status').filter({ hasText: '已恢复原修订的调查' })).toBeVisible();
+    await expect(page.getByText(/修订18 · 材料/)).toBeVisible();
     await page.getByRole('button', { name: '与克莱门特牧师交谈', exact: true }).click();
     const state = await snapshot(page);
     expect(state.caseRevision.value).toBe(18); expect(state.scene.revision).toBe('5');

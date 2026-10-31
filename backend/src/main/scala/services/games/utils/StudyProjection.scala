@@ -10,8 +10,12 @@ private[games] object StudyProjection:
   // Revision 18 adds study/5; existing games retain study/4 and their authored content.
   private[games] def supports(id: CaseId, value: Revision): Boolean =
     id == caseId && Set(Revision(3), Revision(4), Revision(5), Revision(6), Revision(7), Revision(8), Revision(9), Revision(10), Revision(11), Revision(12), Revision(13), Revision(14), Revision(15), Revision(16), Revision(17), Revision(18), Revision(19), Revision(20), revision)(value)
-  private[games] def snapshot(caseRecord: CaseRevisionRecord, state: GameSessionRecord, records: Vector[SessionRecord], turns: Vector[InterviewTurnRecord], exchanges: Vector[PoliceExchangeRecord] = Vector.empty): InvestigationSnapshot =
-    if !supports(caseRecord.caseId,caseRecord.revision) then
+  private[games] def supportsScene(bundle: String, revision: String): Boolean = bundle == "study" && Set("4","5")(revision)
+  private[games] def snapshot(caseRecord: CaseRevisionRecord, state: GameSessionRecord, records: Vector[SessionRecord], turns: Vector[InterviewTurnRecord], exchanges: Vector[PoliceExchangeRecord] = Vector.empty,
+      release: Option[CaseReleaseRecord] = None): InvestigationSnapshot =
+    val supported = release.fold(supports(caseRecord.caseId,caseRecord.revision))(r =>
+      r.caseId == caseRecord.caseId && r.revision == caseRecord.revision && supportsScene(r.sceneBundle,r.sceneRevision))
+    if !supported then
       throw GameError(ErrorCode.ConflictingContent,"这份调查使用的场景版本暂不支持，请保留原存档；可以另建一次调查使用当前版本。")
     val content = caseRecord.content
     val police = content.police.flatMap(id => content.witnesses.find(_.id == id))
@@ -34,7 +38,7 @@ private[games] object StudyProjection:
     val accessibleWitnesses = content.witnesses.filter(w => points.exists(_.id == w.point)).map(_.id).toSet
     val people = content.publicPersons.map(p => p.copy(witness=p.witness.filter(accessibleWitnesses)))
     InvestigationSnapshot(state.id,state.caseId,state.caseRevision,state.sequence,caseRecord.title,
-      StudySceneView("study",if caseRecord.revision.value >= 18 then "5" else "4",content.placeName,state.opened(EntityId("drawer")),state.opened(EntityId("window")),
+      StudySceneView(release.map(_.sceneBundle).getOrElse("study"),release.map(_.sceneRevision).getOrElse(if caseRecord.revision.value >= 18 then "5" else "4"),content.placeName,state.opened(EntityId("drawer")),state.opened(EntityId("window")),
         content.sceneObjects.filter(o => positions.contains(o.node) && o.point.forall(p => points.exists(_.id == p)))),points,clues,journal,observations,
       content.stage.map(s => InvestigationStageView(s.introduction,s.objective,s.completionClue.exists(state.clues.contains),s.nextObjective,
         Option.when(s.comparison.isEmpty)(false))),

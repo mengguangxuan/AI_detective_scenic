@@ -17,10 +17,12 @@ object SessionTableInitializer:
   private val addChecksSql = "ALTER TABLE game_sessions ADD COLUMN IF NOT EXISTS checks_json CLOB DEFAULT '[]' NOT NULL"
   private val addConclusionSql = "ALTER TABLE game_sessions ADD COLUMN IF NOT EXISTS conclusion_json CLOB DEFAULT 'null' NOT NULL"
   private val addReasoningSql = "ALTER TABLE game_sessions ADD COLUMN IF NOT EXISTS reasoning_json CLOB DEFAULT '{\"attempts\":[],\"ending\":null}' NOT NULL"
+  private val addUpdatedSql = "ALTER TABLE game_sessions ADD COLUMN IF NOT EXISTS updated_at_ms BIGINT DEFAULT 0 NOT NULL"
   def initialize(connection: Connection): IO[Unit] = IO.blocking {
     Using.resource(connection.createStatement())(_.execute(createSql))
     Using.resource(connection.createStatement())(_.execute(addChecksSql))
     Using.resource(connection.createStatement())(_.execute(addConclusionSql))
     Using.resource(connection.createStatement())(_.execute(addReasoningSql))
+    Using.resource(connection.createStatement())(_.execute(addUpdatedSql))
     ()
   }

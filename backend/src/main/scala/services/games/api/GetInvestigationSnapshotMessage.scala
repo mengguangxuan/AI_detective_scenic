@@ -4,6 +4,7 @@ import io.circe.generic.semiauto.*
 import cats.effect.IO
 import java.sql.Connection
 import services.cases.tables.CaseRevisionTable.CaseRevisionTable
+import services.cases.tables.CaseReleaseTable.CaseReleaseTable
 import services.games.objects.apiTypes.InvestigationSnapshot
 import services.games.tables.SessionTable.SessionTable
 import services.games.tables.SessionRecordTable.SessionRecordTable
@@ -21,7 +22,8 @@ final case class GetInvestigationSnapshotMessage(userId: UserId,sessionId: Sessi
       records <- SessionRecordTable.list(connection,state.id)
       turns <- InterviewTurnTable.list(connection,state.id)
       exchanges <- PoliceExchangeTable.list(connection,state.id)
-    yield StudyProjection.snapshot(revision,state,records,turns,exchanges)
+      release <- CaseReleaseTable.find(connection,state.caseId,state.caseRevision)
+    yield StudyProjection.snapshot(revision,state,records,turns,exchanges,release)
 
 object GetInvestigationSnapshotMessage:
   given Encoder[GetInvestigationSnapshotMessage] = deriveEncoder[GetInvestigationSnapshotMessage]

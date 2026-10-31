@@ -1,4 +1,4 @@
-import { test, expect, type Page } from '@playwright/test';
+import { test, expect, type Page } from './support/investigation-test';
 test.skip(process.env.DETECTIVE_TEST_MODEL !== '1', 'Uses the local model fixture, never a paid model.');
 
 async function send(page: Page, question: string) {

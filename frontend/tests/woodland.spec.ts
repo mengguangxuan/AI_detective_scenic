@@ -1,5 +1,5 @@
 import { writeFileSync } from 'node:fs';
-import { test, expect, type Page } from '@playwright/test';
+import { test, expect, type Page } from './support/investigation-test';
 async function snapshot(page: Page) {
   const saved = await page.evaluate(() => JSON.parse(localStorage.getItem('detective-scenic:server-session:v6')!));
   const response = await page.request.post('/api/getinvestigationsnapshot', { data: { sessionId: saved.sessionId }, headers: { 'X-Detective-Client': 'web' } });
@@ -78,7 +78,7 @@ test.describe('actual previous revision compatibility', () => {
   test.use({ storageState: '.build-cache/pre-woodland-v14-state.json' });
   test('revision 14 retains completed calls without new woodland checks', async ({ page }) => {
     await page.goto('/police');
-    await expect(page.getByRole('status').filter({ hasText: '已恢复原修订的调查' })).toContainText('原调查仍保留在服务器');
+    await expect(page.getByText(/修订14 · 材料/)).toBeVisible();
     const state = await snapshot(page);
     expect(state.caseRevision.value).toBe(14);
     expect(state.externalChecks).toHaveLength(7);

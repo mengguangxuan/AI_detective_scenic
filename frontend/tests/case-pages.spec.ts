@@ -1,4 +1,4 @@
-import { test, expect, type Page } from '@playwright/test';
+import { test, expect, type Page } from './support/investigation-test';
 
 const sessionKey = 'detective-scenic:server-session:v6';
 async function go(page: Page, name: string) {

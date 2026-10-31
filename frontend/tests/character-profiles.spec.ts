@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from './support/investigation-test';
 import { existsSync } from 'node:fs';
 
 test('unified character authoring keeps public profiles and the current browser contract', async ({ page }) => {
@@ -44,7 +44,7 @@ test.describe('real pre-merge revision 10 save', () => {
     const state = await response.json();
     expect(state.caseRevision.value).toBe(10);
     expect(state.people.some((p: { id: string }) => p.id === 'mrs_archer')).toBe(false);
-    await expect(page.getByRole('status').filter({ hasText: '已恢复原修订的调查，进度与待处理请求保持不变' })).toBeVisible();
+    await expect(page.getByText(/修订10 · 材料/)).toBeVisible();
     const officers = state.witnesses.filter((w: { point: string }) => w.point === state.police.point);
     expect(officers).toHaveLength(1);
     expect(state.police.sharedClues).toContain('clue_redding_revised');

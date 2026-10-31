@@ -1,5 +1,23 @@
 import { readFileSync, existsSync } from 'node:fs';
 import { test, expect } from '@playwright/test';
+test.describe('case hub recovery', () => {
+  test.use({ storageState: '.build-cache/case-hub-state.json' });
+  test('the home page lists both saved investigations and restores the original without creating another', async ({ page }) => {
+    let creations = 0;
+    page.on('request', request => { if (/\/api\/(openstudy|openinvestigation)$/.test(request.url())) creations++; });
+    await page.goto('/');
+    await expect(page.getByRole('button', { name: '继续调查', exact: true })).toHaveCount(2);
+    await page.getByRole('listitem').filter({ hasText: '1条记录' }).getByRole('button', { name: '继续调查', exact: true }).click();
+    await expect(page.getByRole('heading', { name: '案件简介', exact: true })).toBeVisible();
+    const saved = await page.evaluate(() => JSON.parse(localStorage.getItem('detective-scenic:server-session:v6')!));
+    const response = await page.request.post('/api/getinvestigationsnapshot', { data: { sessionId: saved.sessionId }, headers: { 'X-Detective-Client': 'web' } });
+    expect(response.status()).toBe(200);
+    const snapshot = await response.json();
+    expect(snapshot.sequence.value).toBe(1);
+    expect(snapshot.clues.map((clue: { id: string }) => clue.id)).toEqual(['clue_clock']);
+    expect(creations).toBe(0);
+  });
+});
 test.describe('presentation history recovery', () => {
   test.use({ storageState: '.build-cache/presentation-state.json' });
   test('a presentation restores under its actual witness without adding a clue after backend restart', async ({ page }) => {

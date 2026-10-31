@@ -1,4 +1,4 @@
-import { test, expect, type Page } from '@playwright/test';
+import { test, expect, type Page } from './support/investigation-test';
 import { PerspectiveCamera, Vector3 } from 'three';
 const sessionKey = 'detective-scenic:server-session:v6';
 async function go(page: Page, name: string) {
@@ -68,7 +68,7 @@ async function clickModel(page: Page, position: [number, number, number], label:
 test('player gathers time evidence without a compulsory calculation or prewritten conclusion', async ({ page }) => {
   const errors: string[] = [];
   page.on('pageerror', error => errors.push(error.message));
-  await page.goto('/');
+  await page.goto('/scene');
   await expect(page.getByRole('heading', { name: '调查目标', exact: true })).toBeVisible();
   const initial = await snapshot(page);
   expect(initial.clues).toHaveLength(0);
@@ -88,7 +88,7 @@ test('player gathers time evidence without a compulsory calculation or prewritte
 });
 
 test('clicking models opens live drawer and window menus, and paper opens its contents', async ({ page }) => {
-  await page.goto('/');
+  await page.goto('/scene');
   await clickModel(page, [0.8, 0.94, 0.48], '抽屉');
   const drawer = page.getByRole('dialog', { name: '抽屉操作', exact: true });
   await drawer.getByRole('button', { name: '打开抽屉', exact: true }).click();
@@ -115,7 +115,7 @@ test('clicking models opens live drawer and window menus, and paper opens its co
 });
 
 test('left drag pans the view without selecting a model; clicking an item preserves the camera', async ({ page }) => {
-  await page.goto('/');
+  await page.goto('/scene');
   await clickModel(page, [0.8, 0.94, 0.48], '抽屉');
   await page.keyboard.press('Escape');
   await page.mouse.move(1, 1);
@@ -146,7 +146,7 @@ test('left drag pans the view without selecting a model; clicking an item preser
 });
 
 test('lost automatic reading response retries the same request after reload', async ({ page }) => {
-  await page.goto('/');
+  await page.goto('/scene');
   const payloads: string[] = [];
   let drop = true;
   await page.route('**/api/investigate', async route => {
@@ -169,7 +169,7 @@ test('lost automatic reading response retries the same request after reload', as
 });
 
 test('lost evidence-presentation response retries once without creating a duplicate clue', async ({ page }) => {
-  await page.goto('/');
+  await page.goto('/scene');
   await gather(page);
   const before = await snapshot(page);
   await go(page, '人物问询');
@@ -199,7 +199,7 @@ test('lost evidence-presentation response retries once without creating a duplic
 });
 
 test('post-commit view failure only rereads the view', async ({ page }) => {
-  await page.goto('/');
+  await page.goto('/scene');
   await expect(page.getByRole('heading', { name: '调查目标' })).toBeVisible();
   let writes = 0;
   await page.route('**/api/investigate', async route => { writes++; await route.continue(); });
@@ -215,7 +215,7 @@ test('post-commit view failure only rereads the view', async ({ page }) => {
 });
 
 test('mobile item menu fits after resizing and can be dismissed', async ({ page }) => {
-  await page.goto('/');
+  await page.goto('/scene');
   const menu = await objectMenu(page, '纸张原位置');
   await expect(menu).toContainText('18:20');
   await page.setViewportSize({ width: 390, height: 844 });
@@ -231,7 +231,7 @@ test('mobile item menu fits after resizing and can be dismissed', async ({ page 
 });
 
 test('witness-first investigation and optional evidence presentation remain available', async ({ page }) => {
-  await page.goto('/');
+  await page.goto('/scene');
   await question(page, '玛丽', '询问：上校什么时候到？');
   await question(page, '玛丽', '追问：18:15是看哪一座钟？');
   await question(page, '克莱门特牧师', '询问：座钟平时准吗？');
@@ -252,7 +252,7 @@ test('witness-first investigation and optional evidence presentation remain avai
 
 test('backend unavailable does not fabricate local progress', async ({ page }) => {
   await page.route('**/api/**', route => route.abort('failed'));
-  await page.goto('/');
+  await page.goto('/scene');
   await expect(page.getByRole('button', { name: '重新连接' })).toBeVisible();
   await expect(page.getByRole('heading', { name: '调查目标' })).toHaveCount(0);
 });
