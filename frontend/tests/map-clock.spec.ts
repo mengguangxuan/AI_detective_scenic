@@ -23,7 +23,7 @@ test('public map shows connected distances and route estimates; browsing and ref
   await page.goto('/map');
   await expect(page.getByRole('region', { name: '步行路线估算', exact: true })).toContainText('1060 米');
   const initial = await snapshot(page);
-  expect(initial.caseRevision.value).toBe(18);
+  expect(initial.caseRevision.value).toBe(19);
   expect(initial.clock.elapsedSeconds).toBe(0);
   expect(initial.areaMap.locations).toHaveLength(15);
   expect(JSON.stringify(initial)).not.toContain('clue_gun_verification');

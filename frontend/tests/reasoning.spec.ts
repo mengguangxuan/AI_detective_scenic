@@ -11,7 +11,7 @@ async function setup(page: Page) {
   await page.goto('/conclusion');
   await expect(page.getByRole('heading', { name: '推理与复盘', exact: true })).toBeVisible();
   const first = await snapshot(page);
-  expect(first.caseRevision.value).toBe(18); expect(first.reasoning.ending).toBeNull();
+  expect(first.caseRevision.value).toBe(19); expect(first.reasoning.ending).toBeNull();
   expect(JSON.stringify(first)).not.toContain('authorTruth'); expect(JSON.stringify(first)).not.toContain('预藏枪');
   await go(page, '人物问询');
   await page.getByRole('button', { name: '与克莱门特牧师交谈', exact: true }).click();

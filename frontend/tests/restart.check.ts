@@ -1,4 +1,4 @@
-import { readFileSync } from 'node:fs';
+import { readFileSync, existsSync } from 'node:fs';
 import { test, expect } from '@playwright/test';
 test('same identity restores the completed stage after a backend process restart', async ({ page }) => {
   await page.goto('/clues');
@@ -111,7 +111,7 @@ test.describe('Archer inquiry recovery', () => {
     expect(response.status()).toBe(200);
     const state = await response.json();
     expect(state).toEqual(JSON.parse(readFileSync('.build-cache/archer-inquiry-snapshot.json', 'utf8')));
-    expect(state.caseRevision.value).toBe(18);
+    expect(state.caseRevision.value).toBe(19);
     await page.getByRole('navigation', { name: '调查导航' }).getByRole('link', { name: '人物问询', exact: true }).click();
     await page.getByRole('button', { name: '与阿彻太太交谈', exact: true }).click();
     await expect(page.getByRole('log', { name: '自由问询记录', exact: true })).toContainText('十二点三刻');
@@ -209,3 +209,33 @@ test.describe('planter discovery recovery', () => {
     expect(await response.json()).toEqual(JSON.parse(readFileSync('.build-cache/planter-snapshot.json', 'utf8')));
   });
 });
+
+test.describe('pre-crime recollection recovery', () => {
+  test.use({ storageState: '.build-cache/before-crime-state.json' });
+  test('actual recollections and sequence restore after a backend restart', async ({ page }) => {
+    await page.goto('/interviews');
+    await page.getByRole('button', { name: '与克莱门特牧师交谈', exact: true }).click();
+    const saved = await page.evaluate(() => JSON.parse(localStorage.getItem('detective-scenic:server-session:v6')!));
+    const response = await page.request.post('/api/getinvestigationsnapshot', { data: { sessionId: saved.sessionId }, headers: { 'X-Detective-Client': 'web' } });
+    expect(response.status()).toBe(200);
+    expect(await response.json()).toEqual(JSON.parse(readFileSync('.build-cache/before-crime-snapshot.json', 'utf8')));
+  });
+});
+
+for (const [name, ending] of [['completion-live-solved', 'Solved'], ['completion-live-paraphrase', null]] as const) {
+  const statePath = `.build-cache/${name}-state.json`;
+  if (existsSync(statePath)) test.describe(`${name} real-model recovery`, () => {
+    test.use({ storageState: statePath });
+    test('real-model assessment and ending survive process restart without another completion', async ({ page }) => {
+      await page.goto('/conclusion');
+      await expect(page.getByRole('region', { name: '推理评审记录', exact: true })).toBeVisible();
+      const saved = await page.evaluate(() => JSON.parse(localStorage.getItem('detective-scenic:server-session:v6')!));
+      const response = await page.request.post('/api/getinvestigationsnapshot', { data: { sessionId: saved.sessionId }, headers: { 'X-Detective-Client': 'web' } });
+      expect(response.status()).toBe(200);
+      const state = await response.json();
+      expect(state).toEqual(JSON.parse(readFileSync(`.build-cache/${name}-snapshot.json`, 'utf8')));
+      expect(state.reasoning.attempts.at(-1).status).toBe('Established');
+      expect(state.reasoning.ending?.mode ?? null).toBe(ending);
+    });
+  });
+}

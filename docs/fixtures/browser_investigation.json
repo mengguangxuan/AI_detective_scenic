@@ -1,7 +1,7 @@
 {
   "id": "vicarage_study",
   "revision": {
-    "value": 18
+    "value": 19
   },
   "schemaVersion": {
     "value": 2
@@ -1534,6 +1534,40 @@
           }
         },
         "boundary": "本局提起内盆后的现场观察；内外盆结构及提起交互为游戏改编，不证明此前放过什么、由谁放置或取走。"
+      },
+      {
+        "id": "topic_clement_relationship",
+        "subject": {
+          "kind": "Place",
+          "id": "study"
+        },
+        "question": "牧师回忆的案发前感情谈话",
+        "when": {
+          "earliest": {
+            "seconds": 0
+          },
+          "latest": {
+            "seconds": 0
+          }
+        },
+        "boundary": "本局询问后取得的牧师回忆；案发前经历固定，谈话内容是当事人说法，不能升级为谋杀计划或携枪目击。"
+      },
+      {
+        "id": "topic_clement_early_visit",
+        "subject": {
+          "kind": "Place",
+          "id": "study"
+        },
+        "question": "牧师回忆的雷丁午后来访",
+        "when": {
+          "earliest": {
+            "seconds": 0
+          },
+          "latest": {
+            "seconds": 0
+          }
+        },
+        "boundary": "本局询问后取得的牧师回忆；案发前经历固定，谈话内容是当事人说法，不能升级为谋杀计划或携枪目击。"
       }
     ],
     "facts": [
@@ -2539,6 +2573,35 @@
           "source_game_planter"
         ],
         "topic": "topic_planter"
+      },
+      {
+        "id": "fact_clement_relationship",
+        "value": {
+          "kind": "AuthoredDetail",
+          "detail": "克莱门特说：“周三傍晚，我在画室里看见雷丁拥抱并亲吻安妮。后来安妮来找我，承认他们相爱，说自己的婚姻很不幸，甚至说过希望丈夫死去。那天晚饭后，我又单独劝雷丁离开村子。他说自己没有钱，没法就这样带安妮走。”这是牧师对亲历和谈话的回忆，不是他目击了杀人计划。"
+        },
+        "requiresOccurred": [],
+        "explanation": "原著既有经历；改编为周五可明确询问的回忆，非未来事件或物证结论。",
+        "sources": [
+          "source_ch3",
+          "source_ch4",
+          "source_game_before_crime"
+        ],
+        "topic": "topic_clement_relationship"
+      },
+      {
+        "id": "fact_clement_early_visit",
+        "value": {
+          "kind": "AuthoredDetail",
+          "detail": "克莱门特说：“周四大约三点三刻，我回到寓所，玛丽说雷丁正在书房等我。我进去时，他在屋里来回走，脸色很不好。他说想过我前一天的劝告，决定离开村子，打算当晚向安妮告别，次日收拾行李走。”牧师回来前的书房情况不在他的目击范围内。"
+        },
+        "requiresOccurred": [],
+        "explanation": "原著既有经历；改编为周五可明确询问的回忆，非未来事件或物证结论。",
+        "sources": [
+          "source_ch4",
+          "source_game_before_crime"
+        ],
+        "topic": "topic_clement_early_visit"
       }
     ],
     "claims": [],
@@ -2652,6 +2715,21 @@
         "id": "source_game_planter",
         "kind": "Adapted",
         "reference": "docs/cases/murder_at_the_vicarage.md#窗边盆栽检查修订18"
+      },
+      {
+        "id": "source_ch3",
+        "kind": "Original",
+        "reference": "https://en.wikisource.org/wiki/The_Murder_at_the_Vicarage/Chapter_3"
+      },
+      {
+        "id": "source_ch4",
+        "kind": "Original",
+        "reference": "https://en.wikisource.org/wiki/The_Murder_at_the_Vicarage/Chapter_4"
+      },
+      {
+        "id": "source_game_before_crime",
+        "kind": "Adapted",
+        "reference": "docs/cases/murder_at_the_vicarage.md#案发前谈话与午后来访修订19"
       }
     ]
   },
@@ -4812,6 +4890,34 @@
           "media": []
         },
         "suggests": []
+      },
+      {
+        "id": "clue_clement_relationship",
+        "title": "牧师回忆的案发前感情谈话",
+        "finding": "克莱门特说：“周三傍晚，我在画室里看见雷丁拥抱并亲吻安妮。后来安妮来找我，承认他们相爱，说自己的婚姻很不幸，甚至说过希望丈夫死去。那天晚饭后，我又单独劝雷丁离开村子。他说自己没有钱，没法就这样带安妮走。”这是牧师对亲历和谈话的回忆，不是他目击了杀人计划。",
+        "facts": [
+          "fact_clement_relationship"
+        ],
+        "relatedClaims": [],
+        "result": {
+          "text": "克莱门特说：“周三傍晚，我在画室里看见雷丁拥抱并亲吻安妮。后来安妮来找我，承认他们相爱，说自己的婚姻很不幸，甚至说过希望丈夫死去。那天晚饭后，我又单独劝雷丁离开村子。他说自己没有钱，没法就这样带安妮走。”这是牧师对亲历和谈话的回忆，不是他目击了杀人计划。",
+          "media": []
+        },
+        "suggests": []
+      },
+      {
+        "id": "clue_clement_early_visit",
+        "title": "牧师回忆的雷丁午后来访",
+        "finding": "克莱门特说：“周四大约三点三刻，我回到寓所，玛丽说雷丁正在书房等我。我进去时，他在屋里来回走，脸色很不好。他说想过我前一天的劝告，决定离开村子，打算当晚向安妮告别，次日收拾行李走。”牧师回来前的书房情况不在他的目击范围内。",
+        "facts": [
+          "fact_clement_early_visit"
+        ],
+        "relatedClaims": [],
+        "result": {
+          "text": "克莱门特说：“周四大约三点三刻，我回到寓所，玛丽说雷丁正在书房等我。我进去时，他在屋里来回走，脸色很不好。他说想过我前一天的劝告，决定离开村子，打算当晚向安妮告别，次日收拾行李走。”牧师回来前的书房情况不在他的目击范围内。",
+          "media": []
+        },
+        "suggests": []
       }
     ],
     "routes": [
@@ -6015,6 +6121,36 @@
           "clue_planter"
         ],
         "reports": []
+      },
+      {
+        "id": "route_clement_relationship",
+        "point": "point_clement",
+        "condition": {
+          "kind": "Always"
+        },
+        "method": {
+          "kind": "Fixed",
+          "label": "询问：案发前安妮与雷丁有过什么来往？"
+        },
+        "grants": [
+          "clue_clement_relationship"
+        ],
+        "reports": []
+      },
+      {
+        "id": "route_clement_early_visit",
+        "point": "point_clement",
+        "condition": {
+          "kind": "Always"
+        },
+        "method": {
+          "kind": "Fixed",
+          "label": "询问：雷丁在那天傍晚之前来过吗？"
+        },
+        "grants": [
+          "clue_clement_early_visit"
+        ],
+        "reports": []
       }
     ],
     "operations": [
@@ -6629,6 +6765,22 @@
             "requiredEvidence": [
               "clue_call_origin"
             ]
+          },
+          {
+            "id": "clement_relationship",
+            "text": "克莱门特说：“周三傍晚，我在画室里看见雷丁拥抱并亲吻安妮。后来安妮来找我，承认他们相爱，说自己的婚姻很不幸，甚至说过希望丈夫死去。那天晚饭后，我又单独劝雷丁离开村子。他说自己没有钱，没法就这样带安妮走。”这是牧师对亲历和谈话的回忆，不是他目击了杀人计划。",
+            "routes": [
+              "route_clement_relationship"
+            ],
+            "requiredEvidence": []
+          },
+          {
+            "id": "clement_early_visit",
+            "text": "克莱门特说：“周四大约三点三刻，我回到寓所，玛丽说雷丁正在书房等我。我进去时，他在屋里来回走，脸色很不好。他说想过我前一天的劝告，决定离开村子，打算当晚向安妮告别，次日收拾行李走。”牧师回来前的书房情况不在他的目击范围内。",
+            "routes": [
+              "route_clement_early_visit"
+            ],
+            "requiredEvidence": []
           }
         ]
       },
@@ -7345,10 +7497,14 @@
           "到了病人家，阿博特先生比此前还好一些；阿博特太太说自己根本没有打过电话。你亲历这次白跑，可以告诉玩家病人是谁、去哪里、为何去、到达后发现什么，但不能凭此宣布已查明幕后人。",
           "往返走的是穿过田野的小路；你实际回来已接近19:00。到寓所门外遇见脸色苍白、神态很不对劲的雷丁，他急着离开。回屋后玛丽说上校在书房，你进书房才发现他伏在桌前，随后请医生。你没有亲眼看见杀人，不能认定雷丁刚开过枪。",
           "你平时把书房座钟拨快十五分钟。这是你自己的习惯，玩家不先出示时钟也可以问出。时钟现场读数、纸上文字等需据调查材料说，不凭空补充读数。",
-          "周四格丽泽尔达去伦敦，晚些时候回来。你的资料没有每一分钟的全村行踪，不知道的他人秘密不能补答。日常相识不等于知道对方作案秘密。"
+          "周四格丽泽尔达去伦敦，晚些时候回来。你的资料没有每一分钟的全村行踪，不知道的他人秘密不能补答。日常相识不等于知道对方作案秘密。",
+          "周三傍晚，你在画室亲眼看见雷丁拥抱并亲吻安妮。随后安妮来找你，承认两人相爱，诉说婚姻不幸并说过希望丈夫死去。当天晚饭后你单独劝雷丁离开村子，他说自己没有钱，无法带安妮走。你知道这些谈话，不知道他们是否因此策划杀人。",
+          "周四约15:45，你回到寓所，玛丽告诉你雷丁正在书房等你。你进去时见他来回走动、面色不好；他说想过你前一日的劝告，决定离开村子，准备当晚与安妮告别、次日收拾离去。你没有目击自己回来前他在书房做过什么，也不知道他是否带过或放过枪。"
         ],
         "privateContext": [],
-        "policy": []
+        "policy": [
+          "谈及案发前的感情与来访时，只按玩家所问披露对应回忆；感情冲突与先前来访不等于谋杀证明，不主动建议藏枪或宣告共谋，也不生成目击不到的行为。"
+        ]
       }
     },
     {

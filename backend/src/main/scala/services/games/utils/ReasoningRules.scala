@@ -10,6 +10,7 @@ import services.models.objects.ChatCompletionInput
 import services.system.objects.*
 
 private[games] object ReasoningRules:
+  private[games] val establishedFeedback = "核心推理已经得到现有材料支持。你可以选择“结案并查看复盘”，也可以继续调查；本次评审不会自动公开作者解答。"
   private def denied = GameError(ErrorCode.AccessDenied,"这份调查尚未开放推理评审。")
   private def textValid(s: String,limit: Int): Boolean = s.trim.nonEmpty && s.length <= limit && !s.exists(c => c < ' ' && c != '\n' && c != '\t')
   private def materials(clues: Vector[FixtureClue]): Json = Json.fromValues(clues.map(c => Json.obj("id" -> c.id.asJson,"title" -> c.title.value.asJson,"text" -> c.text.value.asJson)))
@@ -58,6 +59,22 @@ private[games] object ReasoningRules:
       if !values.forall(_.satisfied) || (request.suspects == request.context.culprits && ids.nonEmpty)
     yield ReasoningDecision(criteria.flatMap(c => values.find(_.id == c.id)),ids.toSet)
 
+  // Only counts and booleans are logged, never model text, evidence IDs or private truth.
+  private[games] def judgeValidationSummary(raw: String,request: ReasoningRequestRecord): String =
+    val parsed=parser.parse(raw).toOption
+    val checks=parsed.flatMap(_.hcursor.get[Vector[Json]]("checks").toOption)
+    val ids=parsed.flatMap(_.hcursor.get[Vector[ClueId]]("evidenceIds").toOption)
+    val criteria=request.context.evaluator.criteria.map(_.id).toSet
+    Json.obj("json" -> parsed.nonEmpty.asJson,
+      "fields" -> parsed.flatMap(_.asObject).exists(_.keys.toSet == Set("checks","evidenceIds")).asJson,
+      "checkCount" -> checks.map(_.size).getOrElse(-1).asJson,
+      "checkFields" -> checks.exists(_.forall(_.asObject.exists(_.keys.toSet == Set("id","satisfied")))).asJson,
+      "criteria" -> checks.exists(c => c.size == criteria.size && c.flatMap(_.hcursor.get[String]("id").toOption).toSet == criteria).asJson,
+      "booleans" -> checks.exists(_.forall(_.hcursor.get[Boolean]("satisfied").isRight)).asJson,
+      "evidenceArray" -> ids.nonEmpty.asJson,
+      "evidenceUnique" -> ids.exists(v => v.distinct.size == v.size).asJson,
+      "evidenceAllowed" -> ids.exists(_.toSet.subsetOf(request.evidence)).asJson).noSpaces
+
   // Deliberately excludes truth, culprit keys, private instructions and unacquired evidence.
   private[games] def guidancePrompt(request: ReasoningRequestRecord,decision: ReasoningDecision): ChatCompletionInput =
     val system="""你是侦探游戏的推理引导员，不是作者解答者。你只知道玩家提交、实际引用材料和评审的检查结果，不知道完整真相。
@@ -95,6 +112,7 @@ private[games] object ReasoningRules:
       val reply=status match
         case ReasoningStatus.Unavailable => "评审模型暂时无法响应，本次推理原文已保存，尚未作出判断。请继续调查或稍后重新提交评审。"
         case ReasoningStatus.Rejected => "本次模型评审未通过格式或引用检查，推理原文已保存，尚未作出判断。可以稍后重新提交。"
+        case ReasoningStatus.Established if request.context.revision.value >= 19 => establishedFeedback
         case _ => feedback.get.trim
       val sequence=Sequence(state.sequence.value+1)
       val checks=if status == ReasoningStatus.Established || status == ReasoningStatus.Revise then decision.get.checks else Vector.empty

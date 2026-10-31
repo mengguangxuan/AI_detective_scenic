@@ -73,7 +73,7 @@ class ReasoningSuite extends FunSuite:
     (for
       _ <- setup(url,id)
       first <- view(url,id)
-      _ = assertEquals(first.caseRevision,Revision(18))
+      _ = assertEquals(first.caseRevision,Revision(19))
       _ = assert(first.reasoning.nonEmpty && first.reasoning.get.attempts.isEmpty)
       _ = assert(!first.asJson.noSpaces.contains("预藏枪"))
       _ = assert(!first.asJson.noSpaces.contains("authorTruth"))
@@ -144,6 +144,30 @@ class ReasoningSuite extends FunSuite:
       _ = assertEquals(done.clues,passed.clues)
       _ = assert(done.police.get.sharedClues.isEmpty)
       _ = assert(!done.stage.get.completed)
+    yield ()).unsafeRunSync()
+  }
+
+  test("established revision 19 uses one judge call and a stable ending invitation, without a second model blocking or adding tasks") {
+    val url=database;val id=SessionId(UUID.randomUUID().toString)
+    (for
+      calls <- Ref.of[IO,Int](0)
+      _ <- setup(url,id)
+      _ <- read(url,id,"point_clement","route_call")
+      first <- view(url,id)
+      client=new ChatCompletionClient:
+        override def complete(input: ChatCompletionInput): IO[String]=
+          calls.update(_+1) *> IO(assert(input.user.contains("reasoning_judge"))) *> model(true).complete(input)
+      original=command(id,first.sequence)
+      result <- original.run(url,client)
+      retry <- original.run(url,client)
+      _ = assertEquals(result,retry)
+      count <- calls.get
+      _ = assertEquals(count,1)
+      saved <- view(url,id)
+      _ = assertEquals(saved.reasoning.get.attempts.last.status,ReasoningStatus.Established)
+      _ = assertEquals(saved.reasoning.get.attempts.last.feedback,ReasoningRules.establishedFeedback)
+      _ = assert(saved.reasoning.get.ending.isEmpty)
+      _ = assert(!saved.asJson.noSpaces.contains("作者复盘"))
     yield ()).unsafeRunSync()
   }
 

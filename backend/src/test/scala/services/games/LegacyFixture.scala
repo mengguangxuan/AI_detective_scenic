@@ -3,7 +3,19 @@ import services.cases.objects.*
 
 // Test-only reconstruction of the preceding published feature set.
 private[games] object LegacyFixture:
-  def withoutPlanter(current: CaseContent): CaseContent =
+  def withoutBeforeCrime(current: CaseContent): CaseContent =
+    val clues=Set(ClueId("clue_clement_relationship"),ClueId("clue_clement_early_visit"))
+    val routes=current.routes.filter(_.clues.exists(clues)).map(_.id).toSet
+    val facts=current.clues.filter(c => clues(c.id)).flatMap(_.facts).toSet
+    current.copy(routes=current.routes.filterNot(r => routes(r.id)),clues=current.clues.filterNot(c => clues(c.id)),
+      facts=current.facts.filterNot(f => facts(f.id)),witnesses=current.witnesses.map { w =>
+        if w.id != WitnessId("clement") then w else w.copy(answers=w.answers.filterNot(_.routes.exists(routes)),
+          dossier=w.dossier.copy(knowledge=w.dossier.knowledge.filterNot(k => k.startsWith("周三傍晚，你在画室") || k.startsWith("周四约15:45，你回到寓所")),
+            policy=w.dossier.policy.filterNot(_.startsWith("谈及案发前的感情与来访时"))))
+      })
+
+  def withoutPlanter(latest: CaseContent): CaseContent =
+    val current=withoutBeforeCrime(latest)
     val nodes=Set(SceneNodeId("node_planter"),SceneNodeId("node_planter_interior"))
     val points=Set(PointId("point_planter"),PointId("point_planter_interior"))
     current.copy(nodes=current.nodes.filterNot(n => nodes(n.id)),points=current.points.filterNot(p => points(p.id)),

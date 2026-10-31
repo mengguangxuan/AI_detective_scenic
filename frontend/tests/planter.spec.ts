@@ -33,7 +33,7 @@ test('player lifts the real planter model, inspects the exposed cavity and retai
   await page.goto('/scene');
   await expect(page.getByRole('heading', { name: '当前阶段 · 书房初查', exact: true })).toBeVisible();
   const first = await snapshot(page);
-  expect(first.caseRevision.value).toBe(18); expect(first.scene.revision).toBe('5');
+  expect(first.caseRevision.value).toBe(19); expect(first.scene.revision).toBe('5');
   expect(first.scene.objects.some((o: { node: string }) => o.node === 'node_planter_interior')).toBe(false);
   await model(page, [2.35, 1.15, -1.08], '窗边盆栽');
   await page.getByRole('button', { name: '提起内盆查看', exact: true }).click();

@@ -71,9 +71,17 @@ final case class EvaluateReasoningMessage(userId: UserId,sessionId: SessionId,re
         for
           completion <- (for
             raw <- client.complete(ReasoningRules.judgePrompt(row))
-            decision <- IO.fromOption(ReasoningRules.judge(raw,row))(GameError(ErrorCode.InvalidValue,"Invalid reasoning assessment"))
-            guided <- client.complete(ReasoningRules.guidancePrompt(row,decision))
-            feedback <- IO.fromOption(ReasoningRules.guidance(guided,row))(GameError(ErrorCode.InvalidValue,"Invalid reasoning guidance"))
+            assessed = ReasoningRules.judge(raw,row)
+            _ <- IO.whenA(assessed.isEmpty)(IO.println(s"[reasoning] Judge output rejected: ${ReasoningRules.judgeValidationSummary(raw,row)}"))
+            decision <- IO.fromOption(assessed)(GameError(ErrorCode.InvalidValue,"Invalid reasoning assessment"))
+            feedback <- if row.context.revision.value >= 19 && decision.checks.forall(_.satisfied) then
+              IO.pure(ReasoningRules.establishedFeedback)
+            else
+              client.complete(ReasoningRules.guidancePrompt(row,decision)).flatMap { raw =>
+                val guided=ReasoningRules.guidance(raw,row)
+                IO.whenA(guided.isEmpty)(IO.println("[reasoning] Guidance output rejected: structure, text limits or evidence references.")) *>
+                  IO.fromOption(guided)(GameError(ErrorCode.InvalidValue,"Invalid reasoning guidance"))
+              }
           yield (decision,feedback)).timeout(65.seconds).attempt
           decision = completion.toOption.map(_._1)
           feedback = completion.toOption.map(_._2)
