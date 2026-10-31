@@ -1,3 +1,5 @@
+import { caseConclusionSchema } from './CaseConclusionRecord';
+import { personIdSchema } from '../../../objects/PersonId';
 import { z } from 'zod';
 import { witnessFollowUpSchema } from './WitnessFollowUpView';
 import { statementComparisonSchema } from './StatementComparisonView';
@@ -15,6 +17,8 @@ import { clueViewSchema } from './ClueView';
 import { investigationLogSchema } from './InvestigationLogEntry';
 import { sceneObjectBindingSchema } from './SceneObjectBinding';
 export const investigationSnapshotSchema = z.object({
+  conclusionCandidates: z.array(personIdSchema).default([]),
+  conclusion: caseConclusionSchema.nullable().default(null),
   followUps: z.array(witnessFollowUpSchema).default([]),
   statementComparisons: z.array(statementComparisonSchema).default([]),
   areaMap: areaMapSchema.nullable().default(null),
@@ -29,6 +33,12 @@ export const investigationSnapshotSchema = z.object({
   people: z.array(casePersonBriefSchema),
   stage: z.object({ introduction: z.string(), objective: z.string(), completed: z.boolean(), nextObjective: z.string().nullable() }).strict().nullable(),
 }).strict().superRefine((snapshot, context) => {
+  if (snapshot.conclusionCandidates.some(id => !snapshot.people.some(p => p.id === id))) context.addIssue({ code: 'custom', message: '推理人物不在公开资料中' });
+  const result = snapshot.conclusion;
+  if (result && (result.sequence > snapshot.sequence || result.suspects.some(id => !snapshot.conclusionCandidates.includes(id)) ||
+    result.evidence.some(id => !snapshot.clues.some(c => c.id === id)) || result.evidenceScore !== result.coverage.filter(g => g.covered).length * 10 ||
+    result.coverage.some(g => g.covered !== g.requiredClues.every(id => result.evidence.includes(id)))))
+    context.addIssue({ code: 'custom', message: '推理复盘与提交记录不一致' });
   for (const values of [snapshot.followUps.map(v => v.operation), snapshot.statementComparisons.map(v => v.witness), snapshot.externalChecks.map(v => v.id), snapshot.people.map(v => v.id), snapshot.points.map(v => v.id), snapshot.clues.map(v => v.id), snapshot.journal.map(v => v.id), snapshot.observations.map(v => v.node), snapshot.scene.objects.map(v => v.node), snapshot.scene.objects.map(v => v.entity), snapshot.witnesses.map(v => v.id), snapshot.interviews.map(v => v.requestId)])
     if (new Set<string>(values).size !== values.length) context.addIssue({ code: 'custom', message: '响应编号重复' });
   for (const followUp of snapshot.followUps) {

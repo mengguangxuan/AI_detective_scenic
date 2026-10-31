@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
 import { useInvestigation } from '../features/investigation/hooks/useInvestigation';
 import type { SessionId } from '../objects/SessionId';
+import ConclusionPage from '../pages/Conclusion';
+import { emptyConclusionDraft, type ConclusionDraft } from '../pages/Conclusion/objects/ConclusionDraft';
 import MapPage from '../pages/Map';
 import CaseClockPanel from './components/CaseClockPanel';
 import ScenePage from '../pages/Scene';
@@ -25,6 +27,7 @@ export default function InvestigationApp() {
   const disabled = ready?.mutation.kind !== 'idle';
   const cameraMemory = useRef<SceneCameraMemory | null>(null);
   const [clueDraft, setClueDraft] = useState<{ sessionId: SessionId; value: TimeComparisonDraft } | null>(null);
+  const [conclusionDraft, setConclusionDraft] = useState<{ sessionId: SessionId; value: ConclusionDraft } | null>(null);
   const content = useRef<HTMLDivElement>(null);
   useEffect(() => {
     document.title = `${investigationPages.find(item => item.path === page)?.label ?? '页面不存在'} · AI侦探剧场`;
@@ -42,12 +45,15 @@ export default function InvestigationApp() {
         {state.kind === 'loading' ? <p role="status" className="py-12 text-stone-300">正在连接后端并恢复调查…</p> : null}
         {state.kind === 'failed' ? <section role="alert" className="rounded-xl border border-amber-200/20 p-6"><p>{state.message}</p><p className="mt-2 text-sm text-stone-400">请确认后端已启动；若刚更新过项目，请先刷新页面，再重新连接。原存档与待处理请求会保留。</p><button type="button" onClick={() => void reconnect()} className="mt-4 rounded-lg border border-amber-200 px-4 py-2">重新连接</button></section> : null}
         {ready ? <>
-          {ready.snapshot.caseId === 'vicarage_study' && ready.snapshot.caseRevision < 15 ? <section role="status" className="mb-5 rounded-xl border border-white/20 p-4 text-sm leading-7 text-stone-300">已恢复原修订的调查，进度与待处理请求保持不变。若要体验树林查访与晶体初步辨认，请用右上角“新建调查”进入当前修订；原调查仍保留在服务器。</section> : null}
+          {ready.snapshot.caseId === 'vicarage_study' && ready.snapshot.caseRevision < 16 ? <section role="status" className="mb-5 rounded-xl border border-white/20 p-4 text-sm leading-7 text-stone-300">已恢复原修订的调查，进度与待处理请求保持不变。若要体验推理提交与复盘，请用右上角“新建调查”进入当前修订；原调查仍保留在服务器。</section> : null}
           {ready.mutation.kind === 'outcomeUnknown' ? <section role="alert" className="mb-5 rounded-xl border border-amber-200/30 p-4"><p>{ready.mutation.problem}</p><button type="button" onClick={retry} className="mt-3 rounded-lg border border-amber-200 px-4 py-2">用原请求重试</button></section> : null}
           {ready.mutation.kind === 'awaitingSnapshot' ? <section role="status" className="mb-5 rounded-xl border border-amber-200/30 p-4"><p>{ready.mutation.problem}</p><button type="button" onClick={() => void reconnect()} className="mt-3 rounded-lg border border-amber-200 px-4 py-2">重新读取视图</button></section> : null}
           <CaseClockPanel clock={ready.snapshot.clock} disabled={disabled} onWait={investigation.advanceTime}/>
           {page !== '/case' ? <StagePanel stage={ready.snapshot.stage} compact/> : null}
           <div ref={content} tabIndex={-1} className="outline-none">
+            {page === '/conclusion' ? <ConclusionPage snapshot={ready.snapshot} disabled={disabled} onSubmit={investigation.conclude}
+              draft={conclusionDraft?.sessionId === ready.snapshot.sessionId ? conclusionDraft.value : emptyConclusionDraft}
+              onChange={value => setConclusionDraft({ sessionId: ready.snapshot.sessionId, value })}/> : null}
             {page === '/map' ? <MapPage key={ready.snapshot.sessionId} map={ready.snapshot.areaMap}/> : null}
             {page === '/case' ? <CasePage snapshot={ready.snapshot} onSelect={investigation.select}/> : null}
             {page === '/people' ? <PeoplePage snapshot={ready.snapshot} onSelect={investigation.select}/> : null}
@@ -62,7 +68,7 @@ export default function InvestigationApp() {
           <p role="status" aria-live="polite" className="mt-5 min-h-6 text-sm text-amber-100">{ready.mutation.kind === 'submitting' ? '正在提交调查…' : ready.notice}</p>
         </> : null}
       </>}
-      <footer className="mt-7 border-t border-white/10 pt-5 text-xs text-stone-500">课程项目 · 《牧师寓所谋杀案》首阶段 · 人物问询 · 调查自动保存</footer>
+      <footer className="mt-7 border-t border-white/10 pt-5 text-xs text-stone-500">课程项目 · 《牧师寓所谋杀案》 · 现场调查 · 人物问询 · 推理复盘</footer>
     </div>
   </main>;
 }

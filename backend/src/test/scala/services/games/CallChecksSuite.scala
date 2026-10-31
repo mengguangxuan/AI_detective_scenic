@@ -62,7 +62,7 @@ class CallChecksSuite extends FunSuite:
     (for
       _ <- setup(url,id)
       initial <- view(url,id)
-      _ = assertEquals(initial.caseRevision,Revision(15))
+      _ = assertEquals(initial.caseRevision,Revision(16))
       _ = assert(initial.externalChecks.filter(_.id.value.startsWith("call_")).forall(!_.available))
       early <- request(url,id,"call_origin").attempt
       _ = assertEquals(code(early),Some(ErrorCode.ConditionFailed))

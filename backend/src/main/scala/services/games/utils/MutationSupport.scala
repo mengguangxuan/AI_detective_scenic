@@ -48,6 +48,11 @@ private[games] object MutationSupport:
   private[games] def advanceTimeDigest(user: UserId,session: SessionId,request: RequestId,expected: Sequence,minutes: Int): String =
     digest(user,session,request,expected,Json.obj("kind" -> Json.fromString("AdvanceTime"),"minutes" -> minutes.asJson))
 
+  private[games] def conclusionDigest(user: UserId,session: SessionId,request: RequestId,expected: Sequence,
+      suspects: Set[PersonId],evidence: Set[ClueId],explanation: String): String =
+    digest(user,session,request,expected,Json.obj("kind" -> Json.fromString("SubmitConclusion"),
+      "suspects" -> suspects.toVector.sortBy(_.value).asJson,"evidence" -> evidence.toVector.sortBy(_.value).asJson,"explanation" -> explanation.asJson))
+
   // Keep the exact original JSON bytes so stored receipt digests remain valid.
   private def digest(user: UserId,session: SessionId,request: RequestId,expected: Sequence,command: Json): String =
     val payload=Json.obj("user" -> user.asJson,"session" -> session.asJson,"request" -> request.asJson,

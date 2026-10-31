@@ -19,7 +19,7 @@ test('case briefing and public profiles lead into the same investigation without
   page.on('pageerror', error => errors.push(error.message));
   await page.goto('/case');
   await expect(page.getByRole('heading', { name: '案件简介', exact: true })).toBeVisible();
-  await expect(page.getByRole('navigation', { name: '调查导航' }).getByRole('link')).toHaveCount(8);
+  await expect(page.getByRole('navigation', { name: '调查导航' }).getByRole('link')).toHaveCount(9);
   await expect(page.getByRole('region', { name: '阶段目标', exact: true })).toContainText('雷丁已向警方自首');
   await expect(page.locator('canvas')).toHaveCount(0);
   await expect(page.getByRole('button', { name: '发送问题' })).toHaveCount(0);

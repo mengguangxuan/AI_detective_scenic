@@ -1,3 +1,4 @@
+import { personIdSchema } from '../../../objects/PersonId';
 import { z } from 'zod';
 import { externalCheckIdSchema } from '../../../objects/ExternalCheckId';
 import { witnessIdSchema } from '../../../objects/WitnessId';
@@ -10,6 +11,7 @@ import { clueIdSchema } from '../../../objects/ClueId';
 import { timeAssessmentSchema } from '../../../apis/games/objects/TimeAssessment';
 const meta = { sessionId: sessionIdSchema, requestId: requestIdSchema, expectedSequence: z.number().int().nonnegative().safe() };
 export const pendingCommandSchema = z.discriminatedUnion('kind', [
+  z.object({ kind: z.literal('conclude'), ...meta, suspects: z.array(personIdSchema).min(1), evidence: z.array(clueIdSchema).min(1).max(50), explanation: z.string().min(10).max(1000) }).strict(),
   z.object({ kind: z.literal('check'), ...meta, check: externalCheckIdSchema }).strict(),
   z.object({ kind: z.literal('wait'), ...meta, minutes: z.number().int().min(1).max(30) }).strict(),
   z.object({ kind: z.literal('execute'), ...meta, operation: operationIdSchema }).strict(),

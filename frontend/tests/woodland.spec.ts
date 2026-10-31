@@ -33,7 +33,7 @@ test('independent woodland route collects a sample, obtains a tentative opinion 
   const errors: string[] = []; page.on('pageerror', error => errors.push(error.message));
   await page.goto('/police');
   await expect(page.getByRole('heading', { name: '警方交流', exact: true })).toBeVisible();
-  expect((await snapshot(page)).caseRevision.value).toBe(15);
+  expect((await snapshot(page)).caseRevision.value).toBe(16);
   await expect(page.getByRole('button', { name: '申请查访树林声响附近现场', exact: true })).toBeDisabled();
   await expect(page.getByRole('region', { name: '核查进展', exact: true })).not.toContainText('苦味酸');
   await fixedPerson(page, '玛丽', '询问：树林方向那声响是什么时候？');
@@ -76,7 +76,7 @@ test.describe('actual previous revision compatibility', () => {
   test.use({ storageState: '.build-cache/pre-woodland-v14-state.json' });
   test('revision 14 retains completed calls without new woodland checks', async ({ page }) => {
     await page.goto('/police');
-    await expect(page.getByRole('status').filter({ hasText: '已恢复原修订的调查' })).toContainText('树林查访与晶体初步辨认');
+    await expect(page.getByRole('status').filter({ hasText: '已恢复原修订的调查' })).toContainText('原调查仍保留在服务器');
     const state = await snapshot(page);
     expect(state.caseRevision.value).toBe(14);
     expect(state.externalChecks).toHaveLength(7);

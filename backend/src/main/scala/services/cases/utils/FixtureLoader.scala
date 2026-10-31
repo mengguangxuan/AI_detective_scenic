@@ -7,7 +7,7 @@ import services.cases.objects.*
 import services.system.objects.*
 import services.cases.objects.scene.{FixtureNode, FixturePoint, SceneObservation, SceneObjectBinding, AreaMap}
 import services.cases.objects.content.{FixtureFact, FixtureClue}
-import services.cases.objects.investigation.{EntityOpenRequirement, ExternalCheckSpec, FixtureEffect, FixtureOperation, FixtureRoute, InvestigationClock, InvestigationStage, WitnessAnswer, WitnessFollowUpSpec, StatementComparisonSpec}
+import services.cases.objects.investigation.{EntityOpenRequirement, ExternalCheckSpec, FixtureEffect, FixtureOperation, FixtureRoute, InvestigationClock, InvestigationStage, WitnessAnswer, WitnessFollowUpSpec, StatementComparisonSpec, CaseConclusionSpec}
 
 private[cases] object FixtureLoader:
   private def check(ok: Boolean, message: String, cursor: HCursor): Decoder.Result[Unit] =
@@ -189,6 +189,7 @@ private[cases] object FixtureLoader:
       clock <- investigation.hcursor.get[Option[InvestigationClock]]("clock")
       checks <- investigation.hcursor.get[Option[Vector[ExternalCheckSpec]]]("externalChecks").map(_.getOrElse(Vector.empty))
       followUps <- investigation.hcursor.get[Option[Vector[WitnessFollowUpSpec]]]("followUps").map(_.getOrElse(Vector.empty))
+      conclusion <- investigation.hcursor.get[Option[CaseConclusionSpec]]("conclusion")
       comparisons <- investigation.hcursor.get[Option[Vector[StatementComparisonSpec]]]("statementComparisons").map(_.getOrElse(Vector.empty))
       placeIds <- places.traverse(_.hcursor.get[PlaceId]("id"))
       _ <- check(placeIds.distinct.size == placeIds.size && areaMap.forall(_.locations.forall(l => placeIds.contains(l.id))),"publicInfo.background.areaMap.locations：地点不在world.places中或world.places有重复编号",c)
@@ -202,7 +203,7 @@ private[cases] object FixtureLoader:
         case _ => true
       }, "investigation.operations.effects：效果引用了未知实体", c)
       _ <- check(operations.forall(_.openedRequirement.forall(r => entityIds.contains(r.entity))),"investigation.operations.openedRequirement：前提引用了未知实体",c)
-      content = CaseContent(place, placeName, time, origin, position, nodes, points, facts, clues, routes, operations, opened, unlocked, common, observations, stage, sceneObjects, people._2, people._3, people._1, areaMap, clock, checks, followUps, comparisons)
+      content = CaseContent(place, placeName, time, origin, position, nodes, points, facts, clues, routes, operations, opened, unlocked, common, observations, stage, sceneObjects, people._2, people._3, people._1, areaMap, clock, checks, followUps, comparisons, conclusion)
       record = CaseRevisionRecord(caseId, revision, 1, title, content)
       _ <- validation(record).left.map(message => DecodingFailure(message,c.history))
     yield record).left.map(error => GameError(ErrorCode.InvalidValue, s"案件数据不合法：${error.getMessage}"))
@@ -224,6 +225,15 @@ private[cases] object FixtureLoader:
   private[cases] def validation(record: CaseRevisionRecord): Either[String, Unit] =
     val f = record.content
     for
+      _ <- f.conclusion.traverse_ { spec =>
+        val people=f.publicPersons.map(_.id).toSet
+        val clues=f.clues.map(_.id).toSet
+        rule(spec.candidates.nonEmpty && spec.candidates.subsetOf(people) && spec.culprits.nonEmpty && spec.culprits.subsetOf(spec.candidates) &&
+          spec.evidenceGroups.size == 5 && spec.evidenceGroups.map(_.label).distinct.size == 5 &&
+          spec.evidenceGroups.forall(g => g.label.trim.nonEmpty && g.requiredClues.nonEmpty && g.requiredClues.subsetOf(clues)) &&
+          spec.review.trim.nonEmpty && spec.review.length <= 8000,
+          "investigation.conclusion", "人物、评分材料或复盘配置不合法")
+      }
       _ <- validateHeader(record)
       _ <- validateScene(f)
       _ <- validateClues(f)

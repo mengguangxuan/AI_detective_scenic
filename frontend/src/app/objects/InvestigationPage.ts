@@ -7,6 +7,7 @@ export const investigationPages = [
   { path: '/people', label: '人物档案' },
   { path: '/interviews', label: '人物问询' },
   { path: '/police', label: '警方交流' },
+  { path: '/conclusion', label: '推理与复盘' },
   { path: '/journal', label: '调查日志' },
 ] as const;
 export type InvestigationPage = typeof investigationPages[number]['path'];

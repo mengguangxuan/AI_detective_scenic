@@ -7,7 +7,7 @@ import services.cases.utils.LegacyPoliceProfile
 import services.cases.objects.scene.{FixtureNode, FixturePoint, SceneObservation, SceneObjectBinding, AreaMap}
 import services.cases.objects.content.{FixtureFact, FixtureClue, CasePersonBrief}
 import services.cases.objects.dialogue.WitnessProfile
-import services.cases.objects.investigation.{ExternalCheckSpec, FixtureOperation, FixtureRoute, InvestigationClock, InvestigationStage, WitnessFollowUpSpec, StatementComparisonSpec}
+import services.cases.objects.investigation.{ExternalCheckSpec, FixtureOperation, FixtureRoute, InvestigationClock, InvestigationStage, WitnessFollowUpSpec, StatementComparisonSpec, CaseConclusionSpec}
 
 
 final case class CaseContent(place: PlaceId, placeName: String, initialStoryTimeSeconds: Long, timeOriginLabel: String,
@@ -19,7 +19,7 @@ final case class CaseContent(place: PlaceId, placeName: String, initialStoryTime
   witnesses: Vector[WitnessProfile] = Vector.empty, police: Option[WitnessId] = None,
   publicPersons: Vector[CasePersonBrief] = Vector.empty, areaMap: Option[AreaMap] = None,
   clock: Option[InvestigationClock] = None, externalChecks: Vector[ExternalCheckSpec] = Vector.empty,
-  followUps: Vector[WitnessFollowUpSpec] = Vector.empty, statementComparisons: Vector[StatementComparisonSpec] = Vector.empty)
+  followUps: Vector[WitnessFollowUpSpec] = Vector.empty, statementComparisons: Vector[StatementComparisonSpec] = Vector.empty, conclusion: Option[CaseConclusionSpec] = None)
 
 object CaseContent:
   given Encoder[CaseContent] = deriveEncoder[CaseContent]

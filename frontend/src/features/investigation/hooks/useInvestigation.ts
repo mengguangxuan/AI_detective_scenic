@@ -1,3 +1,5 @@
+import { SubmitConclusionAPI } from '../../../apis/games/SubmitConclusionAPI';
+import type { PersonId } from '../../../objects/PersonId';
 import type { ExternalCheckId } from '../../../objects/ExternalCheckId';
 import { RequestExternalCheckAPI } from '../../../apis/games/RequestExternalCheckAPI';
 import { AdvanceTimeAPI } from '../../../apis/games/AdvanceTimeAPI';
@@ -85,6 +87,7 @@ export function useInvestigation() {
     try {
       const result = await (async () => {
         switch (command.kind) {
+          case 'conclude': return new SubmitConclusionAPI(command.sessionId, command.requestId, command.expectedSequence, command.suspects, command.evidence, command.explanation).send();
           case 'check': return new RequestExternalCheckAPI(command.sessionId, command.requestId, command.expectedSequence, command.check).send();
           case 'wait': return new AdvanceTimeAPI(command.sessionId, command.requestId, command.expectedSequence, command.minutes).send();
           case 'execute': return new ExecuteOperationAPI(command.sessionId, command.requestId, command.expectedSequence, command.operation).send();
@@ -176,11 +179,18 @@ export function useInvestigation() {
     if (state.kind !== 'ready' || state.mutation.kind !== 'idle' || !state.snapshot.clock || !Number.isInteger(minutes) || minutes < 1 || minutes > 30) return;
     void submit({ kind: 'wait', sessionId: state.snapshot.sessionId, requestId: requestIdSchema.parse(crypto.randomUUID()), expectedSequence: state.snapshot.sequence, minutes });
   }
+  function conclude(suspects: readonly PersonId[], evidence: readonly ClueId[], explanation: string) {
+    if (state.kind !== 'ready' || state.mutation.kind !== 'idle' || state.snapshot.conclusion ||
+      !suspects.length || suspects.some(id => !state.snapshot.conclusionCandidates.includes(id)) || !evidence.length || evidence.length > 50 ||
+      evidence.some(id => !state.snapshot.clues.some(c => c.id === id)) || explanation.trim().length < 10 || explanation.length > 1000) return;
+    void submit({ kind: 'conclude', sessionId: state.snapshot.sessionId, requestId: requestIdSchema.parse(crypto.randomUUID()),
+      expectedSequence: state.snapshot.sequence, suspects: [...suspects], evidence: [...evidence], explanation });
+  }
   function reset() {
     if (inFlight.current || (state.kind === 'ready' && state.mutation.kind !== 'idle')) return;
     if (!window.confirm('新建一次调查？原会话保留在服务器，当前页面将切换到新会话。')) return;
     try { newBrowserSession(); void reconnect(); }
     catch { setState({ kind: 'failed', message: '无法保存新会话编号；没有提交新建请求。' }); }
   }
-  return { state, requestCheck, advanceTime, lastReply, select, observe, overview, inspect, compare, ask, report, execute, investigate, reconnect, retry, reset };
+  return { state, conclude, requestCheck, advanceTime, lastReply, select, observe, overview, inspect, compare, ask, report, execute, investigate, reconnect, retry, reset };
 }

@@ -3,7 +3,10 @@ import services.cases.objects.*
 
 // Test-only reconstruction of the preceding published feature set.
 private[games] object LegacyFixture:
-  def withoutWoodland(current: CaseContent): CaseContent =
+  def withoutConclusion(current: CaseContent): CaseContent = current.copy(conclusion=None)
+
+  def withoutWoodland(latest: CaseContent): CaseContent =
+    val current=withoutConclusion(latest)
     val clues=Set("clue_woodland_sample","clue_crystal_opinion","clue_police_woodland_review").map(ClueId.apply)
     val routes=current.routes.filter(_.clues.exists(clues)).map(_.id).toSet
     val facts=current.clues.filter(c => clues(c.id)).flatMap(_.facts).toSet
