@@ -29,10 +29,13 @@ object ReasoningEndingMode:
   given Encoder[ReasoningEndingMode] = Encoder.encodeString.contramap(_.toString)
   given Decoder[ReasoningEndingMode] = Decoder.decodeString.emap(s => ReasoningEndingMode.values.find(_.toString == s).toRight("Unknown reasoning ending"))
 
-final case class ReasoningEnding(sequence: Sequence, mode: ReasoningEndingMode, review: String)
+final case class ReasoningEnding(sequence: Sequence, mode: ReasoningEndingMode, review: String, sections: Vector[ReasoningReviewSection] = Vector.empty)
 object ReasoningEnding:
-  given Encoder[ReasoningEnding] = deriveEncoder[ReasoningEnding]
-  given Decoder[ReasoningEnding] = deriveDecoder[ReasoningEnding]
+  private val encoder: Encoder[ReasoningEnding] = deriveEncoder[ReasoningEnding]
+  given Encoder[ReasoningEnding] = encoder.mapJson(_.mapObject(o =>
+    if o("sections").exists(_.asArray.exists(_.isEmpty)) then o.remove("sections") else o))
+  given Decoder[ReasoningEnding] = deriveDecoder[ReasoningEnding].prepare(_.withFocus(_.mapObject(o =>
+    if o.contains("sections") then o else o.add("sections",io.circe.Json.arr()))))
 
 final case class ReasoningProgress(attempts: Vector[ReasoningAttempt], ending: Option[ReasoningEnding])
 object ReasoningProgress:

@@ -8,7 +8,7 @@ async function snapshot(page: Page) {
 test('Clement recollections are actually asked, survive a lost response and remain separate from a murder conclusion', async ({ page }) => {
   await page.goto('/interviews');
   await page.getByRole('button', { name: '与克莱门特牧师交谈', exact: true }).click();
-  expect((await snapshot(page)).caseRevision.value).toBe(19);
+  expect((await snapshot(page)).caseRevision.value).toBe(20);
   expect((await snapshot(page)).clues).toHaveLength(0);
   const detail = page.locator('details').filter({ has: page.getByText('固定问答与材料笔记（备用）', { exact: true }) });
   await detail.locator('summary').click();

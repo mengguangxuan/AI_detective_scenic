@@ -129,7 +129,10 @@ private[games] object ReasoningRules:
   yield
     val sequence=Sequence(state.sequence.value+1)
     val mode=if abandon then ReasoningEndingMode.Revealed else ReasoningEndingMode.Solved
-    val ending=ReasoningEnding(sequence,mode,spec.review)
+    val cited=state.reasoning.attempts.lastOption.map(_.evidence).getOrElse(Set.empty)
+    val sections=spec.reviewSections.map(s => ReasoningReviewSection(s.title,s.explanation,s.boundary,
+      content.clues.filter(c => state.clues(c.id) && s.relatedClues(c.id)).map(c => ReviewMaterial(c.id,c.title.value,c.text.value,cited(c.id)))))
+    val ending=ReasoningEnding(sequence,mode,spec.review,sections)
     val next=state.copy(sequence=sequence,reasoning=state.reasoning.copy(ending=Some(ending)))
     val text=if abandon then "已记录主动查看作者解答；本次未作为推理破案。" else "已记录推理成立后的结案，可以查看作者复盘。"
     val record=SessionRecord(RecordId(s"${request.value}:reasoning-ending"),state.id,request,sequence,state.storyTimeSeconds,point,Some(RouteId("reveal_reasoning")),None,text,Set.empty,Set.empty)

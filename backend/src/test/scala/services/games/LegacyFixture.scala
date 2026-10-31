@@ -3,7 +3,11 @@ import services.cases.objects.*
 
 // Test-only reconstruction of the preceding published feature set.
 private[games] object LegacyFixture:
-  def withoutBeforeCrime(current: CaseContent): CaseContent =
+  def withoutReview(current: CaseContent): CaseContent = current.copy(conclusion=current.conclusion.map(s =>
+    s.copy(reviewSections=Vector.empty,review=s.review.replace("已保存的原文、引用和评审反馈保持不变。","已提交的原文、引用和分数保持不变。"))))
+
+  def withoutBeforeCrime(latest: CaseContent): CaseContent =
+    val current=withoutReview(latest)
     val clues=Set(ClueId("clue_clement_relationship"),ClueId("clue_clement_early_visit"))
     val routes=current.routes.filter(_.clues.exists(clues)).map(_.id).toSet
     val facts=current.clues.filter(c => clues(c.id)).flatMap(_.facts).toSet

@@ -33,7 +33,7 @@ test('independent woodland route collects a sample, obtains a tentative opinion 
   const errors: string[] = []; page.on('pageerror', error => errors.push(error.message));
   await page.goto('/police');
   await expect(page.getByRole('heading', { name: '警方交流', exact: true })).toBeVisible();
-  expect((await snapshot(page)).caseRevision.value).toBe(19);
+  expect((await snapshot(page)).caseRevision.value).toBe(20);
   await expect(page.getByRole('button', { name: '申请查访树林声响附近现场', exact: true })).toBeDisabled();
   await expect(page.getByRole('region', { name: '核查进展', exact: true })).not.toContainText('苦味酸');
   await fixedPerson(page, '玛丽', '询问：树林方向那声响是什么时候？');

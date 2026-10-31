@@ -76,7 +76,7 @@ class NewWitnessSuite extends FunSuite:
     (for
       _ <- setup(url,id)
       initial <- view(url,id)
-      _ = assertEquals(initial.caseRevision,Revision(19))
+      _ = assertEquals(initial.caseRevision,Revision(20))
       _ = assertEquals(initial.people.size,14)
       _ = assertEquals(initial.witnesses.map(_.id).toSet,Set("clement","mary","redding","marple","melchett").map(WitnessId.apply))
       _ = assert(initial.people.find(_.id == PersonId("anne")).get.victimRelation.contains("妻子"))

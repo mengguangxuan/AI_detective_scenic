@@ -231,6 +231,9 @@ private[cases] object FixtureLoader:
         rule(spec.candidates.nonEmpty && spec.candidates.subsetOf(people) && spec.culprits.nonEmpty && spec.culprits.subsetOf(spec.candidates) &&
           spec.evidenceGroups.size == 5 && spec.evidenceGroups.map(_.label).distinct.size == 5 &&
           spec.evidenceGroups.forall(g => g.label.trim.nonEmpty && g.requiredClues.nonEmpty && g.requiredClues.subsetOf(clues)) &&
+          spec.reviewSections.size <= 10 && spec.reviewSections.map(_.title).distinct.size == spec.reviewSections.size &&
+          spec.reviewSections.forall(s => s.title.trim.nonEmpty && s.title.length <= 100 && s.explanation.trim.nonEmpty && s.explanation.length <= 3000 &&
+            s.boundary.trim.nonEmpty && s.boundary.length <= 1500 && s.relatedClues.nonEmpty && s.relatedClues.subsetOf(clues)) &&
           spec.review.trim.nonEmpty && spec.review.length <= 8000 && spec.evaluation.forall(e =>
             e.truth.trim.nonEmpty && e.truth.length <= 40000 && e.criteria.nonEmpty && e.criteria.size <= 10 &&
             e.criteria.map(_.id).distinct.size == e.criteria.size && e.criteria.forall(c =>

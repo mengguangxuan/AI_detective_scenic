@@ -31,6 +31,15 @@ class FixtureValidationSuite extends FunSuite:
     }
   }
 
+  test("review sections reject unknown clues and duplicate themes without publishing answer text") {
+    val spec=original.content.conclusion.get
+    val first=spec.reviewSections.head
+    val unknown=spec.copy(reviewSections=Vector(first.copy(relatedClues=Set(ClueId("missing")))))
+    rejected(original.copy(content=original.content.copy(conclusion=Some(unknown))),"investigation.conclusion")
+    val duplicate=spec.copy(reviewSections=Vector(first,first))
+    rejected(original.copy(content=original.content.copy(conclusion=Some(duplicate))),"investigation.conclusion")
+  }
+
   test("node cycles and missing parents identify the offending scene entry") {
     val f = original.content
     val head = f.nodes.head

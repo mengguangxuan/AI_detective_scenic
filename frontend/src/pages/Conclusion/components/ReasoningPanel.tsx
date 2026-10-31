@@ -3,6 +3,7 @@ import type { ReasoningProgress } from '../../../apis/games/objects/ReasoningPro
 import type { useInvestigation } from '../../../features/investigation/hooks/useInvestigation';
 import type { ConclusionDraft } from '../objects/ConclusionDraft';
 import InvestigationLink from '../../../app/components/InvestigationLink';
+import ReviewComparison from './ReviewComparison';
 type Props = { snapshot: InvestigationSnapshot; progress: ReasoningProgress; disabled: boolean; draft: ConclusionDraft;
   onChange: (draft: ConclusionDraft) => void; onEvaluate: ReturnType<typeof useInvestigation>['evaluate']; onReveal: ReturnType<typeof useInvestigation>['revealReasoning'] };
 const statusText = { Revise: '继续推敲', Established: '核心推理成立', Unavailable: '评审暂不可用', Rejected: '评审未完成' } as const;
@@ -11,7 +12,7 @@ export default function ReasoningPanel({ snapshot, progress, disabled, draft, on
   return <section aria-labelledby="reasoning-title" className="space-y-5">
     <div><h2 id="reasoning-title" className="text-xl font-medium">推理与复盘</h2><p className="mt-2 text-sm leading-7 text-stone-400">提交你的解释，依据反馈继续调查、修改和论证。评审不会自动展示完整解答。</p></div>
     <section aria-label="推理评审记录" className="space-y-4">
-      {!progress.attempts.length ? <p className="text-sm text-stone-400">尚未提交推理。先取得材料，再写下你的判断。</p> : progress.attempts.map((a, index) => <details key={a.requestId} open={index === progress.attempts.length - 1} className="rounded-xl border border-white/15 p-5">
+      {!progress.attempts.length ? <p className="text-sm text-stone-400">尚未提交推理。先取得材料，再写下你的判断。</p> : progress.attempts.map((a, index) => <details key={a.requestId} open={!progress.ending && index === progress.attempts.length - 1} className="rounded-xl border border-white/15 p-5">
         <summary className="cursor-pointer text-amber-100">第{index + 1}次推理 · {statusText[a.status]}</summary>
         <p className="mt-4 whitespace-pre-wrap text-sm leading-7" role="status">{a.feedback}</p>
         {a.checks.length ? <ul className="mt-3 space-y-1 text-sm text-stone-400">{a.checks.map(c => <li key={c.id}>{c.label} · {c.satisfied ? '已有支持' : '仍需论证'}</li>)}</ul> : null}
@@ -21,10 +22,7 @@ export default function ReasoningPanel({ snapshot, progress, disabled, draft, on
         {!progress.ending && !established ? <button type="button" disabled={disabled} onClick={() => onChange({ suspects: [...a.suspects], evidence: [...a.evidence], explanation: a.explanation, reveal: false })} className="mt-3 rounded-lg border border-white/25 px-3 py-2 text-sm disabled:opacity-40">以第{index + 1}次推理继续修改</button> : null}
       </details>)}
     </section>
-    {progress.ending ? <section aria-label="本案收尾与复盘" className="rounded-xl border border-amber-200/25 p-5">
-      <h3 className="text-lg text-amber-100">{progress.ending.mode === 'Solved' ? '已记录推理成立后的结案' : '已主动查看解答 · 本次未计为破案'}</h3>
-      <p className="mt-4 whitespace-pre-wrap break-words text-sm leading-7 text-stone-300">{progress.ending.review}</p>
-    </section> : established ? <section aria-label="结案选择" className="rounded-xl border border-amber-200/25 p-5">
+    {progress.ending ? <ReviewComparison ending={progress.ending} attempt={progress.attempts.at(-1)} people={snapshot.people} clues={snapshot.clues}/> : established ? <section aria-label="结案选择" className="rounded-xl border border-amber-200/25 p-5">
       <p className="text-sm leading-7">本次核心解释已通过评审。你可以继续调查，或确认结案后查看完整复盘。</p>
       <button type="button" disabled={disabled} onClick={() => onReveal(false)} className="mt-4 rounded-lg border border-amber-200 px-4 py-2 text-sm disabled:opacity-40">结案并查看复盘</button>
     </section> : <>

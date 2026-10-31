@@ -47,6 +47,11 @@ export const investigationSnapshotSchema = z.object({
     if (ending && (ending.sequence > snapshot.sequence || (attempts.length && ending.sequence <= attempts.at(-1)!.sequence) ||
       (ending.mode === 'Solved' && attempts.at(-1)?.status !== 'Established')))
       context.addIssue({ code: 'custom', message: '推理收尾与已保存评审不一致' });
+    if (ending && (new Set(ending.sections.map(s => s.title)).size !== ending.sections.length || ending.sections.some(s =>
+      new Set(s.materials.map(m => m.id)).size !== s.materials.length || s.materials.some(m =>
+        !snapshot.clues.some(c => c.id === m.id && c.title === m.title && c.text === m.text) ||
+        m.cited !== (attempts.at(-1)?.evidence.includes(m.id) ?? false)))))
+      context.addIssue({ code: 'custom', message: '结案对照超出已获材料或与末次引用不一致' });
   }
   if (snapshot.conclusionCandidates.some(id => !snapshot.people.some(p => p.id === id))) context.addIssue({ code: 'custom', message: '推理人物不在公开资料中' });
   const result = snapshot.conclusion;

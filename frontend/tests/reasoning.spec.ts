@@ -11,7 +11,7 @@ async function setup(page: Page) {
   await page.goto('/conclusion');
   await expect(page.getByRole('heading', { name: '推理与复盘', exact: true })).toBeVisible();
   const first = await snapshot(page);
-  expect(first.caseRevision.value).toBe(19); expect(first.reasoning.ending).toBeNull();
+  expect(first.caseRevision.value).toBe(20); expect(first.reasoning.ending).toBeNull();
   expect(JSON.stringify(first)).not.toContain('authorTruth'); expect(JSON.stringify(first)).not.toContain('预藏枪');
   await go(page, '人物问询');
   await page.getByRole('button', { name: '与克莱门特牧师交谈', exact: true }).click();
@@ -79,7 +79,10 @@ test('repeat assessments preserve prior reasoning; lost replies retry once and s
   await page.getByRole('button', { name: '结案并查看复盘', exact: true }).click();
   await expect(page.getByRole('region', { name: '本案收尾与复盘', exact: true })).toContainText('已记录推理成立后的结案');
   const done = await save(page, 'reasoning-solved');
-  expect(done.reasoning.ending.mode).toBe('Solved'); expect(done.clues).toEqual(passed.clues);
+  expect(done.reasoning.ending.mode).toBe('Solved');
+  expect(done.reasoning.ending.sections).toHaveLength(6);
+  await expect(page.getByRole('region', { name: '结案前最后一次推理', exact: true })).toContainText('协议验收：论证成立');
+  await expect(page.getByRole('region', { name: '结案时的材料对照', exact: true })).toContainText('牧师接到的电话 · 末次已引用'); expect(done.clues).toEqual(passed.clues);
   expect(done.stage.completed).toBe(false); expect(done.police.sharedClues).toEqual(before.police.sharedClues);
   await page.reload(); expect(await snapshot(page)).toEqual(done);
   await page.setViewportSize({ width: 390, height: 844 });

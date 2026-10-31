@@ -18,7 +18,7 @@ class Investigation {
     return r.json();
   }
   async refresh() { this.state = await this.post('getinvestigationsnapshot', { sessionId: this.sessionId }); return this.state; }
-  async start() { await this.post('openlocalidentity'); this.state = await this.post('openstudy', { sessionId: this.sessionId }); assert.equal(this.state.caseRevision.value, 19); }
+  async start() { await this.post('openlocalidentity'); this.state = await this.post('openstudy', { sessionId: this.sessionId }); assert.equal(this.state.caseRevision.value, 20); }
   async change(name, payload) {
     const request = { sessionId: this.sessionId, requestId: randomUUID(), expectedSequence: this.state.sequence, ...payload };
     const receipt = await this.post(name, request); await this.refresh(); return { request, receipt };
@@ -105,6 +105,27 @@ async function restore() {
   }
 }
 if (process.argv.includes('--restore')) await restore();
+else if (process.argv.includes('--positive')) {
+  const game = new Investigation();
+  if (process.argv.includes('--resume')) {
+    const storage = JSON.parse(readFileSync(cache + 'completion-live-open-state.json', 'utf8'));
+    game.cookie = storage.cookies.map(c => c.name + '=' + c.value).join('; ');
+    game.sessionId = JSON.parse(storage.origins[0].localStorage[0].value).sessionId; await game.refresh();
+    assert.equal(game.state.caseRevision.value, 20); assert.equal(game.state.reasoning.ending, null);
+  } else await collect(game);
+  await assess(game, 'supported_reconstruction', correct, 'Established');
+  await game.change('revealreasoning', { abandon: false });
+  assert.equal(game.state.reasoning.ending.mode, 'Solved');
+  assert.equal(game.state.reasoning.ending.sections.length, 6);
+  const cited = new Set(game.state.reasoning.attempts.at(-1).evidence);
+  for (const section of game.state.reasoning.ending.sections) for (const m of section.materials) {
+    const acquired = game.state.clues.find(c => c.id === m.id);
+    assert(acquired && acquired.title === m.title && acquired.text === m.text);
+    assert.equal(m.cited, cited.has(m.id));
+  }
+  game.save('completion-live-solved');
+  console.log('Real model: explicit ending saved with six frozen evidence comparisons.');
+}
 else if (process.argv.includes('--paraphrase')) {
   const storage = JSON.parse(readFileSync(cache + 'completion-live-paraphrase-state.json', 'utf8'));
   const game = new Investigation(); game.cookie = storage.cookies.map(c => c.name + '=' + c.value).join('; ');
@@ -117,7 +138,7 @@ else {
     const storage = JSON.parse(readFileSync(cache + 'completion-live-open-state.json', 'utf8'));
     first.cookie = storage.cookies.map(c => c.name + '=' + c.value).join('; ');
     first.sessionId = JSON.parse(storage.origins[0].localStorage[0].value).sessionId; await first.refresh();
-    assert.equal(first.state.caseRevision.value, 19); assert.equal(first.state.reasoning.ending, null);
+    assert.equal(first.state.caseRevision.value, 20); assert.equal(first.state.reasoning.ending, null);
   } else await collect(first, true);
   await assess(first, 'names_and_motive_only', '我选择安妮和雷丁，因为他们相爱、想摆脱上校。其他手法、时刻和材料间的联系我暂时解释不出来，先凭这个就算破案吧。', 'Revise');
   await assess(first, 'wrong_shooter_and_time', '两人相爱想摆脱上校，所以一定是雷丁在18:45独自开枪，安妮只在之后帮他逃走。树林的响声就是这一枪，座钟和纸上时间都完全准确。因为两人都认罪，所以没有必要解释任何矛盾，也不必考虑更早的作案机会。', 'Revise');

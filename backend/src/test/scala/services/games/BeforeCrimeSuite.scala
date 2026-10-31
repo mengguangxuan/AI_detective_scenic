@@ -32,7 +32,7 @@ class BeforeCrimeSuite extends FunSuite:
     val url=database;val id=SessionId(UUID.randomUUID().toString)
     (for
       first <- setup(url,id)
-      _ = assertEquals(first.caseRevision,Revision(19))
+      _ = assertEquals(first.caseRevision,Revision(20))
       _ = assert(first.clues.isEmpty)
       _ = assert(!first.asJson.noSpaces.contains("周三傍晚"))
       command=read(id,first.sequence,"early_visit")
