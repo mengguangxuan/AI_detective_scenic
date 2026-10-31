@@ -11,7 +11,7 @@ import scala.util.Using
 import services.models.api.ChatCompletionClient
 import services.models.objects.{ChatCompletionInput, ModelApiSettings}
 
-private[models] final class DeepSeekChatClient(settings: ModelApiSettings) extends ChatCompletionClient:
+private[models] final class OpenAICompatibleChatClient(settings: ModelApiSettings) extends ChatCompletionClient:
   private val client = HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(5))
     .followRedirects(HttpClient.Redirect.NEVER).build()
   override def complete(input: ChatCompletionInput): IO[String] =

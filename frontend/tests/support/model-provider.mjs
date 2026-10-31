@@ -1,11 +1,12 @@
 // Local protocol fixture only. No external model calls and no real credentials.
 import http from 'node:http';
 const approvedKey = 'Bearer dummy-browser-key';
+const completionPaths = new Set(['/chat/completions', '/v1/chat/completions']);
 const server = http.createServer(async (request, response) => {
   if (request.url === '/shutdown' && request.method === 'POST') {
     response.end('stopping'); server.close(); return;
   }
-  if (request.url !== '/chat/completions' || request.method !== 'POST') { response.writeHead(404).end(); return; }
+  if (!completionPaths.has(request.url) || request.method !== 'POST') { response.writeHead(404).end(); return; }
   if (request.headers.authorization !== approvedKey) { response.writeHead(401).end('{}'); return; }
   try {
     let raw = '';

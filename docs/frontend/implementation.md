@@ -6,6 +6,14 @@
 
 本阶段使用仅限本机的演示凭证，不是正式账户登录。自由问询模型接入与正式案情首阶段见下文。书房模型沿用首版；抽屉可逆开关、观察中心切换，以及书桌／台灯／窗户／书架的公开外观观察已实现，详见 [交互状态](interaction_backlog.md)。
 
+## 2026-10-31：切换腾讯云 TokenHub 学生接口
+
+根据老师提供的学生API速查，模型服务默认地址切换为https://tokenhub.tencentmaas.com/v1，模型为deepseek-v4.1-flash，输出上限1024。现有ChatCompletionClient继续供全部NPC和双阶段推理评审使用；HTTP实现改名OpenAICompatibleChatClient，仍走Bearer鉴权与/chat/completions，保留官方支持的JSON输出和关闭思考参数，没有安装新SDK或增加新API。
+
+新增TOKENHUB_API_KEY环境变量支持，优先于本地文件；TokenHub官方站点不读取旧DETECTIVE_MODEL_API_KEY，防止误用旧直连密钥。旧本地配置已备份到忽略目录，新本地文件和模板的Key均为空，用户自行填写。案例、提示词、原请求、回执与存档不变，仍为修订17。操作见验收准备第8节与手动测试指南顶部。
+
+验证：新增3项配置／密钥隔离测试与1项TokenHub HTTP契约测试，本轮101项后端回归通过，其余未变更套件使用sbt缓存。用TokenHub模型名、1024上限和/v1路径的本机配置，7项人物问询／推理评审浏览器验证通过；模拟服务最初漏接/v1路径返回404，补齐夹具后通过，没有修改生产路径绕过。严格类型和生产构建通过。恢复正常配置并实际重启后15项存档恢复通过。当前本地Key为空，未向真实TokenHub发送请求，待用户填写后联调；原5173前端保持HTTP200，8091模拟供应商已关闭。
+
 ## 2026-10-31：修订17，独立模型推理评审与多次修改（当前）
 
 独立ReasoningRules负责上下文、双阶段提示词、模型输出检查与评审／揭示的纯状态规则。EvaluateReasoningMessage先短事务冻结上下文、预留带租约的reasoning_requests请求，连接外调用模型两次，再由FinishReasoningMessage短事务复核序号、租约与修订并原子保存结果、日志及回执。复用ChatCompletionClient；没有将评审伪装成NPC问询，也没有为此切换SDK或供应商。人物问询与推理请求间校验请求ID和活动预留，避免跨协议重复调用或污染原请求。

@@ -1,8 +1,8 @@
 {
-  "baseUrl": "https://api.deepseek.com",
+  "baseUrl": "https://tokenhub.tencentmaas.com/v1",
   "apiKey": "",
-  "model": "deepseek-flash",
+  "model": "deepseek-v4.1-flash",
   "timeoutSeconds": 20,
-  "maxTokens": 512,
+  "maxTokens": 1024,
   "disableThinking": true
 }

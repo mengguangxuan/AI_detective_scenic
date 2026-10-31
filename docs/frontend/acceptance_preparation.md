@@ -165,11 +165,13 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\frontend.ps1 browser
 浏览器测试会自行构建并使用独立的5175端口，结束后停止自己的预览；不会停止供你手动验收的5173服务。
 
 
-## 8. 配置自由问询的模型接口
+## 8. 配置腾讯云 TokenHub 学生接口
 
-### 首次准备配置文件
+当前按老师提供的 `D:\2026autumn\software_making\tokenhub_student_quickstart.txt` 接入广州站点，人物问询和推理评审共用这一配置。无需安装Python或OpenAI SDK，现有Scala／JDK HTTP客户端可直接调用兼容协议。
 
-在项目根目录的 PowerShell 中执行。已有本地配置时不会覆盖：
+### 填入老师发的 API Key
+
+本机已准备好 `backend/config/model-api.local.json`，只需填其中的 `apiKey`。若在新机器首次启动，可先复制模板：
 
 ```powershell
 Set-Location 'D:\2026autumn\software_making\detective_scenic'
@@ -178,31 +180,38 @@ if (-not (Test-Path .\backend\config\model-api.local.json)) {
 }
 ```
 
-注意：`model-api.example.json` 只是模板，后端不会读取它。不要把密钥填在示例文件里；真正填写的是复制得到的 `model-api.local.json`。
-
-使用 VS Code 等编辑器打开 `backend/config/model-api.local.json`，填写自己的密钥。示例格式如下：
+`model-api.example.json` 是可提交的空密钥模板，后端默认读取 `model-api.local.json`。当前本地文件格式：
 
 ```json
 {
-  "baseUrl": "https://api.deepseek.com",
-  "apiKey": "在这里填写自己的密钥",
-  "model": "deepseek-flash",
+  "baseUrl": "https://tokenhub.tencentmaas.com/v1",
+  "apiKey": "在这里填写老师发的学生Key",
+  "model": "deepseek-v4.1-flash",
   "timeoutSeconds": 20,
-  "maxTokens": 512,
+  "maxTokens": 1024,
   "disableThinking": true
 }
 ```
 
 | 字段 | 填写说明 |
 |---|---|
-| `baseUrl` | 服务基础地址，不包含末尾的 `/chat/completions`；使用兼容服务时可保留它要求的 `/v1`。 |
-| `apiKey` | 服务提供的密钥，保存在本地后端配置，不填到前端代码或聊天消息里。 |
-| `model` | 服务支持的模型名；本项目示例按DeepSeek当前文档填写，可自行替换。 |
-| `timeoutSeconds` | 请求超时，允许2至60秒，建议先保留20。 |
-| `maxTokens` | 本次结构化输出的上限，允许128至2048，建议先保留512。 |
-| `disableThinking` | DeepSeek示例设为true，发送关闭思考模式的参数。若其他兼容服务不支持 `thinking` 字段，改为false以省略该字段。 |
+| `baseUrl` | 老师指定的广州站点，保留末尾 `/v1`，不要追加 `/chat/completions`。 |
+| `apiKey` | 老师发给你的Key，只填本地文件或后端进程环境变量。 |
+| `model` | 按老师开放名单填写 `deepseek-v4.1-flash`。 |
+| `timeoutSeconds` | 允许2至60秒，当前保留20秒；双阶段评审另有整体超时。 |
+| `maxTokens` | 当前1024，后端允许128至2048。 |
+| `disableThinking` | true时发送 `thinking.type=disabled`；保留JSON输出约束。腾讯云协议支持这两项。 |
 
-配置文件必须是合法JSON，保留上述字段，不添加注释或末尾多余逗号。本地配置文件已加入Git忽略规则，示例文件不包含密钥。也支持用当前后端进程的 `DETECTIVE_MODEL_API_KEY` 环境变量覆盖文件中的密钥；未设置时直接使用文件内容。
+也可以按老师速查使用进程环境变量，优先于文件中的Key：
+
+```powershell
+$env:TOKENHUB_API_KEY = '在这里填写老师发的学生Key'
+.\tools\backend.ps1 serve
+```
+
+若采用环境变量方式，须在启动后端的同一个PowerShell终端设置。TokenHub只读取 `TOKENHUB_API_KEY` 或文件Key，不读取旧的 `DETECTIVE_MODEL_API_KEY`，避免把原直连供应商的Key发送到新站点。其他兼容服务仍保留原通用环境变量行为。
+
+迁移前的本地配置已单独备份在被Git忽略的 `backend/.build-cache/model-config-backups/`，不复制旧密钥到TokenHub。当前新本地文件的Key预留为空，等待用户填写；不要在模板或前端中填Key。
 
 ### 保存后重启后端
 
@@ -225,7 +234,7 @@ if (-not (Test-Path .\backend\config\model-api.local.json)) {
 
 模型调用日志只记录配置状态、错误类别和HTTP状态码，不打印密钥、模型原始错误正文或完整提示词。出现401通常需核对密钥，429需检查服务额度或限流；更多情况按服务商文档处理。
 
-格式依据：[DeepSeek首次调用API](https://api-docs.deepseek.com/zh-cn/)、[JSON输出说明](https://api-docs.deepseek.com/zh-cn/guides/json_mode/)。独立调用接口在 `backend/src/main/scala/services/models/api/ChatCompletionClient.scala`，传输实现为同服务的 `utils/DeepSeekChatClient.scala`；填写上述配置即可使用，无需修改前端。
+协议依据：老师的学生API速查，以及[TokenHub语言模型调用概览](https://cloud.tencent.com/document/product/1823/130079)、[Chat Completions字段说明](https://cloud.tencent.com/document/product/1823/135872)。独立调用接口在 `backend/src/main/scala/services/models/api/ChatCompletionClient.scala`，传输实现为同服务的 `utils/OpenAICompatibleChatClient.scala`；填写配置即可使用，无需修改前端。
 
 
 ## 9. 案件简介、人物档案与独立日志验收

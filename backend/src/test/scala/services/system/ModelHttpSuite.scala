@@ -59,6 +59,25 @@ class ModelHttpSuite extends FunSuite:
     yield () }.unsafeRunSync()
   }
 
+  test("student TokenHub profile uses one v1 prefix, Bearer auth and the assigned text model") {
+    val requests=new ConcurrentLinkedQueue[(Boolean,Json)]()
+    provider(200,envelope("""{"reply":"我按现有材料回答。","disclosureIds":[]}"""),requests).use { port => for
+      client <- ChatCompletionClient.fromSettings(settings(port).copy(baseUrl=s"http://127.0.0.1:$port/v1/",model="deepseek-v4.1-flash",maxTokens=1024))
+      response <- client.complete(ChatCompletionInput("请严格输出JSON，不补造案情。","这份材料说明什么？"))
+      _ = assert(response.contains("disclosureIds"))
+      _ = assertEquals(requests.size(),1)
+      sent=requests.peek()
+      _ = assert(sent._1)
+      _ = assertEquals(sent._2.hcursor.get[String]("model"),Right("deepseek-v4.1-flash"))
+      _ = assertEquals(sent._2.hcursor.get[Int]("max_tokens"),Right(1024))
+      _ = assertEquals(sent._2.hcursor.downField("response_format").get[String]("type"),Right("json_object"))
+      _ = assertEquals(sent._2.hcursor.downField("thinking").get[String]("type"),Right("disabled"))
+      messages=sent._2.hcursor.get[Vector[Json]]("messages").toOption.get
+      _ = assertEquals(messages.map(_.hcursor.get[String]("role").toOption.get),Vector("system","user"))
+      _ = assert(!sent._2.noSpaces.contains("dummy-test-key"))
+    yield () }.unsafeRunSync()
+  }
+
   test("provider errors, truncated output and timeouts fail without leaking headers or body") {
     val cases=Vector((401,"DO_NOT_LEAK_PROVIDER_BODY",0L),(200,envelope("partial","length"),0L),(200,envelope("{}"),3000L))
     cases.foreach { case (status,body,delay) =>

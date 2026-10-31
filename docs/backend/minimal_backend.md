@@ -111,7 +111,7 @@ CLI 仍由可信本地调用方提供 userId。新增浏览器入口已通过 ac
 
 当前网页案件修订为 `vicarage_study/3`，场景仍为 `study/4`。固定问答继续可用；自由问题通过 `AskWitnessMessage` 处理，资料来自显式的 `WitnessProfile`／`WitnessAnswer` 初查投影，不加载整份小说案情。人物与答复编号分别使用 `WitnessId`、`WitnessAnswerId`。模型只返回当前允许的答复ID，用户看到的是作者核对过的自然证词，未知与失败各有明确处理，不接收模型自由编造的正文。
 
-模型接入独立在 `services/models`：`ChatCompletionClient.complete(ChatCompletionInput): IO[String]` 是外部传输契约，`DeepSeekChatClient` 实现Chat Completions格式。该接口不是浏览器API，不接收数据库连接；它允许替换服务或注入测试客户端。用户配置放在忽略提交的 `backend/config/model-api.local.json`，示例为同目录 `model-api.example.json`。只使用现有JDK HTTP客户端，无新增依赖。填写步骤见[验收准备第8节](../frontend/acceptance_preparation.md)。
+模型接入独立在 `services/models`：`ChatCompletionClient.complete(ChatCompletionInput): IO[String]` 是外部传输契约，`OpenAICompatibleChatClient` 实现Chat Completions格式。该接口不是浏览器API，不接收数据库连接；它允许替换服务或注入测试客户端。用户配置放在忽略提交的 `backend/config/model-api.local.json`，示例为同目录 `model-api.example.json`。只使用现有JDK HTTP客户端，无新增依赖。填写步骤见[验收准备第8节](../frontend/acceptance_preparation.md)。
 
 ### 长请求的事务边界
 

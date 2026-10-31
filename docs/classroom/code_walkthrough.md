@@ -68,7 +68,7 @@ detective_scenic/
 | `accounts` | 创建本机身份，把令牌解析为可信用户；当前是本机演示身份机制 | `api/ResolveLocalIdentityMessage.scala` |
 | `cases` | 管理固定案件修订、线索、人物、操作配置及引用校验 | `objects/CaseContent.scala`、`utils/FixtureLoader.scala` |
 | `games` | 管理本局进度、已得线索、实际出示、问询、核查时钟及历史记录 | `api/ExecuteOperationMessage.scala`、`utils/FixtureRules.scala` |
-| `models` | 定义对外模型接口，实现DeepSeek兼容HTTP调用 | `api/ChatCompletionClient.scala`、`utils/DeepSeekChatClient.scala` |
+| `models` | 定义对外模型接口，实现TokenHub／OpenAI兼容HTTP调用 | `api/ChatCompletionClient.scala`、`utils/OpenAICompatibleChatClient.scala` |
 | `system` | 管理共享基础设施和程序启动 | `api/APIMessage.scala`、`api/DatabaseSession.scala`、`api/WebDemo.scala` |
 
 这些是同一个后端进程内的业务模块，目前没有分别部署成五个网络微服务。
@@ -316,7 +316,7 @@ trait ChatCompletionClient:
 | 部分 | 职责 |
 |---|---|
 | `ChatCompletionClient` | 定义“给定输入，异步获得模型输出”的能力契约 |
-| `DeepSeekChatClient` | 处理具体HTTP请求、认证和供应商响应 |
+| `OpenAICompatibleChatClient` | 处理具体HTTP请求、认证和供应商响应 |
 | `ModelSettingsLoader` | 读取、校验模型配置 |
 | `games/api/AskWitnessMessage.scala` | 准备本局合法上下文，协调请求与模型调用 |
 | `games/api/FinishInterviewMessage.scala` | 完成回复校验及本局状态提交 |
