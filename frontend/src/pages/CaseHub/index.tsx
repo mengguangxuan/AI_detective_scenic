@@ -5,6 +5,7 @@ import { navigate } from '../../app/hooks/usePathname';
 import CaseCards from './components/CaseCards';
 import SavedInvestigations from './components/SavedInvestigations';
 import { useCaseHub } from './hooks/useCaseHub';
+import HomeHero from './components/HomeHero';
 
 export default function CaseHub({ path, needsSelection = false }: { path: string; needsSelection?: boolean }) {
   const hub = useCaseHub();
@@ -19,7 +20,7 @@ export default function CaseHub({ path, needsSelection = false }: { path: string
   return <main className="min-h-screen bg-[#101918] px-4 py-8 font-sans text-stone-100 sm:px-8 lg:px-12"><div className="mx-auto max-w-6xl">
     <header className="flex flex-wrap items-center justify-between gap-5 border-b border-white/15 pb-6"><div><p className="text-xs tracking-[0.3em] text-amber-200">AI DETECTIVE THEATRE</p><p className="mt-2 text-xl font-medium">AI 侦探剧场</p></div>
       <nav aria-label="网站导航" className="flex gap-5 text-sm text-stone-300"><InvestigationLink href="/" aria-current={path === '/' ? 'page' : undefined}>首页</InvestigationLink><InvestigationLink href="/cases" aria-current={path === '/cases' ? 'page' : undefined}>案件区</InvestigationLink><a href="#my-investigations">我的调查</a></nav></header>
-    {path === '/' ? <section className="my-10 rounded-3xl border border-amber-200/20 bg-[#182421] p-7 sm:p-12"><p className="text-xs tracking-widest text-amber-200">观察 · 问询 · 推理</p><h1 className="mt-5 text-3xl font-medium leading-snug sm:text-5xl">真相，等你亲自发现。</h1><p className="mt-6 max-w-2xl text-base leading-8 text-stone-300">走进现场，留意不起眼的物件，听听每个人的说法。用你发现的材料，解释事情究竟怎样发生。</p><div className="mt-7 flex flex-wrap gap-4"><InvestigationLink href="/cases" className="rounded-lg bg-amber-200 px-6 py-3 font-medium text-stone-950">进入案件区</InvestigationLink>{current ? <button type="button" onClick={() => navigate('/case')} className="rounded-lg border border-white/30 px-6 py-3 text-stone-200">继续当前调查</button> : null}</div></section>
+    {path === '/' ? <HomeHero canContinue={current !== null}/>
       : <h1 className="my-8 text-3xl font-medium">{detailId !== null ? '案件详情' : '案件区'}</h1>}
     {needsSelection ? <p role="status" className="mb-6 text-sm text-amber-100">请先选择案件，或从“我的调查”恢复一份进度。</p> : null}
     {locatorProblem ? <p role="alert" className="mb-6 rounded-xl border border-amber-200/30 p-5 text-sm leading-7 text-amber-100">无法读取本机调查定位。原数据仍保留，请恢复浏览器存储访问后刷新；当前不会覆盖它或新建调查。</p> : null}

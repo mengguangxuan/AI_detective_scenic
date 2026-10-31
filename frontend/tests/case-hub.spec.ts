@@ -22,6 +22,16 @@ test('first visit shows the theatre and catalogue without starting or restoring 
   await page.goto('/');
   await expect(page.getByRole('heading', { name: '真相，等你亲自发现。', exact: true })).toBeVisible();
   await expect(page.getByText('还没有保存的调查。先选择一个案件开始吧。', { exact: true })).toBeVisible();
+  const artwork = page.getByRole('img', { name: '原创侦探与年轻助手的雾夜插画，配文：真相只有一个', exact: true });
+  await expect(artwork).toBeVisible();
+  await expect.poll(() => artwork.evaluate(node => (node as HTMLImageElement).naturalWidth)).toBe(1672);
+  await artwork.evaluate(node => (node as HTMLImageElement).decode());
+  expect((await artwork.boundingBox())!.height).toBeGreaterThan(300);
+  await page.screenshot({ path: '.build-cache/home-hero-desktop.png', fullPage: true });
+  await page.setViewportSize({ width: 390, height: 844 });
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+  await page.screenshot({ path: '.build-cache/home-hero-mobile.png', fullPage: true });
+  await page.setViewportSize({ width: 1280, height: 720 });
   expect(await savedList(page)).toEqual([]);
   await page.getByRole('link', { name: '进入案件区', exact: true }).click();
   await expect(page).toHaveURL(/\/cases$/);
