@@ -1,7 +1,7 @@
 {
   "id": "vicarage_study",
   "revision": {
-    "value": 14
+    "value": 15
   },
   "schemaVersion": {
     "value": 2
@@ -1452,6 +1452,57 @@
           }
         },
         "boundary": "本局实际完成的来电追查、现场检查或实际出示后的本人回应；不凭地点或指纹情况认定身份"
+      },
+      {
+        "id": "topic_woodland_sample",
+        "subject": {
+          "kind": "Place",
+          "id": "study"
+        },
+        "question": "树林查访：棕色晶体样本",
+        "when": {
+          "earliest": {
+            "seconds": 0
+          },
+          "latest": {
+            "seconds": 0
+          }
+        },
+        "boundary": "本局申请后实际完成的树林查访、样本初步辨认或实际出示后的登记；不确定声源、样本化学身份或责任人"
+      },
+      {
+        "id": "topic_crystal_opinion",
+        "subject": {
+          "kind": "Place",
+          "id": "study"
+        },
+        "question": "海多克对晶体的初步意见",
+        "when": {
+          "earliest": {
+            "seconds": 0
+          },
+          "latest": {
+            "seconds": 0
+          }
+        },
+        "boundary": "本局申请后实际完成的树林查访、样本初步辨认或实际出示后的登记；不确定声源、样本化学身份或责任人"
+      },
+      {
+        "id": "topic_police_woodland_review",
+        "subject": {
+          "kind": "Place",
+          "id": "study"
+        },
+        "question": "警方登记的树林查访材料",
+        "when": {
+          "earliest": {
+            "seconds": 0
+          },
+          "latest": {
+            "seconds": 0
+          }
+        },
+        "boundary": "本局申请后实际完成的树林查访、样本初步辨认或实际出示后的登记；不确定声源、样本化学身份或责任人"
       }
     ],
     "facts": [
@@ -2402,6 +2453,47 @@
           "source_game_call"
         ],
         "topic": "topic_police_call_review"
+      },
+      {
+        "id": "fact_woodland_sample",
+        "value": {
+          "kind": "AuthoredDetail",
+          "detail": "警方查访记录：沿寓所附近树林的小径查看，在一处灌木较稀疏的小空地地面收取一小块棕色晶体，作为样本单独保存，留待辨认。本项记录尚未确定它是什么、何时留下、由谁留下，也没有确认它与两人所述响声的关系。"
+        },
+        "requiresOccurred": [],
+        "explanation": "固定的初查材料；陈述及推论的归属见正文，不等同于完整案件真相。",
+        "sources": [
+          "source_ch23",
+          "source_game_woodland"
+        ],
+        "topic": "topic_woodland_sample"
+      },
+      {
+        "id": "fact_crystal_opinion",
+        "value": {
+          "kind": "AuthoredDetail",
+          "detail": "警方将本次收取的棕色晶体交海多克医生查看。海多克说：“看起来像苦味酸。”他说明这种物质既可用作爆炸物，也有医用用途。这是医生凭外观作出的初步辨认，并非化验确认；不能据此确定样本的化学身份、用途、来历或那声响的成因。"
+        },
+        "requiresOccurred": [],
+        "explanation": "固定的初查材料；陈述及推论的归属见正文，不等同于完整案件真相。",
+        "sources": [
+          "source_ch25",
+          "source_game_woodland"
+        ],
+        "topic": "topic_crystal_opinion"
+      },
+      {
+        "id": "fact_police_woodland_review",
+        "value": {
+          "kind": "AuthoredDetail",
+          "detail": "梅尔切特说：“两份听闻、送鱼经过的时间回忆、树林收取样本的记录和医生的初步意见，都分别登记了。听见声音、找到样本、辨认外观，是三种不同的材料。声源、样本来历和用途还需要继续调查。”"
+        },
+        "requiresOccurred": [],
+        "explanation": "固定的初查材料；陈述及推论的归属见正文，不等同于完整案件真相。",
+        "sources": [
+          "source_game_woodland"
+        ],
+        "topic": "topic_police_woodland_review"
       }
     ],
     "claims": [],
@@ -2490,6 +2582,21 @@
         "id": "source_game_call",
         "kind": "Adapted",
         "reference": "docs/cases/murder_at_the_vicarage.md#2026-10-31-牧师来电来源与接出地点核查"
+      },
+      {
+        "id": "source_ch23",
+        "kind": "Original",
+        "reference": "https://en.wikisource.org/wiki/The_Murder_at_the_Vicarage/Chapter_23"
+      },
+      {
+        "id": "source_ch25",
+        "kind": "Original",
+        "reference": "https://en.wikisource.org/wiki/The_Murder_at_the_Vicarage/Chapter_25"
+      },
+      {
+        "id": "source_game_woodland",
+        "kind": "Adapted",
+        "reference": "docs/cases/murder_at_the_vicarage.md#2026-10-31-树林查访与晶体初步辨认"
       }
     ]
   },
@@ -4486,6 +4593,48 @@
           "media": []
         },
         "suggests": []
+      },
+      {
+        "id": "clue_woodland_sample",
+        "title": "树林查访：棕色晶体样本",
+        "finding": "警方查访记录：沿寓所附近树林的小径查看，在一处灌木较稀疏的小空地地面收取一小块棕色晶体，作为样本单独保存，留待辨认。本项记录尚未确定它是什么、何时留下、由谁留下，也没有确认它与两人所述响声的关系。",
+        "facts": [
+          "fact_woodland_sample"
+        ],
+        "relatedClaims": [],
+        "result": {
+          "text": "警方查访记录：沿寓所附近树林的小径查看，在一处灌木较稀疏的小空地地面收取一小块棕色晶体，作为样本单独保存，留待辨认。本项记录尚未确定它是什么、何时留下、由谁留下，也没有确认它与两人所述响声的关系。",
+          "media": []
+        },
+        "suggests": []
+      },
+      {
+        "id": "clue_crystal_opinion",
+        "title": "海多克对晶体的初步意见",
+        "finding": "警方将本次收取的棕色晶体交海多克医生查看。海多克说：“看起来像苦味酸。”他说明这种物质既可用作爆炸物，也有医用用途。这是医生凭外观作出的初步辨认，并非化验确认；不能据此确定样本的化学身份、用途、来历或那声响的成因。",
+        "facts": [
+          "fact_crystal_opinion"
+        ],
+        "relatedClaims": [],
+        "result": {
+          "text": "警方将本次收取的棕色晶体交海多克医生查看。海多克说：“看起来像苦味酸。”他说明这种物质既可用作爆炸物，也有医用用途。这是医生凭外观作出的初步辨认，并非化验确认；不能据此确定样本的化学身份、用途、来历或那声响的成因。",
+          "media": []
+        },
+        "suggests": []
+      },
+      {
+        "id": "clue_police_woodland_review",
+        "title": "警方登记的树林查访材料",
+        "finding": "梅尔切特说：“两份听闻、送鱼经过的时间回忆、树林收取样本的记录和医生的初步意见，都分别登记了。听见声音、找到样本、辨认外观，是三种不同的材料。声源、样本来历和用途还需要继续调查。”",
+        "facts": [
+          "fact_police_woodland_review"
+        ],
+        "relatedClaims": [],
+        "result": {
+          "text": "梅尔切特说：“两份听闻、送鱼经过的时间回忆、树林收取样本的记录和医生的初步意见，都分别登记了。听见声音、找到样本、辨认外观，是三种不同的材料。声源、样本来历和用途还需要继续调查。”",
+          "media": []
+        },
+        "suggests": []
       }
     ],
     "routes": [
@@ -5645,6 +5794,35 @@
           "clue_call_lodge_scene",
           "clue_call_lodge_phone"
         ]
+      },
+      {
+        "id": "route_police_woodland_review",
+        "point": "point_police",
+        "condition": {
+          "kind": "CluesKnown",
+          "clues": [
+            "clue_mary_sound",
+            "clue_mary_fish_time",
+            "clue_marple_sound",
+            "clue_woodland_sample",
+            "clue_crystal_opinion"
+          ]
+        },
+        "method": {
+          "kind": "Fixed",
+          "label": "出示响声回忆、树林样本记录与医生意见"
+        },
+        "grants": [
+          "clue_police_woodland_review"
+        ],
+        "reports": [],
+        "presentedClues": [
+          "clue_mary_sound",
+          "clue_mary_fish_time",
+          "clue_marple_sound",
+          "clue_woodland_sample",
+          "clue_crystal_opinion"
+        ]
       }
     ],
     "operations": [
@@ -6011,6 +6189,32 @@
         "resultClues": [
           "clue_call_lodge_scene",
           "clue_call_lodge_phone"
+        ]
+      },
+      {
+        "id": "woodland_search",
+        "title": "树林声响现场查访",
+        "requestLabel": "申请查访树林声响附近现场",
+        "point": "point_police",
+        "requiredClues": [
+          "clue_police_sound_check"
+        ],
+        "delaySeconds": 900,
+        "resultClues": [
+          "clue_woodland_sample"
+        ]
+      },
+      {
+        "id": "crystal_opinion",
+        "title": "树林样本初步辨认",
+        "requestLabel": "申请请海多克辨认树林样本",
+        "point": "point_police",
+        "requiredClues": [
+          "clue_woodland_sample"
+        ],
+        "delaySeconds": 600,
+        "resultClues": [
+          "clue_crystal_opinion"
         ]
       }
     ],
@@ -6557,6 +6761,20 @@
               "clue_call_origin",
               "clue_call_lodge_scene",
               "clue_call_lodge_phone"
+            ]
+          },
+          {
+            "id": "police_woodland_review",
+            "text": "梅尔切特说：“两份听闻、送鱼经过的时间回忆、树林收取样本的记录和医生的初步意见，都分别登记了。听见声音、找到样本、辨认外观，是三种不同的材料。声源、样本来历和用途还需要继续调查。”",
+            "routes": [
+              "route_police_woodland_review"
+            ],
+            "requiredEvidence": [
+              "clue_mary_sound",
+              "clue_mary_fish_time",
+              "clue_marple_sound",
+              "clue_woodland_sample",
+              "clue_crystal_opinion"
             ]
           }
         ]

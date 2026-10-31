@@ -26,7 +26,7 @@ async function fixedPolice(page: Page, label: string) {
 async function basis(page: Page) {
   await page.goto('/police');
   await expect(page.getByRole('heading', { name: '警方交流', exact: true })).toBeVisible();
-  expect((await snapshot(page)).caseRevision.value).toBe(14);
+  expect((await snapshot(page)).caseRevision.value).toBe(15);
   await fixedPerson(page, '克莱门特牧师', '询问：你为什么离开寓所？');
   await fixedPolice(page, '出示牧师的来电陈述，登记追查依据');
 }

@@ -3,7 +3,17 @@ import services.cases.objects.*
 
 // Test-only reconstruction of the preceding published feature set.
 private[games] object LegacyFixture:
-  def withoutCallChecks(content: CaseContent): CaseContent =
+  def withoutWoodland(current: CaseContent): CaseContent =
+    val clues=Set("clue_woodland_sample","clue_crystal_opinion","clue_police_woodland_review").map(ClueId.apply)
+    val routes=current.routes.filter(_.clues.exists(clues)).map(_.id).toSet
+    val facts=current.clues.filter(c => clues(c.id)).flatMap(_.facts).toSet
+    current.copy(externalChecks=current.externalChecks.filterNot(c => Set("woodland_search","crystal_opinion")(c.id.value)),
+      routes=current.routes.filterNot(r => routes(r.id)),clues=current.clues.filterNot(c => clues(c.id)),
+      facts=current.facts.filterNot(f => facts(f.id)),
+      witnesses=current.witnesses.map(w => w.copy(answers=w.answers.filterNot(_.routes.exists(routes)))))
+
+  def withoutCallChecks(current: CaseContent): CaseContent =
+    val content=withoutWoodland(current)
     val clues=Set("clue_call_basis","clue_call_origin","clue_call_lodge_scene","clue_call_lodge_phone","clue_clement_call_origin_reply","clue_redding_call_origin_reply","clue_police_call_review").map(ClueId.apply)
     val routes=content.routes.filter(_.clues.exists(clues)).map(_.id).toSet
     val facts=content.clues.filter(c => clues(c.id)).flatMap(_.facts).toSet
