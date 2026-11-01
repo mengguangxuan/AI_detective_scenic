@@ -18,7 +18,7 @@ import services.games.tables.ReasoningRequestTable.ReasoningRequestTable
 import services.games.tables.InterviewTurnTable.InterviewTurnTable
 import services.games.tables.SessionRecordTable.SessionRecordTable
 import services.games.tables.PoliceExchangeTable.PoliceExchangeTable
-import services.games.utils.{InterviewRules,MutationSupport}
+import services.games.utils.{InterviewRules,MutationSupport,RecordedInterviewRules}
 import services.models.api.ChatCompletionClient
 import services.system.api.{APIMessage,DatabaseSession}
 import services.system.objects.*
@@ -62,7 +62,7 @@ final case class AskWitnessMessage(userId: UserId,sessionId: SessionId,requestId
                   records <- SessionRecordTable.list(connection,sessionId)
                   exchanges <- PoliceExchangeTable.list(connection,sessionId)
                   dossier <- GetDialogueKnowledgeMessage(session.caseId,session.caseRevision,witness).plan(connection)
-                  context <- IO.fromEither(InterviewRules.context(revision.content,session,witness,question,evidence,turns,records,dossier.knowledge,exchanges,dossier.privateContext,dossier.policy))
+                  context <- IO.fromEither(InterviewRules.context(RecordedInterviewRules.content(revision.content,turns),session,witness,question,evidence,turns,records,dossier.knowledge,exchanges,dossier.privateContext,dossier.policy))
                   token <- IO(UUID.randomUUID().toString)
                   row = InterviewRequestRecord(sessionId,requestId,digest,expectedSequence,witness,question,evidence,context,token,now+90000,InterviewRequestStatus.Pending)
                   _ <- InterviewRequestTable.insert(connection,row)

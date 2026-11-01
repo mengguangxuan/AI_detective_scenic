@@ -27,7 +27,7 @@ class CaseHubSuite extends FunSuite:
   private def release(id: CaseId)=CaseReleaseRecord(id,revision,"公开介绍，仅供选案。",Vector("推理"),"study","5")
   private def setup(url: String)=DatabaseSession.connection(url).use { c =>
     DatabaseSchema.initialize(c) *> LocalIdentityTableInitializer.initialize(c) *> DatabaseSession.transaction(c)(for
-      current <- ImportCaseMessage(Paths.get("../docs/fixtures/browser_investigation.json")).plan(c)
+      current <- ImportCaseMessage(Paths.get("../docs/fixtures/browser_investigation_v21.json")).plan(c)
       _ <- ImportCaseMessage(Paths.get("../docs/fixtures/browser_investigation_v20.json")).plan(c)
       _ <- CaseRevisionTable.insert(c,current.copy(caseId=second,title="第二个书房模板样例"))
       _ <- RegisterPlayableCaseMessage(release(first)).plan(c)

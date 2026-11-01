@@ -4,7 +4,7 @@ import java.nio.file.{Files,Paths}
 import munit.FunSuite
 import services.cases.utils.FixtureLoader
 class MapAndCheckConfigSuite extends FunSuite:
-  private def source=parser.parse(Files.readString(Paths.get("../docs/fixtures/browser_investigation.json"))).toOption.get
+  private def source=parser.parse(Files.readString(Paths.get("../docs/fixtures/browser_investigation_v21.json"))).toOption.get
   test("map roads must use known public world places and positive distances") {
     val valid=source
     assert(FixtureLoader.decode(valid.noSpaces).isRight)

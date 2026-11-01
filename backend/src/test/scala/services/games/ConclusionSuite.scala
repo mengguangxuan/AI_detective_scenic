@@ -26,7 +26,7 @@ class ConclusionSuite extends FunSuite:
   private def setup(url: String,id: SessionId): IO[Unit]=DatabaseSession.connection(url).use(c =>
     DatabaseSchema.initialize(c) *> DatabaseSession.transaction(c)(
       (for
-        latest <- ImportCaseMessage(Paths.get("../docs/fixtures/browser_investigation.json")).plan(c)
+        latest <- ImportCaseMessage(Paths.get("../docs/fixtures/browser_investigation_v21.json")).plan(c)
         old=latest.copy(revision=Revision(16),content=LegacyFixture.withoutEvaluation(latest.content))
         _ <- CaseRevisionTable.insert(c,old)
         _ <- StartGameMessage(owner,id,old.caseId,old.revision).plan(c)
@@ -86,7 +86,7 @@ class ConclusionSuite extends FunSuite:
     val url=database;val id=SessionId(UUID.randomUUID().toString)
     (for
       _ <- DatabaseSession.connection(url).use(DatabaseSchema.initialize)
-      latest <- tx(url)(ImportCaseMessage(Paths.get("../docs/fixtures/browser_investigation.json")).plan)
+      latest <- tx(url)(ImportCaseMessage(Paths.get("../docs/fixtures/browser_investigation_v21.json")).plan)
       r=latest.copy(content=LegacyFixture.withoutEvaluation(latest.content))
       spec=r.content.conclusion.get
       all=spec.evidenceGroups.flatMap(_.requiredClues).toSet
@@ -163,7 +163,7 @@ class ConclusionSuite extends FunSuite:
     (for
       _ <- DatabaseSession.connection(url).use(DatabaseSchema.initialize)
       _ <- tx(url) { c => for
-        latest <- ImportCaseMessage(Paths.get("../docs/fixtures/browser_investigation.json")).plan(c)
+        latest <- ImportCaseMessage(Paths.get("../docs/fixtures/browser_investigation_v21.json")).plan(c)
         old=latest.copy(revision=Revision(15),content=LegacyFixture.withoutConclusion(latest.content))
         _ <- CaseRevisionTable.insert(c,old)
         _ <- StartGameMessage(owner,id,old.caseId,old.revision).plan(c)

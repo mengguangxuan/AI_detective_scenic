@@ -19,7 +19,7 @@ class SightlineSuite extends FunSuite:
   private val owner=UserId("sightline-owner")
   private def database=s"jdbc:h2:mem:${UUID.randomUUID()};DB_CLOSE_DELAY=-1;LOCK_TIMEOUT=3000"
   private def tx[A](url: String)(run: java.sql.Connection => IO[A]): IO[A]=DatabaseSession.connection(url).use(c => DatabaseSession.transaction(c)(run(c)))
-  private def setup(url: String,id: SessionId)=DatabaseSession.connection(url).use(c => DatabaseSchema.initialize(c) *> DatabaseSession.transaction(c)(ImportCaseMessage(Paths.get("../docs/fixtures/browser_investigation.json")).plan(c) *> OpenStudyMessage(owner,id).plan(c)).void)
+  private def setup(url: String,id: SessionId)=DatabaseSession.connection(url).use(c => DatabaseSchema.initialize(c) *> DatabaseSession.transaction(c)(ImportCaseMessage(Paths.get("../docs/fixtures/browser_investigation_v21.json")).plan(c) *> OpenStudyMessage(owner,id).plan(c)).void)
   private def view(url: String,id: SessionId)=tx(url)(GetInvestigationSnapshotMessage(owner,id).plan)
   private def read(url: String,id: SessionId,who: String,route: String): IO[Unit]=for
     before <- view(url,id)
@@ -192,7 +192,7 @@ class SightlineSuite extends FunSuite:
     (for
       _ <- DatabaseSession.connection(url).use(DatabaseSchema.initialize)
       _ <- tx(url) { c => for
-        latest <- ImportCaseMessage(Paths.get("../docs/fixtures/browser_investigation.json")).plan(c)
+        latest <- ImportCaseMessage(Paths.get("../docs/fixtures/browser_investigation_v21.json")).plan(c)
         old=latest.copy(revision=Revision(12),content=LegacyFixture.withoutSightline(latest.content))
         _ <- CaseRevisionTable.insert(c,old)
         _ <- StartGameMessage(owner,id,old.caseId,old.revision).plan(c)

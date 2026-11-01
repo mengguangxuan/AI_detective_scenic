@@ -8,7 +8,7 @@ import services.cases.utils.FixtureLoader
 import services.system.objects.ErrorCode
 
 class FixtureValidationSuite extends FunSuite:
-  private val source = parser.parse(Files.readString(Paths.get("../docs/fixtures/browser_investigation.json"))).toOption.get
+  private val source = parser.parse(Files.readString(Paths.get("../docs/fixtures/browser_investigation_v21.json"))).toOption.get
   private val original = FixtureLoader.decode(source.noSpaces).toOption.get
 
   private def rejected(record: CaseRevisionRecord, path: String): String =

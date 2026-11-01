@@ -29,7 +29,7 @@ class InterviewSuite extends FunSuite:
     DatabaseSession.connection(url).use(c => DatabaseSession.transaction(c)(run(c)))
   private def setup(url: String,id: SessionId): IO[Unit] = DatabaseSession.connection(url).use { c =>
     DatabaseSchema.initialize(c) *> LocalIdentityTableInitializer.initialize(c) *>
-      DatabaseSession.transaction(c)(ImportCaseMessage(Paths.get("../docs/fixtures/browser_investigation.json")).plan(c) *>
+      DatabaseSession.transaction(c)(ImportCaseMessage(Paths.get("../docs/fixtures/browser_investigation_v21.json")).plan(c) *>
         OpenStudyMessage(owner,id).plan(c)).void
   }
   private def client(answer: String,calls: AtomicInteger = new AtomicInteger()): ChatCompletionClient = new ChatCompletionClient:

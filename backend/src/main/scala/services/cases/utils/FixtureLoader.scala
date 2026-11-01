@@ -7,7 +7,7 @@ import services.cases.objects.*
 import services.system.objects.*
 import services.cases.objects.scene.{FixtureNode, FixturePoint, SceneObservation, SceneObjectBinding, AreaMap}
 import services.cases.objects.content.{FixtureFact, FixtureClue}
-import services.cases.objects.investigation.{EntityOpenRequirement, ExternalCheckSpec, FixtureEffect, FixtureOperation, FixtureRoute, InvestigationClock, InvestigationStage, WitnessAnswer, WitnessFollowUpSpec, StatementComparisonSpec, CaseConclusionSpec}
+import services.cases.objects.investigation.{ContinuousInterviewSpec, EntityOpenRequirement, ExternalCheckSpec, FixtureEffect, FixtureOperation, FixtureRoute, InvestigationClock, InvestigationStage, WitnessAnswer, WitnessFollowUpSpec, StatementComparisonSpec, CaseConclusionSpec}
 
 private[cases] object FixtureLoader:
   private def check(ok: Boolean, message: String, cursor: HCursor): Decoder.Result[Unit] =
@@ -93,12 +93,13 @@ private[cases] object FixtureLoader:
           check(xs.nonEmpty,"Empty clue prerequisite",c).as(xs))
         case _ => Right(Set.empty[ClueId])
       disabledAfter <- c.get[Option[OperationId]]("disabledAfter")
+      supersededBy <- c.get[Option[ClueId]]("supersededBy")
       clues <- c.get[Vector[ClueId]]("grants")
       presented <- c.get[Option[Set[ClueId]]]("presentedClues").map(_.getOrElse(Set.empty))
       reply <- c.get[Option[String]]("reply")
       _ <- check(clues.nonEmpty || (presented.nonEmpty && reply.exists(_.trim.nonEmpty)), "Route requires grants or a presentation reply", c)
       _ <- empty(c, "reports")
-    yield FixtureRoute(id, point, prerequisite, clues, c.downField("method").get[String]("label").getOrElse(id.value), required, presented, disabledAfter, reply)
+    yield FixtureRoute(id, point, prerequisite, clues, c.downField("method").get[String]("label").getOrElse(id.value), required, presented, disabledAfter, reply, supersededBy)
 
   private def operation(raw: Json): Decoder.Result[FixtureOperation] =
     val c = raw.hcursor
@@ -190,6 +191,7 @@ private[cases] object FixtureLoader:
       clock <- investigation.hcursor.get[Option[InvestigationClock]]("clock")
       checks <- investigation.hcursor.get[Option[Vector[ExternalCheckSpec]]]("externalChecks").map(_.getOrElse(Vector.empty))
       followUps <- investigation.hcursor.get[Option[Vector[WitnessFollowUpSpec]]]("followUps").map(_.getOrElse(Vector.empty))
+      continuous <- investigation.hcursor.get[Option[Vector[ContinuousInterviewSpec]]]("continuousInterviews").map(_.getOrElse(Vector.empty))
       conclusion <- investigation.hcursor.get[Option[CaseConclusionSpec]]("conclusion")
       comparisons <- investigation.hcursor.get[Option[Vector[StatementComparisonSpec]]]("statementComparisons").map(_.getOrElse(Vector.empty))
       placeIds <- places.traverse(_.hcursor.get[PlaceId]("id"))
@@ -204,7 +206,7 @@ private[cases] object FixtureLoader:
         case _ => true
       }, "investigation.operations.effects：效果引用了未知实体", c)
       _ <- check(operations.forall(_.openedRequirement.forall(r => entityIds.contains(r.entity))),"investigation.operations.openedRequirement：前提引用了未知实体",c)
-      content = CaseContent(place, placeName, time, origin, position, nodes, points, facts, clues, routes, operations, opened, unlocked, common, observations, stage, sceneObjects, people._2, people._3, people._1, areaMap, clock, checks, followUps, comparisons, conclusion)
+      content = CaseContent(place, placeName, time, origin, position, nodes, points, facts, clues, routes, operations, opened, unlocked, common, observations, stage, sceneObjects, people._2, people._3, people._1, areaMap, clock, checks, followUps, comparisons, conclusion, continuous)
       record = CaseRevisionRecord(caseId, revision, 1, title, content)
       _ <- validation(record).left.map(message => DecodingFailure(message,c.history))
     yield record).left.map(error => GameError(ErrorCode.InvalidValue, s"案件数据不合法：${error.getMessage}"))
@@ -250,6 +252,7 @@ private[cases] object FixtureLoader:
       _ <- validateChecks(f)
       _ <- validateMap(f)
       _ <- validateFollowUps(f)
+      _ <- validateContinuousInterviews(f)
       _ <- validateStatementComparisons(f)
     yield ()
 
@@ -367,6 +370,7 @@ private[cases] object FixtureLoader:
           _ <- rule(r.disabledAfter.forall(op => f.operations.exists(_.id == op)), s"$path.disabledAfter", "阶段操作不存在")
           _ <- rule(r.clues.forall(clues.contains) && r.requiredClues.subsetOf(clues), path, "授予或所需线索不存在")
           _ <- rule(r.requiredClues.intersect(r.clues.toSet).isEmpty, s"$path.requiredClues", "不能要求先取得本路线授予的线索")
+          _ <- rule(r.supersededBy.forall(clues.contains), s"$path.supersededBy", "后续说法材料不存在")
           _ <- rule(r.presentedClues.subsetOf(r.requiredClues), s"$path.presentedClues", "出示材料必须包含在所需材料中")
           _ <- rule(r.clues.nonEmpty || (r.presentedClues.nonEmpty && r.reply.exists(_.trim.nonEmpty)), path, "无新材料的路线须记录实际出示与答复")
           _ <- rule(r.reply.forall(text => text.trim.nonEmpty && text.length <= 2000), s"$path.reply", "答复不能为空或超过2000字")
@@ -474,6 +478,19 @@ private[cases] object FixtureLoader:
       }
     yield ()
 
+  private def validateContinuousInterviews(f: CaseContent): Either[String, Unit] =
+    for
+      _ <- unique(f.continuousInterviews.map(_.witness), "investigation.continuousInterviews.witness")
+      _ <- entries(f.continuousInterviews,"investigation.continuousInterviews") { (spec,path) =>
+        val witness=f.witnesses.find(_.id == spec.witness)
+        for
+          _ <- rule(witness.nonEmpty && !f.followUps.exists(_.witness == spec.witness),path,"连续问询对象不存在或仍使用独立阶段")
+          _ <- rule(spec.statementAnswers.nonEmpty && spec.statementAnswers.forall(id => witness.exists(w => w.answers.exists(a => a.id == id && a.requiredEvidence.isEmpty && a.routes.size == 1 &&
+            f.routes.exists(r => r.id == a.routes.head && r.point == w.point && r.prerequisite.isEmpty && r.clues.size == 1)))),path,"说法主题必须对应本人的单条材料路线且不依赖阶段操作")
+        yield ()
+      }
+    yield ()
+
   private def validateStatementComparisons(f: CaseContent): Either[String, Unit] =
     for
       _ <- unique(f.statementComparisons.map(_.witness), "investigation.statementComparisons.witness")
@@ -486,7 +503,9 @@ private[cases] object FixtureLoader:
             for
               _ <- rule(r.label.trim.nonEmpty && r.initial != r.revised, rowPath, "行标题不能为空且两版本不能相同")
               _ <- rule(Vector(r.initial,r.revised).forall(id => f.clues.exists(_.id == id) && f.routes.exists(route => route.clues.contains(id) && f.witnesses.exists(w => w.id == p.witness && w.point == route.point))), rowPath, "对照材料不存在或不属于该人物")
-              _ <- rule(f.followUps.find(_.witness == p.witness).exists(phase => f.routes.filter(_.clues.contains(r.revised)).forall(_.prerequisite.contains(phase.operation))), s"$rowPath.revised", "补充版本缺少本人补充问询阶段前提")
+              _ <- rule(f.continuousInterviews.exists(spec => spec.witness == p.witness && spec.statementAnswers.exists(id =>
+                f.witnesses.find(_.id == p.witness).exists(_.answers.exists(a => a.id == id && a.routes.exists(route => f.routes.exists(x => x.id == route && x.clues.contains(r.revised))))))) ||
+                f.followUps.find(_.witness == p.witness).exists(phase => f.routes.filter(_.clues.contains(r.revised)).forall(_.prerequisite.contains(phase.operation))), s"$rowPath.revised", "后续版本缺少本人连续问询或历史阶段配置")
             yield ()
           }
         yield ()

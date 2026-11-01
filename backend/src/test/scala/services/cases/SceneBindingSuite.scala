@@ -6,7 +6,7 @@ import munit.FunSuite
 import services.cases.utils.FixtureLoader
 
 class SceneBindingSuite extends FunSuite:
-  private def source = parser.parse(Files.readString(Paths.get("../docs/fixtures/browser_investigation.json"))).toOption.get
+  private def source = parser.parse(Files.readString(Paths.get("../docs/fixtures/browser_investigation_v21.json"))).toOption.get
   private def changeObjects(change: Vector[Json] => Vector[Json]): Json =
     source.hcursor.downField("scene").downField("objects").withFocus(json =>
       Json.fromValues(change(json.asArray.get.toVector))).top.get

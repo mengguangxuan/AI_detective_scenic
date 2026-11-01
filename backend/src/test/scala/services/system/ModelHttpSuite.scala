@@ -112,7 +112,7 @@ class ModelHttpSuite extends FunSuite:
     provider(200,envelope("""{"reply":"那座钟我一直拨快一刻钟。","disclosureIds":["clement_habit"]}"""),requests).use { port => for
       client <- ChatCompletionClient.fromSettings(settings(port))
       _ <- DatabaseSession.connection(url).use(c => DatabaseSchema.initialize(c) *> LocalIdentityTableInitializer.initialize(c) *>
-        DatabaseSession.transaction(c)(ImportCaseMessage(Paths.get("../docs/fixtures/browser_investigation.json")).plan(c)).void)
+        DatabaseSession.transaction(c)(ImportCaseMessage(Paths.get("../docs/fixtures/browser_investigation_v21.json")).plan(c)).void)
       saved <- LocalHttpServer.resource(url,0,client).use { server =>
         val local=server.getAddress.getPort
         for

@@ -4,7 +4,8 @@ import assert from 'node:assert/strict';
 import { randomUUID } from 'node:crypto';
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
-const cache = fileURLToPath(new URL('../frontend/.build-cache/', import.meta.url));
+const continuous = process.argv.includes('--continuous');
+const cache = fileURLToPath(new URL(continuous ? '../frontend/.build-cache/continuous-completion/' : '../frontend/.build-cache/', import.meta.url));
 mkdirSync(cache, { recursive: true });
 const origin = 'http://127.0.0.1:5175';
 const key = 'detective-scenic:server-session:v6';
@@ -18,7 +19,9 @@ class Investigation {
     return r.json();
   }
   async refresh() { this.state = await this.post('getinvestigationsnapshot', { sessionId: this.sessionId }); return this.state; }
-  async start() { await this.post('openlocalidentity'); this.state = await this.post('openstudy', { sessionId: this.sessionId }); assert.equal(this.state.caseRevision.value, 21); }
+  async start() { await this.post('openlocalidentity'); this.state = continuous
+    ? await this.post('openinvestigation', { sessionId: this.sessionId, caseId: 'vicarage_study', revision: { value: 22 } })
+    : await this.post('openstudy', { sessionId: this.sessionId }); assert.equal(this.state.caseRevision.value, continuous ? 22 : 21); }
   async change(name, payload) {
     const request = { sessionId: this.sessionId, requestId: randomUUID(), expectedSequence: this.state.sequence, ...payload };
     const receipt = await this.post(name, request); await this.refresh(); return { request, receipt };
@@ -65,9 +68,9 @@ async function collect(game, natural = false) {
   for (const route of ['route_stone_walk', 'route_stone_inn', 'route_marple_visitors', 'route_marple_anne_reply', 'route_marple_sound', 'route_hartnell_visit', 'route_mary_sound', 'route_mary_fish_time']) await game.read(route);
   await game.check('paper_handwriting');
   for (const route of ['route_redding_time_challenge', 'route_redding_anne_reply']) await game.read(route);
-  await game.operate('begin_redding_followup');
+  if (!continuous) await game.operate('begin_redding_followup');
   for (const route of ['route_redding_revised', 'route_redding_gun_revised', 'route_redding_scene_revised', 'route_anne_gun_challenge', 'route_anne_redding_challenge']) await game.read(route);
-  await game.operate('begin_anne_followup'); await game.read('route_anne_revised'); await game.read('route_anne_visit_revised');
+  if (!continuous) await game.operate('begin_anne_followup'); await game.read('route_anne_revised'); await game.read('route_anne_visit_revised');
   await game.read('route_call_basis'); await game.check('call_origin');
   await game.read('route_police_sound_check'); await game.check('woodland_search');
   await game.operate('lift_planter'); await game.read('route_planter_interior'); await game.operate('replace_planter');
@@ -96,7 +99,7 @@ async function assess(game, label, explanation, expected) {
   await game.refresh(); assert.equal(game.state.reasoning.attempts.length, before + 1);
 }
 async function restore() {
-  for (const name of ['completion-live-solved', 'completion-live-paraphrase']) {
+  for (const name of (continuous ? ['completion-live-solved'] : ['completion-live-solved', 'completion-live-paraphrase'])) {
     const storage = JSON.parse(readFileSync(cache + name + '-state.json', 'utf8'));
     const game = new Investigation(); game.cookie = storage.cookies.map(c => c.name + '=' + c.value).join('; ');
     game.sessionId = JSON.parse(storage.origins[0].localStorage[0].value).sessionId;

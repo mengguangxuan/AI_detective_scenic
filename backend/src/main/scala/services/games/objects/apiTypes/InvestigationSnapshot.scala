@@ -5,7 +5,10 @@ import services.system.objects.*
 import services.cases.objects.*
 import services.cases.objects.scene.{SceneObservation, AreaMap}
 import services.cases.objects.content.CasePersonBrief
-final case class InvestigationSnapshot(sessionId: SessionId, caseId: CaseId, caseRevision: Revision, sequence: Sequence, title: String, scene: StudySceneView, points: Vector[InquiryPointView], clues: Vector[ClueView], journal: Vector[InvestigationLogEntry], observations: Vector[SceneObservation], stage: Option[InvestigationStageView], witnesses: Vector[WitnessView], interviews: Vector[InterviewTurnView], police: Option[PoliceDeskView], people: Vector[CasePersonBrief], areaMap: Option[AreaMap] = None, clock: Option[ClockView] = None, externalChecks: Vector[ExternalCheckView] = Vector.empty, followUps: Vector[WitnessFollowUpView] = Vector.empty, statementComparisons: Vector[StatementComparisonView] = Vector.empty, conclusionCandidates: Set[PersonId] = Set.empty, conclusion: Option[services.games.objects.CaseConclusionRecord] = None, reasoning: Option[services.games.objects.ReasoningProgress] = None)
+final case class InvestigationSnapshot(sessionId: SessionId, caseId: CaseId, caseRevision: Revision, sequence: Sequence, title: String, scene: StudySceneView, points: Vector[InquiryPointView], clues: Vector[ClueView], journal: Vector[InvestigationLogEntry], observations: Vector[SceneObservation], stage: Option[InvestigationStageView], witnesses: Vector[WitnessView], interviews: Vector[InterviewTurnView], police: Option[PoliceDeskView], people: Vector[CasePersonBrief], areaMap: Option[AreaMap] = None, clock: Option[ClockView] = None, externalChecks: Vector[ExternalCheckView] = Vector.empty, followUps: Vector[WitnessFollowUpView] = Vector.empty, statementComparisons: Vector[StatementComparisonView] = Vector.empty, conclusionCandidates: Set[PersonId] = Set.empty, conclusion: Option[services.games.objects.CaseConclusionRecord] = None, reasoning: Option[services.games.objects.ReasoningProgress] = None,
+  continuousWitnesses: Vector[WitnessId] = Vector.empty)
 object InvestigationSnapshot:
-  given Encoder[InvestigationSnapshot] = deriveEncoder[InvestigationSnapshot]
-  given Decoder[InvestigationSnapshot] = deriveDecoder[InvestigationSnapshot]
+  given Encoder[InvestigationSnapshot] = deriveEncoder[InvestigationSnapshot].mapJson(json =>
+    if json.hcursor.get[Vector[WitnessId]]("continuousWitnesses").contains(Vector.empty) then json.mapObject(_.remove("continuousWitnesses")) else json)
+  given Decoder[InvestigationSnapshot] = deriveDecoder[InvestigationSnapshot].prepare(_.withFocus(_.mapObject(fields =>
+    if fields.contains("continuousWitnesses") then fields else fields.add("continuousWitnesses",io.circe.Json.arr()))))

@@ -1,5 +1,23 @@
 # 验收前准备与启动步骤
 
+## 2026-11-01：连续问询修订22
+
+新调查发布为`vicarage_study/22`，场景仍为`study/5`。雷丁、安妮均采用连续问询，取消新局补问启动与准备清单；模型依据本人资料、实际出示材料和本人已存记录选择回应或修正。固定备用也保存为问询记录。新说法保存当次实际说出口的原文，首供、原请求、回执和后续引用保留；警方登记、阿彻联系仍需实际调查材料。题材真相、人物责任与原著时代不变，不自动认罪、逮捕或补造检查。
+
+当前仅首案这两位人物采用新协议，不是通用语义引擎。后端约束ID、引用和事务，真实语义仍需抽样及人工审核；仍可能出现同义问法漏标或误标。旧3—21调查和冻结复盘不迁移；旧`openstudy`默认21用于恢复兼容，新网页从发布目录明确选择22。旧21作者文件独立冻结。操作见[手动测试指南](manual_test_guide.md)及整案流程第7段。以下旧版本与分阶段说明是历史记录。
+
+
+开发验收脚本（含剧透，使用后端正常模型配置，不读取密钥）：
+
+```powershell
+& 'E:\dev\nodejs\node.exe' tools/verify_continuous_interviews_live.mjs
+& 'E:\dev\nodejs\node.exe' tools/verify_continuous_interviews_live.mjs --unrelated
+& 'E:\dev\nodejs\node.exe' tools/verify_case_completion_live.mjs --continuous --positive
+```
+
+连续问询脚本测试不同问法、实际材料、一般确认与越权请求；`--unrelated`补测无关材料不应使供述改变。整案脚本用固定取证路径及真实模型评审，验证新修订到明确结案；它不能代替自然问询语义验收。输出与凭证仅存在被忽略的`.build-cache`内。实际停止并正常重启后端后，分别加`--restore`验证整份快照（整案脚本保留`--continuous`，不加`--positive`）。浏览器新22测试与固定21旧版回归分开，恢复检查用项目`browser-restore`。
+
+
 适用于当前 Windows 本机版本。项目目录：`D:\2026autumn\software_making\detective_scenic`。
 
 日常验收按下面的步骤启动即可，无需重新安装依赖或修改系统环境。

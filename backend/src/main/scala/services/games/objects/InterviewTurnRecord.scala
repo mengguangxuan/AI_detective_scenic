@@ -5,7 +5,10 @@ import io.circe.generic.semiauto.*
 import services.system.objects.*
 import services.cases.objects.*
 
-final case class InterviewTurnRecord(sessionId: SessionId, requestId: RequestId, sequence: Sequence, witness: WitnessId, question: String, shownClues: Set[ClueId], reply: String, mode: InterviewReplyMode, answerIds: Vector[WitnessAnswerId])
+final case class InterviewTurnRecord(sessionId: SessionId, requestId: RequestId, sequence: Sequence, witness: WitnessId, question: String, shownClues: Set[ClueId], reply: String, mode: InterviewReplyMode, answerIds: Vector[WitnessAnswerId],
+  statementUpdates: Vector[InterviewStatementUpdate] = Vector.empty)
 object InterviewTurnRecord:
-  given Encoder[InterviewTurnRecord] = deriveEncoder[InterviewTurnRecord]
-  given Decoder[InterviewTurnRecord] = deriveDecoder[InterviewTurnRecord]
+  given Encoder[InterviewTurnRecord] = deriveEncoder[InterviewTurnRecord].mapJson(json =>
+    if json.hcursor.get[Vector[InterviewStatementUpdate]]("statementUpdates").contains(Vector.empty) then json.mapObject(_.remove("statementUpdates")) else json)
+  given Decoder[InterviewTurnRecord] = deriveDecoder[InterviewTurnRecord].prepare(_.withFocus(_.mapObject(fields =>
+    if fields.contains("statementUpdates") then fields else fields.add("statementUpdates",io.circe.Json.arr()))))

@@ -13,7 +13,7 @@ import services.games.tables.ReceiptTable.ReceiptTable
 import services.games.tables.PoliceExchangeTable.PoliceExchangeTable
 import services.games.tables.SessionRecordTable.SessionRecordTable
 import services.games.tables.InterviewTurnTable.InterviewTurnTable
-import services.games.utils.{FixtureRules,MutationSupport}
+import services.games.utils.{ContinuousInterviewRules, FixtureRules,MutationSupport, RecordedInterviewRules}
 import services.system.api.APIMessage
 import services.system.objects.*
 
@@ -32,7 +32,12 @@ final case class InvestigateMessage(userId: UserId,sessionId: SessionId,requestI
             revision <- CaseRevisionTable.find(connection,session.caseId,session.caseRevision).flatMap(value => IO.fromOption(value)(GameError(ErrorCode.InvalidValue,"案件修订不存在。")))
             records <- SessionRecordTable.list(connection,sessionId)
             turns <- InterviewTurnTable.list(connection,sessionId)
-            plan <- IO.fromEither(FixtureRules.investigate(revision.content,session,requestId,point,route,records,turns))
+            content=RecordedInterviewRules.content(revision.content,turns)
+            continuous=content.witnesses.exists(w => w.point == point && content.continuousInterviews.exists(_.witness == w.id))
+            planned <- if continuous then IO.fromEither(ContinuousInterviewRules.fixed(content,session,requestId,point,route,records,turns)).map((action,turn) => (action,Some(turn)))
+              else IO.fromEither(FixtureRules.investigate(content,session,requestId,point,route,records,turns)).map(action => (action,None))
+            (plan,turn)=planned
+            _ <- turn.fold(IO.unit)(InterviewTurnTable.insert(connection,_))
             presented = revision.content.routes.find(_.id == route).map(_.presentedClues).getOrElse(Set.empty)
             _ <- if revision.content.police.flatMap(id => revision.content.witnesses.find(_.id == id)).exists(_.point == point) && presented.nonEmpty then
               PoliceExchangeTable.insert(connection,PoliceExchangeRecord(sessionId,requestId,plan.session.sequence,presented,plan.record.text)) else IO.unit

@@ -19,7 +19,7 @@ class PlanterSuite extends FunSuite:
     DatabaseSession.connection(url).use(c => DatabaseSession.transaction(c)(f(c)))
   private def setup(url: String,id: SessionId)=DatabaseSession.connection(url).use(c =>
     DatabaseSchema.initialize(c) *> DatabaseSession.transaction(c)(
-      ImportCaseMessage(Paths.get("../docs/fixtures/browser_investigation.json")).plan(c) *> OpenStudyMessage(owner,id).plan(c)))
+      ImportCaseMessage(Paths.get("../docs/fixtures/browser_investigation_v21.json")).plan(c) *> OpenStudyMessage(owner,id).plan(c)))
   private def view(url: String,id: SessionId)=tx(url)(GetInvestigationSnapshotMessage(owner,id).plan)
   private def operation(id: SessionId,seq: Sequence,op: String)=
     ExecuteOperationMessage(owner,id,RequestId(UUID.randomUUID().toString),seq,OperationId(op))
@@ -88,7 +88,7 @@ class PlanterSuite extends FunSuite:
     val url=database;val id=SessionId(UUID.randomUUID().toString)
     (for
       _ <- DatabaseSession.connection(url).use(c => DatabaseSchema.initialize(c) *> DatabaseSession.transaction(c)(for
-        latest <- ImportCaseMessage(Paths.get("../docs/fixtures/browser_investigation.json")).plan(c)
+        latest <- ImportCaseMessage(Paths.get("../docs/fixtures/browser_investigation_v21.json")).plan(c)
         previous=latest.copy(revision=Revision(17),content=LegacyFixture.withoutPlanter(latest.content))
         _ <- CaseRevisionTable.insert(c,previous)
         _ <- StartGameMessage(owner,id,previous.caseId,previous.revision).plan(c)

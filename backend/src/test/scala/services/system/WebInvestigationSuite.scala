@@ -17,7 +17,7 @@ class WebInvestigationSuite extends FunSuite:
   private val client = HttpClient.newHttpClient()
   private def setup(url: String): IO[Unit] = DatabaseSession.connection(url).use { c =>
     DatabaseSchema.initialize(c) *> LocalIdentityTableInitializer.initialize(c) *>
-      DatabaseSession.transaction(c)(ImportCaseMessage(Paths.get("../docs/fixtures/browser_investigation.json")).plan(c)).void
+      DatabaseSession.transaction(c)(ImportCaseMessage(Paths.get("../docs/fixtures/browser_investigation_v21.json")).plan(c)).void
   }
   private def send(port: Int,name: String,body: String = "{}",cookie: Option[String] = None,origin: Option[String] = None): IO[(Int,Json,Option[String])] = IO.blocking {
     val request = HttpRequest.newBuilder(URI.create(s"http://127.0.0.1:$port/api/$name"))

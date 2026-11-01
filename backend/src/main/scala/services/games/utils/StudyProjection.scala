@@ -6,10 +6,11 @@ import services.system.objects.*
 // Authored presentation binding for the first registered study, not a general action classifier.
 private[games] object StudyProjection:
   private[games] val caseId = CaseId("vicarage_study")
+  // Legacy openstudy payloads have no explicit revision; retain their original default.
   private[games] val revision = Revision(21)
   // Revision 18 adds study/5; existing games retain study/4 and their authored content.
   private[games] def supports(id: CaseId, value: Revision): Boolean =
-    id == caseId && Set(Revision(3), Revision(4), Revision(5), Revision(6), Revision(7), Revision(8), Revision(9), Revision(10), Revision(11), Revision(12), Revision(13), Revision(14), Revision(15), Revision(16), Revision(17), Revision(18), Revision(19), Revision(20), revision)(value)
+    id == caseId && Set(Revision(3), Revision(4), Revision(5), Revision(6), Revision(7), Revision(8), Revision(9), Revision(10), Revision(11), Revision(12), Revision(13), Revision(14), Revision(15), Revision(16), Revision(17), Revision(18), Revision(19), Revision(20), Revision(22), revision)(value)
   private[games] def supportsScene(bundle: String, revision: String): Boolean = bundle == "study" && Set("4","5")(revision)
   private[games] def snapshot(caseRecord: CaseRevisionRecord, state: GameSessionRecord, records: Vector[SessionRecord], turns: Vector[InterviewTurnRecord], exchanges: Vector[PoliceExchangeRecord] = Vector.empty,
       release: Option[CaseReleaseRecord] = None): InvestigationSnapshot =
@@ -17,7 +18,7 @@ private[games] object StudyProjection:
       r.caseId == caseRecord.caseId && r.revision == caseRecord.revision && supportsScene(r.sceneBundle,r.sceneRevision))
     if !supported then
       throw GameError(ErrorCode.ConflictingContent,"这份调查使用的场景版本暂不支持，请保留原存档；可以另建一次调查使用当前版本。")
-    val content = caseRecord.content
+    val content = RecordedInterviewRules.content(caseRecord.content,turns)
     val police = content.police.flatMap(id => content.witnesses.find(_.id == id))
     val positions = SceneAccessRules.positions(content,state)
     val points = content.points.filter(p => SceneAccessRules.withinRange(positions.get(p.node),state.playerPosition,p)).map { point =>
@@ -50,4 +51,5 @@ private[games] object StudyProjection:
           visible.map(e => PoliceExchangeView(e.requestId,e.sequence,e.evidence,e.reply)))
       },people,content.areaMap,
       content.clock.map(c => ClockView(ExternalCheckRules.timeLabel(content,state.storyTimeSeconds),state.storyTimeSeconds-content.initialStoryTimeSeconds,c.actionSeconds/60)),
-      ExternalCheckRules.views(content,state),FollowUpRules.views(content,state,records,turns),FollowUpRules.comparisons(content,state,records),content.conclusion.map(_.candidates).getOrElse(Set.empty),state.conclusion,content.conclusion.flatMap(_.evaluation).map(_ => state.reasoning))
+      ExternalCheckRules.views(content,state),FollowUpRules.views(content,state,records,turns),FollowUpRules.comparisons(content,state,records),content.conclusion.map(_.candidates).getOrElse(Set.empty),state.conclusion,content.conclusion.flatMap(_.evaluation).map(_ => state.reasoning),
+      content.continuousInterviews.map(_.witness).filter(accessibleWitnesses))

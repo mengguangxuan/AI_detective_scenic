@@ -20,7 +20,8 @@ private[games] object FixtureRules:
       operation.requiredClues.subsetOf(state.clues)
 
   private[games] def routeAvailable(state: GameSessionRecord, route: FixtureRoute): Boolean =
-    route.prerequisite.forall(state.completedOperations.contains) && route.disabledAfter.forall(op => !state.completedOperations(op)) && route.requiredClues.subsetOf(state.clues)
+    route.prerequisite.forall(state.completedOperations.contains) && route.disabledAfter.forall(op => !state.completedOperations(op)) &&
+      route.supersededBy.forall(id => !state.clues(id)) && route.requiredClues.subsetOf(state.clues)
 
   private[games] def execute(f: CaseContent,state: GameSessionRecord,request: RequestId,operation: OperationId, records: Vector[SessionRecord] = Vector.empty, turns: Vector[InterviewTurnRecord] = Vector.empty): Either[GameError,ActionPlan] =
     for

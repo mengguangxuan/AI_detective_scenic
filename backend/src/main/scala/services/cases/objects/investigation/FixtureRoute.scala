@@ -8,7 +8,7 @@ import services.cases.objects.{ClueId, OperationId, PointId, RouteId}
 
 final case class FixtureRoute(id: RouteId, point: PointId, prerequisite: Option[OperationId], clues: Vector[ClueId], label: String,
   requiredClues: Set[ClueId] = Set.empty, presentedClues: Set[ClueId] = Set.empty, disabledAfter: Option[OperationId] = None,
-  reply: Option[String] = None)
+  reply: Option[String] = None, supersededBy: Option[ClueId] = None)
 
 object FixtureRoute:
   given Encoder[FixtureRoute] = deriveEncoder[FixtureRoute]

@@ -1,7 +1,7 @@
 import { test as base, expect } from '@playwright/test';
 import { randomUUID } from 'node:crypto';
 
-// Existing investigation regressions begin with an explicitly created investigation.
+// Published revision 21 regressions begin with an explicitly pinned investigation.
 // Website-entry tests use Playwright directly, and must exercise the empty initial state.
 export const test = base.extend({
   page: async ({ page }, use) => {
@@ -15,7 +15,7 @@ export const test = base.extend({
       const entry = (await catalog.json()).find((item: { caseId: string }) => item.caseId === 'vicarage_study');
       expect(entry).toBeDefined();
       const sessionId = randomUUID();
-      const response = await page.request.post('/api/openinvestigation', { data: { sessionId, caseId: entry.caseId, revision: entry.revision }, headers });
+      const response = await page.request.post('/api/openinvestigation', { data: { sessionId, caseId: entry.caseId, revision: { value: 21 } }, headers });
       expect(response.status()).toBe(200);
       await page.addInitScript(({ locatorKey, value }) => {
         if (!localStorage.getItem(locatorKey)) localStorage.setItem(locatorKey, value);

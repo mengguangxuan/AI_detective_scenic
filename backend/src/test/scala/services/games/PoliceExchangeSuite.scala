@@ -20,7 +20,7 @@ class PoliceExchangeSuite extends FunSuite:
     DatabaseSession.connection(url).use(c => DatabaseSession.transaction(c)(run(c)))
   private def setup(url: String,id: SessionId): IO[Unit] = DatabaseSession.connection(url).use { c =>
     DatabaseSchema.initialize(c) *> DatabaseSession.transaction(c)(
-      ImportCaseMessage(Paths.get("../docs/fixtures/browser_investigation.json")).plan(c) *>
+      ImportCaseMessage(Paths.get("../docs/fixtures/browser_investigation_v21.json")).plan(c) *>
       OpenStudyMessage(owner,id).plan(c)).void
   }
   private def read(id: SessionId,point: String,route: String,seq: Long) =
@@ -35,7 +35,7 @@ class PoliceExchangeSuite extends FunSuite:
     (for
       _ <- DatabaseSession.connection(url).use(c => DatabaseSchema.initialize(c))
       _ <- tx(url) { c => for
-        current <- ImportCaseMessage(Paths.get("../docs/fixtures/browser_investigation.json")).plan(c)
+        current <- ImportCaseMessage(Paths.get("../docs/fixtures/browser_investigation_v21.json")).plan(c)
         previous = current.copy(revision=Revision(3),content=LegacyFixture.withoutFollowUps(current.content).copy(police=None,witnesses=LegacyFixture.withoutFollowUps(current.content).witnesses.filterNot(w => current.content.police.contains(w.id)),publicPersons=Vector.empty,clock=None,externalChecks=Vector.empty,areaMap=None))
         _ <- CaseRevisionTable.insert(c,previous)
         _ <- StartGameMessage(owner,id,previous.caseId,previous.revision).plan(c)

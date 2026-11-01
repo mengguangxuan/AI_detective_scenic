@@ -23,8 +23,12 @@ object WebDemo extends IOApp.Simple:
         _ <- DatabaseSchema.initialize(c)
         _ <- LocalIdentityTableInitializer.initialize(c)
         _ <- DatabaseSession.transaction(c)(ImportCaseMessage(Paths.get("../docs/fixtures/browser_investigation_v20.json")).plan(c))
+        _ <- DatabaseSession.transaction(c)(ImportCaseMessage(Paths.get("../docs/fixtures/browser_investigation_v21.json")).plan(c))
         _ <- DatabaseSession.transaction(c)(ImportCaseMessage(Paths.get("../docs/fixtures/browser_investigation.json")).plan(c))
         _ <- DatabaseSession.transaction(c)(RegisterPlayableCaseMessage(CaseReleaseRecord(CaseId("vicarage_study"),Revision(21),
+          "1930年的圣玛丽米德，上校死在牧师寓所的书房。走进保留现场，询问相关人物，对照证词与检查记录，提出你对案件的解释。",
+          Vector("经典推理","现场探索","人物问询"),"study","5")).plan(c))
+        _ <- DatabaseSession.transaction(c)(RegisterPlayableCaseMessage(CaseReleaseRecord(CaseId("vicarage_study"),Revision(22),
           "1930年的圣玛丽米德，上校死在牧师寓所的书房。走进保留现场，询问相关人物，对照证词与检查记录，提出你对案件的解释。",
           Vector("经典推理","现场探索","人物问询"),"study","5")).plan(c))
       yield () }

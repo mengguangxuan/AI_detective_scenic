@@ -24,7 +24,7 @@ class NewWitnessSuite extends FunSuite:
     DatabaseSession.connection(url).use(c => DatabaseSession.transaction(c)(run(c)))
   private def setup(url: String,id: SessionId): IO[Unit] = DatabaseSession.connection(url).use { c =>
     DatabaseSchema.initialize(c) *> DatabaseSession.transaction(c)(
-      ImportCaseMessage(Paths.get("../docs/fixtures/browser_investigation.json")).plan(c) *> OpenStudyMessage(owner,id).plan(c)).void
+      ImportCaseMessage(Paths.get("../docs/fixtures/browser_investigation_v21.json")).plan(c) *> OpenStudyMessage(owner,id).plan(c)).void
   }
   private def client(raw: String)=new ChatCompletionClient:
     override def complete(input: ChatCompletionInput): IO[String]=IO.pure(raw)
@@ -41,7 +41,7 @@ class NewWitnessSuite extends FunSuite:
     (for
       _ <- DatabaseSession.connection(url).use(c => DatabaseSchema.initialize(c))
       _ <- tx(url) { c => for
-        latest <- ImportCaseMessage(Paths.get("../docs/fixtures/browser_investigation.json")).plan(c)
+        latest <- ImportCaseMessage(Paths.get("../docs/fixtures/browser_investigation_v21.json")).plan(c)
         base = LegacyFixture.withoutFollowUps(latest.content)
         newPoints = Set(PointId("point_redding"),PointId("point_marple"),PointId("point_anne"),PointId("point_valet"),PointId("point_stone"),PointId("point_hartnell"),PointId("point_archer"))
         primaryClues = base.routes.filter(r => newPoints(r.point)).flatMap(_.clues).toSet

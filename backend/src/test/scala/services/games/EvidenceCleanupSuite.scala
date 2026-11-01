@@ -18,7 +18,7 @@ class EvidenceCleanupSuite extends FunSuite:
   private def tx[A](url: String)(f: java.sql.Connection => IO[A]): IO[A]=DatabaseSession.connection(url).use(c => DatabaseSession.transaction(c)(f(c)))
   private def setup(url: String)=DatabaseSession.connection(url).use(c => DatabaseSchema.initialize(c) *> DatabaseSession.transaction(c)(
     ImportCaseMessage(Paths.get("../docs/fixtures/browser_investigation_v20.json")).plan(c) *>
-    ImportCaseMessage(Paths.get("../docs/fixtures/browser_investigation.json")).plan(c)))
+    ImportCaseMessage(Paths.get("../docs/fixtures/browser_investigation_v21.json")).plan(c)))
   private def view(url: String,id: SessionId)=tx(url)(GetInvestigationSnapshotMessage(owner,id).plan)
   private def read(url: String,id: SessionId,point: String,route: String)=for
     before <- view(url,id)

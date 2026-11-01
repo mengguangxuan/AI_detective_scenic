@@ -10,11 +10,12 @@ import services.cases.objects.*
 import services.cases.tables.CaseRevisionTable.CaseRevisionTable
 import services.games.objects.*
 import services.games.objects.apiTypes.CommandResult
+import services.games.tables.InterviewTurnTable.InterviewTurnTable
 import services.games.tables.SessionTable.SessionTable
 import services.games.tables.ReceiptTable.ReceiptTable
 import services.games.tables.InterviewRequestTable.InterviewRequestTable
 import services.games.tables.ReasoningRequestTable.ReasoningRequestTable
-import services.games.utils.{ReasoningRules,MutationSupport}
+import services.games.utils.{ReasoningRules,MutationSupport,RecordedInterviewRules}
 import services.models.api.ChatCompletionClient
 import services.system.api.{APIMessage,DatabaseSession}
 import services.system.objects.*
@@ -54,7 +55,8 @@ final case class EvaluateReasoningMessage(userId: UserId,sessionId: SessionId,re
                   evaluating <- InterviewRequestTable.hasActive(connection,sessionId,now)
                   _ <- IO.raiseWhen(active || evaluating)(GameError(ErrorCode.RequestPending,"这场调查还有模型请求正在处理中，请稍后重试。"))
                   revision <- CaseRevisionTable.find(connection,session.caseId,session.caseRevision).flatMap(value => IO.fromOption(value)(GameError(ErrorCode.InvalidValue,"案件修订不存在。")))
-                  context <- IO.fromEither(ReasoningRules.context(revision.content,session,suspects,evidence,explanation))
+                  turns <- InterviewTurnTable.list(connection,sessionId)
+                  context <- IO.fromEither(ReasoningRules.context(RecordedInterviewRules.content(revision.content,turns),session,suspects,evidence,explanation))
                   token <- IO(UUID.randomUUID().toString)
                   row = ReasoningRequestRecord(sessionId,requestId,digest,expectedSequence,suspects,evidence,explanation,context,token,now+90000,ReasoningRequestStatus.Pending)
                   _ <- ReasoningRequestTable.insert(connection,row)

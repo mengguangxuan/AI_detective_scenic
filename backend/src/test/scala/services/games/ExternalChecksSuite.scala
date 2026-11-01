@@ -23,7 +23,7 @@ class ExternalChecksSuite extends FunSuite:
   private def database=s"jdbc:h2:mem:${UUID.randomUUID()};DB_CLOSE_DELAY=-1;LOCK_TIMEOUT=3000"
   private def tx[A](url: String)(run: java.sql.Connection => IO[A]): IO[A] = DatabaseSession.connection(url).use(c => DatabaseSession.transaction(c)(run(c)))
   private def setup(url: String,id: SessionId): IO[Unit]=DatabaseSession.connection(url).use(c => DatabaseSchema.initialize(c) *> DatabaseSession.transaction(c)(
-    ImportCaseMessage(Paths.get("../docs/fixtures/browser_investigation.json")).plan(c) *> OpenStudyMessage(owner,id).plan(c)).void)
+    ImportCaseMessage(Paths.get("../docs/fixtures/browser_investigation_v21.json")).plan(c) *> OpenStudyMessage(owner,id).plan(c)).void)
   private def view(url: String,id: SessionId)=tx(url)(GetInvestigationSnapshotMessage(owner,id).plan)
   private def request(id: SessionId,check: String="gun_verification",seq: Long=0)=RequestExternalCheckMessage(owner,id,RequestId(check),Sequence(seq),ExternalCheckId(check))
   private def waitFor(id: SessionId,seq: Long,minutes: Int=15)=AdvanceTimeMessage(owner,id,RequestId(s"wait-$seq"),Sequence(seq),minutes)
@@ -144,7 +144,7 @@ class ExternalChecksSuite extends FunSuite:
     (for
       _ <- DatabaseSession.connection(url).use(DatabaseSchema.initialize)
       _ <- tx(url) { c => for
-        latest <- ImportCaseMessage(Paths.get("../docs/fixtures/browser_investigation.json")).plan(c)
+        latest <- ImportCaseMessage(Paths.get("../docs/fixtures/browser_investigation_v21.json")).plan(c)
         old=latest.copy(revision=Revision(7),content=LegacyFixture.withoutFollowUps(latest.content).copy(clock=None,areaMap=None,externalChecks=Vector.empty))
         _ <- CaseRevisionTable.insert(c,old)
         _ <- StartGameMessage(owner,id,old.caseId,old.revision).plan(c)
@@ -193,7 +193,7 @@ class ExternalChecksSuite extends FunSuite:
     val url=database
     (for
       _ <- DatabaseSession.connection(url).use(c => DatabaseSchema.initialize(c))
-      record <- tx(url)(ImportCaseMessage(Paths.get("../docs/fixtures/browser_investigation.json")).plan)
+      record <- tx(url)(ImportCaseMessage(Paths.get("../docs/fixtures/browser_investigation_v21.json")).plan)
       content = record.content
       officer = content.witnesses.find(w => content.police.contains(w.id)).get
       ordinary = content.witnesses.find(_.id == WitnessId("clement")).get.copy(name=officer.name)

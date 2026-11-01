@@ -21,7 +21,7 @@ import services.system.objects.*
 import services.cases.objects.dialogue.{DialogueDossier, WitnessProfile}
 
 class CharacterConfigurationSuite extends FunSuite:
-  private val source = parser.parse(Files.readString(Paths.get("../docs/fixtures/browser_investigation.json"))).toOption.get
+  private val source = parser.parse(Files.readString(Paths.get("../docs/fixtures/browser_investigation_v21.json"))).toOption.get
   private def changeCharacter(source: Json, id: String)(change: Json => Json): Json =
     source.mapObject(fields => fields.add("characters",Json.fromValues(fields("characters").get.asArray.get.map(p =>
       if p.hcursor.get[String]("id").contains(id) then change(p) else p))))

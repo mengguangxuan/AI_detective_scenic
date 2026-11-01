@@ -25,6 +25,8 @@ private[games] object InterviewRules:
       _ <- Either.cond(evidence.subsetOf(state.clues),(),denied)
     yield
       val history = turns.filter(_.witness == witness)
+      val continuous=content.continuousInterviews.find(_.witness == witness)
+      val own=RecordedInterviewRules.ownClues(content,witness,records,turns)
       val fixedPresentations = records.filter(_.point == profile.point).flatMap(_.route)
         .flatMap(id => content.routes.find(_.id == id).toVector.flatMap(_.presentedClues))
       val policeEvidence = if content.police.contains(profile.id) then exchanges.flatMap(_.evidence).toSet else Set.empty[ClueId]
@@ -32,10 +34,11 @@ private[games] object InterviewRules:
         content.externalChecks.filter(c => state.externalChecks.exists(p => p.id == c.id && p.completedAtSeconds.nonEmpty)).flatMap(_.resultClues).toSet else Set.empty[ClueId]
       val known = checked ++ evidence ++ history.filter(t => t.mode == InterviewReplyMode.Answered || t.mode == InterviewReplyMode.Unknown).flatMap(_.shownClues) ++ fixedPresentations ++ policeEvidence
       // Composite answers may establish a prerequisite for their own later route.
-      val native = profile.answers.filter(a => a.requiredEvidence.subsetOf(known) &&
+      val native = profile.answers.filter(a =>
+        continuous.exists(_.statementAnswers(a.id)) || (a.requiredEvidence.subsetOf(known) &&
         a.routes.foldLeft(Option(state)) { (candidate,id) => candidate.flatMap(s =>
           content.routes.find(r => r.id == id && r.point == profile.point).filter(FixtureRules.routeAvailable(s,_))
-            .map(r => s.copy(clues=s.clues++r.clues))) }.nonEmpty)
+            .map(r => s.copy(clues=s.clues++r.clues))) }.nonEmpty))
       val initial = if knowledge.nonEmpty || privateContext.nonEmpty || policy.nonEmpty then DialogueDossier(knowledge,privateContext,policy) else profile.dossier
       val phase = content.followUps.find(p => p.witness == witness && state.completedOperations(p.operation))
       val phaseKnowledge = phase.map(_.knowledge).getOrElse(initial.knowledge)
@@ -53,7 +56,9 @@ private[games] object InterviewRules:
         }
       } else Vector.empty
       InterviewContext(profile.copy(answers=available,dossier=DialogueDossier(phaseKnowledge++current++mapKnowledge++conditions,initial.privateContext,phasePolicy)),content.clues.filter(c => known(c.id)),history.takeRight(12),state.caseId,state.caseRevision,
-        if initial.knowledge.nonEmpty then 2 else 1)
+        if continuous.nonEmpty then 3 else if initial.knowledge.nonEmpty then 2 else 1,
+        continuous.map(_.statementAnswers.filter(id => profile.answers.find(_.id == id).exists(a => a.routes.exists(route => content.routes.exists(r => r.id == route && !r.clues.forall(state.clues.contains)))))).getOrElse(Set.empty),
+        if continuous.nonEmpty then content.clues.filter(c => own(c.id)) else Vector.empty)
 
   private[games] def prompt(request: InterviewRequestRecord): ChatCompletionInput =
     val c = request.context
@@ -81,32 +86,62 @@ private[games] object InterviewRules:
       |警方不能凭对话宣称已搜查、逮捕、保护或取得新检查报告。可以讨论下一步建议，但执行与结果须等游戏系统确认。不得自动转述其他人物本局对话。
       |严格输出JSON，仅两个字段：{"reply":"你说给玩家听的话","disclosureIds":["本轮实际披露的允许材料ID"]}。
       |reply必须非空，最多2000字；disclosureIds最多4个不重复ID，只能使用disclosures里提供的ID。不要输出Markdown或额外字段。""".stripMargin
-    val system = if c.responseVersion == 2 then conversational else legacy
+    val continuousPrompt = conversational
+      .replace("保持人物对外版本，不自动改口或承认未经本局发生的后续事件。", "依据实际交流选择坚持、解释、回避或改变说法；不承认未经本局发生的未来事件。")
+      .replace("严格输出JSON，仅两个字段：{\"reply\":\"你说给玩家听的话\",\"disclosureIds\":[\"本轮实际披露的允许材料ID\"]}。", "")
+      .replace("不要输出Markdown或额外字段。", "不要输出Markdown。") +
+      """
+      |这是连续问询，没有首轮／补充阶段、准备清单或启动按钮。根据本人资料、实际收到的证据和recordedStatements回应，不要求点完固定问题。可用disclosures含不同说法的候选，不表示本轮必须采用；是否改变说法应结合问题、实际材料和本人保护意图判断。
+      |knowledge和voice中描述的“最初”“开局”“维持认罪”是初始对外说法，不是永久禁止修正的指令。当玩家针对原供矛盾明确追问、且policy允许解释或改变时，应结合已经出示的材料选择当下能维持本人保护意图的说法，不要机械重复初始认罪。此时若对方已经实际撤回独自杀人的说法，要理解这与自己仍替他承担的动机有何关系；允许说明先前认罪是为了保护对方，而不是把这当成玩家要求泄露共谋。新解释仍是掩饰，不是客观无辜。
+      |recordedStatements是本人已经实际说过、已保存的记录，早于history中的近期对话。保留已发生的表达；面对矛盾可以解释旧说法，不得假装从没说过，不得把保护情人的对外策略变成真实无辜。不能因玩家说“你已经看过”就信以为真。
+      |只回答当前问题涉及的话题。玩家仅询问姓名、职业、身份，确认听到或要求记下旧供时，不主动转入撤回认罪、枪来源或现场经过的新版本；即使shownEvidence有材料、disclosures有备选说法，也不是主动改口的理由。材料被收到本身不意味着保护意图改变；不能为了利用候选条目而额外补一段改口。
+      |statementOptions列出尚未记录的说法主题。只在reply实际明确表达其中的新说法时登记statementUpdates。坚持旧供、收到材料、含糊迟疑、否认某个猜测、只说愿意重新解释，都不等于已经作出那份新说法。普通细节首次披露不自动代表撤回其他口供。
+      |转述出示材料时，材料中的“我”“我的枪”等第一人称属于原发言人，转换为相应人物，不得误说成你自己的物品、行为或亲历；不增加材料未记载的精确位置、检查或目击。
+      |新说法依据只能引用shownEvidence或recordedStatements中真实提供、且与当前追问和这次改口理由相关的ID，不能引用未收到的报告，不能用无关读数或本人旧供凑引用。statementUpdates.text须从本轮reply逐字截取能独立表达该新说法的原文，不能增写未说出口的内容。已经记录的说法可复述，不再次登记更新。只列本轮实际表达的disclosureIds，不以关联词匹配整套候选。
+      |ID有两个不同命名空间：disclosureIds只能逐字复制disclosures中id（例如redding_revised），绝不能把shownEvidence或recordedStatements的材料ID（例如clue_anne_statement）放入disclosureIds。出示的材料是输入依据，不是你本轮新披露的内容；其ID只放在statementUpdates.evidenceIds。answerId也只能复制statementOptions中的ID。输出前逐一核对所有ID所属列表。
+      |只输出JSON三个字段：{"reply":"人物实际答复","disclosureIds":["本轮实际披露ID"],"statementUpdates":[{"answerId":"statementOptions里的ID","evidenceIds":["实际依据ID"],"text":"reply中的新说法原文"}]}。没有新说法则statementUpdates为空数组。每个更新ID也须列入disclosureIds；更新最多3条，引用依据不得为空。人物仍不泄露共谋真相，不替他人改口或替警方完成调查。
+      |""".stripMargin
+    val system = if c.responseVersion == 3 then continuousPrompt else if c.responseVersion == 2 then conversational else legacy
     val user = Json.obj("witness" -> Json.obj("name" -> c.profile.name.asJson, "background" -> c.profile.background.asJson,
       "voice" -> c.profile.voice.asJson),
       "knowledge" -> c.profile.dossier.knowledge.asJson,
       "privateContext" -> c.profile.dossier.privateContext.asJson,
       "policy" -> c.profile.dossier.policy.asJson,
-      (if c.responseVersion == 2 then "disclosures" else "answers") -> Json.fromValues(c.profile.answers.map(a => Json.obj("id" -> a.id.asJson, "text" -> a.text.asJson))),
+      (if c.responseVersion >= 2 then "disclosures" else "answers") -> Json.fromValues(c.profile.answers.map(a => Json.obj("id" -> a.id.asJson, "text" -> a.text.asJson))),
       "shownEvidence" -> Json.fromValues(c.evidence.map(e => Json.obj("id" -> e.id.asJson,"title" -> e.title.value.asJson,"text" -> e.text.value.asJson))),
       "history" -> Json.fromValues(c.history.map(t => Json.obj("question" -> t.question.asJson,"reply" -> t.reply.asJson,"mode" -> t.mode.asJson))),
       "question" -> request.question.asJson)
-    ChatCompletionInput(system,user.noSpaces)
+    val expanded=if c.responseVersion < 3 then user else user.deepMerge(Json.obj(
+      "statementOptions" -> c.statementAnswers.toVector.sortBy(_.value).asJson,
+      "recordedStatements" -> Json.fromValues(c.recordedStatements.map(e => Json.obj("id" -> e.id.asJson,"title" -> e.title.value.asJson,"text" -> e.text.value.asJson)))))
+    ChatCompletionInput(system,expanded.noSpaces)
 
   private[games] def decision(raw: String, context: InterviewContext): Option[InterviewDecision] =
     for
       json <- parser.parse(raw).toOption
-      obj <- json.asObject.filter(_.keys.toSet == (if context.responseVersion == 2 then Set("reply","disclosureIds") else Set("answerIds")))
-      ids <- obj(if context.responseVersion == 2 then "disclosureIds" else "answerIds").flatMap(_.as[Vector[WitnessAnswerId]].toOption)
-      reply <- if context.responseVersion == 2 then obj("reply").flatMap(_.asString).map(s => Some(s.trim)) else Some(None)
-      value = InterviewDecision(ids,reply)
+      obj <- json.asObject.filter(_.keys.toSet == (if context.responseVersion == 3 then Set("reply","disclosureIds","statementUpdates") else if context.responseVersion == 2 then Set("reply","disclosureIds") else Set("answerIds")))
+      ids <- obj(if context.responseVersion >= 2 then "disclosureIds" else "answerIds").flatMap(_.as[Vector[WitnessAnswerId]].toOption)
+      reply <- if context.responseVersion >= 2 then obj("reply").flatMap(_.asString).map(s => Some(s.trim)) else Some(None)
+      updates <- if context.responseVersion == 3 then obj("statementUpdates").filter(_.asArray.exists(_.forall(_.asObject.exists(_.keys.toSet == Set("answerId","evidenceIds","text")))))
+        .flatMap(_.as[Vector[InterviewStatementUpdate]].toOption) else Some(Vector.empty)
+      value = InterviewDecision(ids,reply,updates)
       if validDecision(value,context)
     yield value
 
   private[games] def validDecision(value: InterviewDecision,context: InterviewContext): Boolean =
-    value.answerIds.size <= (if context.responseVersion == 2 then 4 else 2) &&
+    value.answerIds.size <= (if context.responseVersion >= 2 then 4 else 2) &&
       value.answerIds.distinct.size == value.answerIds.size && value.answerIds.forall(id => context.profile.answers.exists(_.id == id)) &&
-      (if context.responseVersion == 2 then value.reply.exists(s => s.trim.nonEmpty && s.length <= 2000 && !s.exists(c => c < ' ' && c != '\n' && c != '\t')) else value.reply.isEmpty)
+      (if context.responseVersion >= 2 then value.reply.exists(s => s.trim.nonEmpty && s.length <= 2000 && !s.exists(c => c < ' ' && c != '\n' && c != '\t')) else value.reply.isEmpty) && validUpdates(value,context)
+
+  private def validUpdates(value: InterviewDecision,context: InterviewContext): Boolean =
+    if context.responseVersion < 3 then value.statementUpdates.isEmpty
+    else
+      val updates=value.statementUpdates
+      val known=(context.evidence ++ context.recordedStatements).map(_.id).toSet
+      updates.size <= 3 && updates.map(_.answerId).distinct.size == updates.size &&
+        updates.map(_.answerId).toSet == value.answerIds.filter(context.statementAnswers).toSet && updates.forall(update =>
+          update.evidenceIds.nonEmpty && update.evidenceIds.subsetOf(known) && update.text.trim.nonEmpty && update.text.length <= 1500 &&
+          value.reply.exists(_.contains(update.text)) && !update.text.exists(c => c < ' ' && c != '\n' && c != '\t'))
 
   private[games] def plan(content: CaseContent,state: GameSessionRecord,request: InterviewRequestRecord,
       decision: Option[InterviewDecision],failure: Option[InterviewReplyMode]): Either[GameError,(ActionPlan,InterviewTurnRecord)] =
@@ -117,7 +152,7 @@ private[games] object InterviewRules:
         current.flatMap { s =>
           for
             route <- content.routes.find(r => r.id == routeId && r.point == request.context.profile.point).toRight(denied)
-            _ <- Either.cond(FixtureRules.routeAvailable(s,route),(),denied)
+            _ <- Either.cond((request.context.responseVersion == 3 && content.continuousInterviews.exists(spec => spec.witness == request.witness && answers.exists(a => a.routes.contains(routeId) && spec.statementAnswers(a.id)))) || FixtureRules.routeAvailable(s,route),(),denied)
             clues = content.clues.filter(c => route.clues.contains(c.id))
           yield s.copy(clues=s.clues++clues.map(_.id),facts=s.facts++clues.flatMap(_.facts))
         }
@@ -131,7 +166,7 @@ private[games] object InterviewRules:
       val next=s.copy(sequence=Sequence(state.sequence.value+1))
       val clues=next.clues--state.clues
       val facts=next.facts--state.facts
-      val turn=InterviewTurnRecord(state.id,request.requestId,next.sequence,request.witness,request.question,request.shownClues,reply,mode,answers.map(_.id))
+      val turn=InterviewTurnRecord(state.id,request.requestId,next.sequence,request.witness,request.question,request.shownClues,reply,mode,answers.map(_.id),if mode == InterviewReplyMode.Answered then decision.toVector.flatMap(_.statementUpdates) else Vector.empty)
       val text=s"问询${request.context.profile.name}：${request.question}\n$reply"
       val record=SessionRecord(RecordId(s"${request.requestId.value}:interview"),state.id,request.requestId,next.sequence,next.storyTimeSeconds,
         request.context.profile.point,Some(RouteId(s"interview_${request.witness.value}")),None,text,clues,facts)

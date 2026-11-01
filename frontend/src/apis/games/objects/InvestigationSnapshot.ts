@@ -7,6 +7,7 @@ import { statementComparisonSchema } from './StatementComparisonView';
 import { areaMapSchema } from './AreaMap';
 import { externalCheckViewSchema } from './ExternalCheckView';
 import { witnessViewSchema } from './WitnessView';
+import { witnessIdSchema } from '../../../objects/WitnessId';
 import { interviewTurnSchema } from './InterviewTurnView';
 import { policeDeskSchema } from './PoliceDeskView';
 import { casePersonBriefSchema } from './CasePersonBrief';
@@ -18,6 +19,7 @@ import { clueViewSchema } from './ClueView';
 import { investigationLogSchema } from './InvestigationLogEntry';
 import { sceneObjectBindingSchema } from './SceneObjectBinding';
 export const investigationSnapshotSchema = z.object({
+  continuousWitnesses: z.array(witnessIdSchema).default([]),
   reasoning: reasoningProgressSchema.nullable().default(null),
   conclusionCandidates: z.array(personIdSchema).default([]),
   conclusion: caseConclusionSchema.nullable().default(null),
@@ -35,6 +37,8 @@ export const investigationSnapshotSchema = z.object({
   people: z.array(casePersonBriefSchema),
   stage: z.object({ introduction: z.string(), objective: z.string(), completed: z.boolean(), nextObjective: z.string().nullable(), hasTimeComparison: z.boolean().default(true) }).strict().nullable(),
 }).strict().superRefine((snapshot, context) => {
+  if (snapshot.continuousWitnesses.some(id => !snapshot.witnesses.some(witness => witness.id === id)))
+    context.addIssue({ code: 'custom', message: '连续问询对象不可接触' });
   if (snapshot.reasoning) {
     const attempts = snapshot.reasoning.attempts;
     if (new Set(attempts.map(a => a.requestId)).size !== attempts.length || attempts.some((a, i) =>

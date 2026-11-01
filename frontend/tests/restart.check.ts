@@ -301,3 +301,20 @@ test.describe('case-wide ending status recovery', () => {
     expect(await response.json()).toEqual(JSON.parse(readFileSync('.build-cache/progress-solved-snapshot.json', 'utf8')));
   });
 });
+
+test.describe('continuous statement recovery', () => {
+  test.use({ storageState: '.build-cache/continuous-browser-state.json' });
+  test('new investigation restores actual versions without a phase operation after restart', async ({ page }) => {
+    await page.goto('/interviews');
+    await page.getByRole('button', { name: '与劳伦斯·雷丁交谈', exact: true }).click();
+    const saved = await page.evaluate(() => JSON.parse(localStorage.getItem('detective-scenic:server-session:v6')!));
+    const response = await page.request.post('/api/getinvestigationsnapshot', { data: { sessionId: saved.sessionId }, headers: { 'X-Detective-Client': 'web' } });
+    expect(response.status()).toBe(200); const snapshot = await response.json();
+    expect(snapshot.caseRevision.value).toBe(22); expect(snapshot.followUps).toEqual([]);
+    expect(snapshot.clues.some((c: { id: string }) => c.id === 'clue_redding_account')).toBe(true);
+    const revised = snapshot.clues.find((c: { id: string }) => c.id === 'clue_redding_revised');
+    expect(revised).toBeDefined();
+    await expect(page.getByRole('log', { name: '自由问询记录', exact: true })).toContainText(revised.text);
+    await expect(page.getByRole('button', { name: '开始补充问询', exact: true })).toHaveCount(0);
+  });
+});

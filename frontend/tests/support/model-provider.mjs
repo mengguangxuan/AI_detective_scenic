@@ -32,6 +32,20 @@ const server = http.createServer(async (request, response) => {
       response.end(JSON.stringify({ choices: [{ finish_reason: 'stop', message: { content: JSON.stringify(payload) } }] })); return;
     }
     if (context.question.includes('接口故障测试')) { response.writeHead(503).end('{"error":"fixture unavailable"}'); return; }
+    // Version 3 protocol fixture only; semantic quality is tested separately with the real provider.
+    if (context.statementOptions) {
+      const allowed = new Set(context.disclosures.map(answer => answer.id));
+      const id = context.question.includes('协议连续：雷丁重新说明') ? 'redding_revised'
+        : context.question.includes('协议连续：安妮重新说明') ? 'anne_revised' : undefined;
+      const reply = id && allowed.has(id) ? context.disclosures.find(answer => answer.id === id).text : '我听到了，目前仍坚持先前的说法。';
+      const known = [...context.shownEvidence, ...context.recordedStatements];
+      const preferred = id === 'redding_revised' ? 'clue_anne_statement' : 'clue_redding_revised';
+      const basis = known.find(item => item.id === preferred);
+      const payload = { reply, disclosureIds: id && allowed.has(id) ? [id] : [],
+        statementUpdates: id && context.statementOptions.includes(id) && basis ? [{ answerId: id, evidenceIds: [basis.id], text: reply }] : [] };
+      response.setHeader('Content-Type', 'application/json');
+      response.end(JSON.stringify({ choices: [{ finish_reason: 'stop', message: { content: JSON.stringify(payload) } }] })); return;
+    }
     let id;
     if (/教堂|凭什么|时间依据/.test(context.question)) id = 'mary_time_basis';
     else if (/钟|准不准/.test(context.question)) id = 'clement_habit';

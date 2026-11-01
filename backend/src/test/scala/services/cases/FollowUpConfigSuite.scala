@@ -4,7 +4,7 @@ import java.nio.file.{Files,Paths}
 import munit.FunSuite
 import services.cases.utils.FixtureLoader
 class FollowUpConfigSuite extends FunSuite:
-  private def source=parser.parse(Files.readString(Paths.get("../docs/fixtures/browser_investigation.json"))).toOption.get
+  private def source=parser.parse(Files.readString(Paths.get("../docs/fixtures/browser_investigation_v21.json"))).toOption.get
   test("follow-up operations must belong to the stated witness and reference reachable preparation questions") {
     assert(FixtureLoader.decode(source.noSpaces).isRight)
     val wrong=source.hcursor.downField("investigation").downField("followUps").downArray.downField("witness").withFocus(_ => Json.fromString("mary")).top.get
