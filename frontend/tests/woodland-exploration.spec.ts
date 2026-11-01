@@ -90,7 +90,7 @@ test('woodland remains playable through the same registered actions without WebG
     } });
   });
   const game = await start(page); await page.goto('/map'); await travel(page, '前往树林');
-  await expect(page.getByText(/浏览器不支持 WebGL|3D 场景无法加载/).first()).toBeVisible();
+  await expect(page.getByText(/暂时无法初始化三维画面|3D 场景无法加载/).first()).toBeVisible();
   await travel(page, '沿小径走向空地'); await travel(page, '走近倒木旁');
   await item(page, '倒木旁的落叶'); await page.getByRole('button', { name: '拨开落叶查看', exact: true }).click();
   await expect.poll(async () => (await game.snapshot()).scene.objects.some((o: { node: string }) => o.node === 'node_woodland_fragment')).toBe(true);

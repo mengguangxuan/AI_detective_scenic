@@ -8,26 +8,39 @@ import type { OperationId } from '../../../../objects/OperationId';
 import type { RouteId } from '../../../../objects/RouteId';
 import type { SceneCameraMemory } from '../../objects/SceneCameraMemory';
 import ObjectMenu from './ObjectMenu';
+import ContextLifecycle from './ContextLifecycle';
 const StudyScene = lazy(() => import('./StudyScene'));
 const WoodlandScene = lazy(() => import('./WoodlandScene'));
-class SceneBoundary extends Component<{ children: ReactNode }, { failed: boolean }> {
+class SceneBoundary extends Component<{ children: ReactNode; onFailure: () => void }, { failed: boolean }> {
   state = { failed: false };
   static getDerivedStateFromError() { return { failed: true }; }
+  componentDidCatch() { this.props.onFailure(); }
   render() {
     return this.state.failed ? <p role="alert" className="p-8 text-stone-300">3D 场景无法加载，请使用下方的物品列表调查。</p> : this.props.children;
   }
+}
+function canInitializeWebgl(): boolean {
+  try {
+    const probe = document.createElement('canvas').getContext('webgl2');
+    const available = probe !== null; probe?.getExtension('WEBGL_lose_context')?.loseContext();
+    return available;
+  } catch { return false; }
 }
 type Props = { cameraMemory: RefObject<SceneCameraMemory | null>; snapshot: InvestigationSnapshot; selected: SceneSelection; disabled: boolean;
   onInspect: (object: SceneObjectBinding) => void; onExecute: (operation: OperationId) => void; onInvestigate: (route: RouteId) => void };
 export default function SceneViewport({ snapshot, selected, disabled, onInspect, onExecute, onInvestigate, cameraMemory }: Props) {
   const woodland = snapshot.scene.bundleId === 'woodland';
   const [webgl, setWebgl] = useState<boolean | null>(null);
+  const [contextLost, setContextLost] = useState(false);
+  const [renderFailed, setRenderFailed] = useState(false);
+  const [attempt, setAttempt] = useState(0);
   useEffect(() => {
-    try {
-      const probe = document.createElement('canvas').getContext('webgl2');
-      setWebgl(probe !== null); probe?.getExtension('WEBGL_lose_context')?.loseContext();
-    } catch { setWebgl(false); }
+    setWebgl(canInitializeWebgl());
   }, []);
+  function retryView() {
+    if (webgl !== true) setWebgl(canInitializeWebgl());
+    setContextLost(false); setRenderFailed(false); setAttempt(value => value + 1);
+  }
   const frame = useRef<HTMLDivElement>(null);
   const gesture = useRef({ x: 0, y: 0, dragged: false });
   const [menu, setMenu] = useState<{ node: SceneNodeId; x: number; y: number } | null>(null);
@@ -64,14 +77,16 @@ export default function SceneViewport({ snapshot, selected, disabled, onInspect,
       onPointerMoveCapture={event => { if (Math.hypot(event.clientX - gesture.current.x, event.clientY - gesture.current.y) > 5) gesture.current.dragged = true; }}>
       <div className="pointer-events-none absolute left-4 top-4 z-10 rounded-full bg-stone-950/60 px-3 py-2 text-xs text-stone-200">{woodland ? '周五 · 林间小径' : '牧师寓所 / 书房'}</div>
       <button type="button" onClick={() => { setResetVersion(v => v + 1); setMenu(null); }} className="absolute right-4 top-4 z-10 rounded-lg border border-white/25 bg-stone-950/70 px-3 py-2 text-xs text-stone-100 hover:bg-stone-800">恢复全景</button>
-      <SceneBoundary key={snapshot.scene.bundleId}><Suspense fallback={<p className="p-16 text-stone-300">{woodland ? '正在准备林地…' : '正在准备书房…'}</p>}>
-        {webgl ? <Canvas key={snapshot.scene.bundleId} shadows frameloop={woodland ? 'demand' : 'always'} dpr={woodland ? 1 : [1, 1.5]} camera={{ position: [4, 3.5, 5], fov: woodland ? 48 : 43, far: 80 }} onPointerMissed={() => { if (!gesture.current.dragged) setMenu(null); }}
-          onCreated={({ gl }) => { gl.domElement.addEventListener('webglcontextlost', () => setWebgl(false), { once: true }); }}
-          fallback={<p className="p-16">浏览器不支持 WebGL，请使用下方物品列表。</p>}>
+      <SceneBoundary key={`${snapshot.scene.bundleId}:${attempt}`} onFailure={() => setRenderFailed(true)}><Suspense fallback={<p className="p-16 text-stone-300">{woodland ? '正在准备林地…' : '正在准备书房…'}</p>}>
+        {webgl ? <Canvas key={`${snapshot.scene.bundleId}:${attempt}`} shadows frameloop={woodland ? 'demand' : 'always'} dpr={woodland ? 1 : [1, 1.5]} camera={{ position: [4, 3.5, 5], fov: woodland ? 48 : 43, far: 80 }} onPointerMissed={() => { if (!gesture.current.dragged) setMenu(null); }}
+          fallback={<p className="p-16">暂时无法初始化三维画面，请重试或使用下方物品列表。</p>}>
+          <ContextLifecycle onLost={setContextLost}/>
           {woodland ? <WoodlandScene snapshot={snapshot} cameraMemory={cameraMemory} resetVersion={resetVersion} onPick={pickModel}/>
             : <StudyScene scene={snapshot.scene} sessionId={snapshot.sessionId} cameraMemory={cameraMemory} resetVersion={resetVersion} onPick={pickModel}/>}
-        </Canvas> : <p role="status" className="p-16 text-stone-300">{webgl === null ? '正在准备三维视图…' : '浏览器不支持 WebGL，请使用下方物品列表。'}</p>}
+        </Canvas> : <p role="status" className="p-16 text-stone-300">{webgl === null ? '正在准备三维视图…' : '暂时无法初始化三维画面，请重试或使用下方物品列表。'}</p>}
       </Suspense></SceneBoundary>
+      {contextLost ? <p role="status" className="absolute left-4 right-4 top-16 z-10 rounded-lg bg-stone-950/90 p-3 text-sm text-amber-100">三维画面暂时中断，正在等待恢复。也可重试画面或使用下方物品列表。</p> : null}
+      {contextLost || renderFailed || webgl === false ? <button type="button" onClick={retryView} className="absolute bottom-14 right-4 z-20 rounded-lg border border-amber-200/60 bg-stone-950/90 px-4 py-2 text-sm text-amber-100 hover:bg-stone-800">重试三维画面</button> : null}
       {menu && object && isSelected ? <ObjectMenu object={object} point={snapshot.points.find(p => p.id === object.point)}
         observation={snapshot.observations.find(o => o.node === object.node)}
         left={Math.max(12, Math.min(menu.x, size.width - 332))} top={Math.max(52, Math.min(menu.y, size.height - 180))}
