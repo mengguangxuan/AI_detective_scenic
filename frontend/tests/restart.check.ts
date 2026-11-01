@@ -367,3 +367,14 @@ test.describe('short-answer continuity recovery', () => {
     await expect(log).not.toContainText('这是我们这次的第一句交谈。');
   });
 });
+
+test.describe('clarification focus recovery', () => {
+  test.use({ storageState: '.build-cache/focus-browser-state.json' });
+  test('the clarification and its actual answer survive backend restart without granting clues', async ({ page }) => {
+    await page.goto('/interviews'); await page.getByRole('button', { name: '与玛丽交谈', exact: true }).click();
+    const log = page.getByRole('log', { name: '自由问询记录', exact: true });
+    await expect(log).toContainText('你是问他为什么让我去请医生吗？');
+    await expect(log).toContainText('对，我问的是为什么去请医生。');
+    await expect(log).toContainText('这件事刚才说清楚了。');
+  });
+});

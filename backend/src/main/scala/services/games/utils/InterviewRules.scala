@@ -56,9 +56,11 @@ private[games] object InterviewRules:
         }
       } else Vector.empty
       InterviewContext(profile.copy(answers=available,dossier=DialogueDossier(phaseKnowledge++current++mapKnowledge++conditions,initial.privateContext,phasePolicy)),content.clues.filter(c => known(c.id)),history.takeRight(12),state.caseId,state.caseRevision,
-        if continuous.nonEmpty || content.interviewPromptVersion == 2 then 3 else if initial.knowledge.nonEmpty then 2 else 1,
+        if content.interviewPromptVersion == 2 then 4 else if continuous.nonEmpty then 3 else if initial.knowledge.nonEmpty then 2 else 1,
         continuous.map(_.statementAnswers.filter(id => profile.answers.find(_.id == id).exists(a => a.routes.exists(route => content.routes.exists(r => r.id == route && !r.clues.forall(state.clues.contains)))))).getOrElse(Set.empty),
-        if continuous.nonEmpty || content.interviewPromptVersion == 2 then content.clues.filter(c => own(c.id)) else Vector.empty, if content.interviewPromptVersion == 2 then 5 else 1)
+        if continuous.nonEmpty || content.interviewPromptVersion == 2 then content.clues.filter(c => own(c.id)) else Vector.empty, if content.interviewPromptVersion == 2 then 6 else 1,
+        if content.interviewPromptVersion == 2 then history.reverseIterator.filter(_.mode == InterviewReplyMode.Answered)
+          .flatMap(t => t.focus.map(f => RecordedDialogueFocus(t.sequence,f))).nextOption() else None)
 
   private[games] def prompt(request: InterviewRequestRecord): ChatCompletionInput =
     val c = request.context
@@ -115,31 +117,47 @@ private[games] object InterviewRules:
       "allowedEvidenceIds" -> (c.evidence ++ c.recordedStatements).map(_.id).distinct.asJson))
     val withMemory=if c.responseVersion < 3 && c.promptVersion < 2 then constrained else constrained.deepMerge(Json.obj(
       "recordedStatements" -> Json.fromValues(c.recordedStatements.map(e => Json.obj("id" -> e.id.asJson,"title" -> e.title.value.asJson,"text" -> e.text.value.asJson)))))
-    val expanded=if c.responseVersion != 3 then withMemory else withMemory.deepMerge(Json.obj(
+    val expanded=if c.responseVersion < 3 then withMemory else withMemory.deepMerge(Json.obj(
       "statementOptions" -> c.statementAnswers.toVector.sortBy(_.value).asJson))
     val presented=if c.promptVersion < 3 then expanded else expanded.deepMerge(Json.obj(
       "readingReminder" -> "以下presentedThisTurn是本轮已经交到你面前的原文，不是待索取的资料。policy中的试探话术须结合这些原文调整：先回应一条相关的具体记载，再怀疑或反问其中未明之处。材料内容已知，不代表相信或改口。若登记更新，text须逐字复制最终reply里的连续原文，不能另写摘要。".asJson,
       "presentedThisTurn" -> Json.fromValues(c.evidence.filter(e => request.shownClues(e.id))
         .map(e => Json.obj("id" -> e.id.asJson,"title" -> e.title.value.asJson,"text" -> e.text.value.asJson)))))
-    if c.promptVersion == 5 then DialogueContinuityPrompt.groundedInput(c,presented)
+    if c.promptVersion == 6 then FocusedInterviewPrompt.input(c,presented)
+    else if c.promptVersion == 5 then DialogueContinuityPrompt.groundedInput(c,presented)
     else if c.promptVersion == 4 then DialogueContinuityPrompt.input(c,presented) else ChatCompletionInput(system,presented.noSpaces)
+
+  private def responseFields(context: InterviewContext): Set[String] =
+    if context.responseVersion == 4 then Set("reply","disclosureIds","statementUpdates","focus")
+    else if context.responseVersion == 3 then Set("reply","disclosureIds","statementUpdates")
+    else if context.responseVersion == 2 then Set("reply","disclosureIds") else Set("answerIds")
+
+  private def validFocus(value: InterviewDecision,context: InterviewContext): Boolean =
+    if context.responseVersion != 4 then value.focus.isEmpty
+    else value.focus.exists(f => value.reply.exists { reply =>
+      f.topic.trim.nonEmpty && f.topic.length <= 160 && reply.contains(f.topic) &&
+        f.pendingQuestion.forall(q => q.trim.nonEmpty && q.length <= 500 && reply.contains(q)) &&
+        (!f.clarification || (f.pendingQuestion.nonEmpty && value.answerIds.isEmpty && value.statementUpdates.isEmpty))
+    })
 
   private[games] def decision(raw: String, context: InterviewContext): Option[InterviewDecision] =
     for
       json <- parser.parse(raw).toOption
-      obj <- json.asObject.filter(_.keys.toSet == (if context.responseVersion == 3 then Set("reply","disclosureIds","statementUpdates") else if context.responseVersion == 2 then Set("reply","disclosureIds") else Set("answerIds")))
+      obj <- json.asObject.filter(_.keys.toSet == responseFields(context))
       ids <- obj(if context.responseVersion >= 2 then "disclosureIds" else "answerIds").flatMap(_.as[Vector[WitnessAnswerId]].toOption)
       reply <- if context.responseVersion >= 2 then obj("reply").flatMap(_.asString).map(s => Some(s.trim)) else Some(None)
-      updates <- if context.responseVersion == 3 then obj("statementUpdates").filter(_.asArray.exists(_.forall(_.asObject.exists(_.keys.toSet == Set("answerId","evidenceIds","text")))))
+      updates <- if context.responseVersion >= 3 then obj("statementUpdates").filter(_.asArray.exists(_.forall(_.asObject.exists(_.keys.toSet == Set("answerId","evidenceIds","text")))))
         .flatMap(_.as[Vector[InterviewStatementUpdate]].toOption) else Some(Vector.empty)
-      value = InterviewDecision(ids,reply,updates)
+      focus <- if context.responseVersion == 4 then obj("focus").filter(_.asObject.exists(_.keys.toSet == Set("topic","pendingQuestion","clarification")))
+        .flatMap(_.as[DialogueFocus].toOption).map(Some.apply) else Some(None)
+      value = InterviewDecision(ids,reply,updates,focus)
       if validDecision(value,context)
     yield value
 
   // Log only validation flags, never model text, private dossiers or provider payloads.
   private[games] def rejectionSummary(raw: String,context: InterviewContext): String =
     val json=parser.parse(raw).toOption
-    val expected=if context.responseVersion == 3 then Set("reply","disclosureIds","statementUpdates") else if context.responseVersion == 2 then Set("reply","disclosureIds") else Set("answerIds")
+    val expected=responseFields(context)
     val ids=json.flatMap(_.hcursor.get[Vector[WitnessAnswerId]](if context.responseVersion >= 2 then "disclosureIds" else "answerIds").toOption)
     val reply=json.flatMap(_.hcursor.get[String]("reply").toOption)
     val updates=json.flatMap(_.hcursor.get[Vector[InterviewStatementUpdate]]("statementUpdates").toOption)
@@ -154,13 +172,15 @@ private[games] object InterviewRules:
       "basisUsesDisclosureId" -> updates.exists(_.exists(x => x.evidenceIds.exists(e => context.profile.answers.exists(_.id.value == e.value)))).asJson,
       "updateBasis" -> updates.exists(_.forall(x => x.evidenceIds.nonEmpty && x.evidenceIds.subsetOf(known))).asJson,
       "updateQuotes" -> updates.exists(_.forall(x => reply.exists(_.contains(x.text)))).asJson,
-      "updates" -> (if context.responseVersion != 3 then true else json.flatMap(_.hcursor.get[Vector[InterviewStatementUpdate]]("statementUpdates").toOption)
-        .exists(xs => ids.exists(is => validUpdates(InterviewDecision(is,reply,xs),context)))).asJson).noSpaces
+      "updates" -> (if context.responseVersion < 3 then true else json.flatMap(_.hcursor.get[Vector[InterviewStatementUpdate]]("statementUpdates").toOption)
+        .exists(xs => ids.exists(is => validUpdates(InterviewDecision(is,reply,xs),context)))).asJson,
+      "focus" -> (context.responseVersion != 4 || json.flatMap(_.hcursor.get[DialogueFocus]("focus").toOption)
+        .exists(f => validFocus(InterviewDecision(ids.getOrElse(Vector.empty),reply,updates.getOrElse(Vector.empty),Some(f)),context))).asJson).noSpaces
 
   private[games] def validDecision(value: InterviewDecision,context: InterviewContext): Boolean =
     value.answerIds.size <= (if context.responseVersion >= 2 then 4 else 2) &&
       value.answerIds.distinct.size == value.answerIds.size && value.answerIds.forall(id => context.profile.answers.exists(_.id == id)) &&
-      (if context.responseVersion >= 2 then value.reply.exists(s => s.trim.nonEmpty && s.length <= 2000 && !s.exists(c => c < ' ' && c != '\n' && c != '\t')) else value.reply.isEmpty) && validUpdates(value,context)
+      (if context.responseVersion >= 2 then value.reply.exists(s => s.trim.nonEmpty && s.length <= 2000 && !s.exists(c => c < ' ' && c != '\n' && c != '\t')) else value.reply.isEmpty) && validUpdates(value,context) && validFocus(value,context)
 
   private def validUpdates(value: InterviewDecision,context: InterviewContext): Boolean =
     if context.responseVersion < 3 then value.statementUpdates.isEmpty
@@ -181,7 +201,7 @@ private[games] object InterviewRules:
         current.flatMap { s =>
           for
             route <- content.routes.find(r => r.id == routeId && r.point == request.context.profile.point).toRight(denied)
-            _ <- Either.cond((request.context.responseVersion == 3 && content.continuousInterviews.exists(spec => spec.witness == request.witness && answers.exists(a => a.routes.contains(routeId) && spec.statementAnswers(a.id)))) || FixtureRules.routeAvailable(s,route),(),denied)
+            _ <- Either.cond((request.context.responseVersion >= 3 && content.continuousInterviews.exists(spec => spec.witness == request.witness && answers.exists(a => a.routes.contains(routeId) && spec.statementAnswers(a.id)))) || FixtureRules.routeAvailable(s,route),(),denied)
             clues = content.clues.filter(c => route.clues.contains(c.id))
           yield s.copy(clues=s.clues++clues.map(_.id),facts=s.facts++clues.flatMap(_.facts))
         }
@@ -195,7 +215,8 @@ private[games] object InterviewRules:
       val next=s.copy(sequence=Sequence(state.sequence.value+1))
       val clues=next.clues--state.clues
       val facts=next.facts--state.facts
-      val turn=InterviewTurnRecord(state.id,request.requestId,next.sequence,request.witness,request.question,request.shownClues,reply,mode,answers.map(_.id),if mode == InterviewReplyMode.Answered then decision.toVector.flatMap(_.statementUpdates) else Vector.empty)
+      val turn=InterviewTurnRecord(state.id,request.requestId,next.sequence,request.witness,request.question,request.shownClues,reply,mode,answers.map(_.id),if mode == InterviewReplyMode.Answered then decision.toVector.flatMap(_.statementUpdates) else Vector.empty,
+        if mode == InterviewReplyMode.Answered then decision.flatMap(_.focus) else None)
       val text=s"问询${request.context.profile.name}：${request.question}\n$reply"
       val record=SessionRecord(RecordId(s"${request.requestId.value}:interview"),state.id,request.requestId,next.sequence,next.storyTimeSeconds,
         request.context.profile.point,Some(RouteId(s"interview_${request.witness.value}")),None,text,clues,facts)

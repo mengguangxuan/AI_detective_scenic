@@ -30,6 +30,7 @@ object InspectInterviewEvidence extends IOApp.Simple:
             report=Json.obj("sessionId" -> request.sessionId.asJson,"requestId" -> request.requestId.asJson,
               "revision" -> request.context.revision.asJson,"sequence" -> request.expectedSequence.asJson,
               "promptVersion" -> request.context.promptVersion.asJson,"witness" -> request.witness.asJson,
+              "activeFocus" -> request.context.activeFocus.asJson,"savedFocus" -> turn.flatMap(_.focus).asJson,
               "question" -> request.question.asJson,"selectedIds" -> request.shownClues.asJson,
               "selectedInModelInput" -> selected.asJson,
               "presentedThisTurn" -> input.hcursor.get[Vector[Json]]("presentedThisTurn").toOption.asJson,

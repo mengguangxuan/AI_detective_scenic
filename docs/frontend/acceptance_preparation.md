@@ -2,9 +2,11 @@
 
 ## 当前验收：人物对话第一档，修订23
 
-本轮连续接话与材料阅读修复直接用于已有修订23的新问题，无需重开；按[手动指南第0节](manual_test_guide.md)复测。旧请求重试仍返回原回执。作者可运行`E:\dev\nodejs\node.exe tools/verify_material_reading_live.mjs`，实际重启后加`--restore`核对完整快照。
+本轮澄清焦点、连续接话与材料阅读修复直接用于已有修订23的新问题，无需重开；按[手动指南第0节](manual_test_guide.md)复测。旧请求重试仍返回原回执。作者可运行`E:\dev\nodejs\node.exe tools/verify_material_reading_live.mjs`，实际重启后加`--restore`核对完整快照。
 
 连续接话真实检查：`E:\dev\nodejs\node.exe tools/verify_dialogue_continuity_live.mjs`，加`--restore`核对实际重启后的完整快照。
+
+澄清焦点实测：`E:\dev\nodejs\node.exe tools/verify_clarification_focus_live.mjs`；实际重启后`--continue`接着回答澄清，最终`--restore`核对快照。加`--redding`可独立抽测雷丁，配合`--continue`换一个明确指代问题继续，`--redding --restore`核对其快照；原失败记录保留。
 
 首次测试时，从首页案件详情明确开始新调查，顶部确认`vicarage_study/23`。所有人物与警方共用反问、部分回答和策略连续性提示；旧22及更早调查保留原行为。当前操作按[手动指南](manual_test_guide.md)第2—5节；完整路线见[整案流程](full_case_walkthrough.md)，实现及边界见[人物对话提示](../cases/dialogue_prompt.md)。
 

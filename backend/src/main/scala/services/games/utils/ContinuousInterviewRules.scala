@@ -20,7 +20,8 @@ private[games] object ContinuousInterviewRules:
       text=route.reply.getOrElse(answer.text)
       basis=route.presentedClues ++ route.requiredClues.intersect(context.recordedStatements.map(_.id).toSet)
       updates=if context.statementAnswers(answer.id) then Vector(InterviewStatementUpdate(answer.id,basis,text)) else Vector.empty
-      decision=InterviewDecision(Vector(answer.id),Some(text),updates)
+      decision=InterviewDecision(Vector(answer.id),Some(text),updates,
+        if context.responseVersion == 4 then Some(DialogueFocus(text.take(160),None,false)) else None)
       _ <- Either.cond(InterviewRules.validDecision(decision,context),(),denied)
       request=InterviewRequestRecord(state.id,requestId,"fixed",state.sequence,person.id,route.label,route.presentedClues,context,"fixed",0L,InterviewRequestStatus.Pending)
       planned <- InterviewRules.plan(content,state,request,Some(decision),None)

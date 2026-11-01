@@ -59,6 +59,25 @@ test('a short answer uses role history after refresh and another witness starts 
   await page.context().storageState({ path: '.build-cache/continuity-browser-state.json' });
 });
 
+test('an ambiguous follow-up can clarify and the saved question clears when answered', async ({ page }) => {
+  test.skip(process.env.DETECTIVE_TEST_MODEL !== '1', 'Focus-state protocol fixture.');
+  const game = await start(page); const before = await game.snapshot();
+  await page.goto('/interviews'); await page.getByRole('button', { name: '与玛丽交谈', exact: true }).click();
+  const send = async (question: string) => {
+    await page.getByLabel('你的问题', { exact: true }).fill(question);
+    await page.getByRole('button', { name: '发送问题', exact: true }).click();
+  };
+  const log = page.getByRole('log', { name: '自由问询记录', exact: true });
+  await send('协议焦点：说明上一句'); await expect(log).toContainText('牧师让我去请医生，我便出门了。');
+  await send('为什么？'); await expect(log).toContainText('你是问他为什么让我去请医生吗？');
+  expect((await game.snapshot()).clues).toEqual(before.clues);
+  await page.reload(); await page.getByRole('button', { name: '与玛丽交谈', exact: true }).click();
+  await send('对，我问的是为什么去请医生。'); await expect(log).toContainText('牧师叫我去请海多克医生，所以我出门了。');
+  await send('协议焦点：已解答'); await expect(log).toContainText('这件事刚才说清楚了。');
+  expect((await game.snapshot()).clues).toEqual(before.clues);
+  await page.context().storageState({ path: '.build-cache/focus-browser-state.json' });
+});
+
 test('revision23 fixed fallback needs actual challenges and still reaches Archer without a phase button', async ({ page }) => {
   const game = await start(page);
   await game.read('route_redding_account'); await game.read('route_redding_gun');

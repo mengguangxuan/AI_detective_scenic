@@ -8,10 +8,12 @@ import services.cases.objects.content.FixtureClue
 import services.cases.objects.dialogue.WitnessProfile
 
 final case class InterviewContext(profile: WitnessProfile, evidence: Vector[FixtureClue], history: Vector[InterviewTurnRecord], caseId: CaseId, revision: Revision, responseVersion: Int = 1,
-  statementAnswers: Set[WitnessAnswerId] = Set.empty, recordedStatements: Vector[FixtureClue] = Vector.empty, promptVersion: Int = 1)
+  statementAnswers: Set[WitnessAnswerId] = Set.empty, recordedStatements: Vector[FixtureClue] = Vector.empty, promptVersion: Int = 1,
+  activeFocus: Option[RecordedDialogueFocus] = None)
 object InterviewContext:
   given Encoder[InterviewContext] = deriveEncoder[InterviewContext].mapJson(json =>
-    val versioned=if json.hcursor.get[Int]("promptVersion").contains(1) then json.mapObject(_.remove("promptVersion")) else json
+    val focused=if json.hcursor.get[Option[RecordedDialogueFocus]]("activeFocus").contains(None) then json.mapObject(_.remove("activeFocus")) else json
+    val versioned=if json.hcursor.get[Int]("promptVersion").contains(1) then focused.mapObject(_.remove("promptVersion")) else focused
     if json.hcursor.get[Int]("responseVersion").exists(_ < 3) && json.hcursor.get[Int]("promptVersion").contains(1) then versioned.mapObject(_.remove("statementAnswers").remove("recordedStatements")) else versioned)
   given Decoder[InterviewContext] = deriveDecoder[InterviewContext].prepare(_.withFocus(_.mapObject(fields =>
     val configured=if fields.contains("promptVersion") then fields else fields.add("promptVersion",io.circe.Json.fromInt(1))

@@ -13,6 +13,8 @@ const server = http.createServer(async (request, response) => {
     for await (const chunk of request) raw += chunk;
     const body = JSON.parse(raw);
     const context = JSON.parse(body.messages.findLast(message => message.role === 'user').content);
+    const withFocus = payload => context.focusInstruction && typeof payload.reply === 'string' && !('focus' in payload)
+      ? { ...payload, focus: { topic: payload.reply.slice(0, 160), pendingQuestion: null, clarification: false } } : payload;
     if (context.task === 'reasoning_judge' || context.task === 'reasoning_guidance') {
       const explanation = context.playerSubmission.explanation;
       if (explanation.includes('评审接口故障测试')) { response.writeHead(503).end('{}'); return; }
@@ -29,9 +31,25 @@ const server = http.createServer(async (request, response) => {
         payload = { feedback: context.checks.every(c => c.satisfied) ? '核心解释已得到现有材料支持。你可以选择结案，或继续核实细节。' : '请说明来电记录怎样支持你的行动时间推断，再核实尚未解释的环节。', evidenceIds: context.citedEvidence.map(c => c.id) };
       }
       response.writeHead(200, { 'Content-Type': 'application/json' });
-      response.end(JSON.stringify({ choices: [{ finish_reason: 'stop', message: { content: JSON.stringify(payload) } }] })); return;
+      response.end(JSON.stringify({ choices: [{ finish_reason: 'stop', message: { content: JSON.stringify(withFocus(payload)) } }] })); return;
     }
     if (context.question.includes('接口故障测试')) { response.writeHead(503).end('{"error":"fixture unavailable"}'); return; }
+    if (context.question.startsWith('协议焦点：') || (context.question === '为什么？' && context.activeFocus?.focus.topic === '去请医生') || context.question === '对，我问的是为什么去请医生。') {
+      let reply, focus;
+      if (context.question === '协议焦点：说明上一句') {
+        reply = '牧师让我去请医生，我便出门了。'; focus = { topic: '去请医生', pendingQuestion: null, clarification: false };
+      } else if (context.question === '为什么？') {
+        reply = '你是问他为什么让我去请医生吗？'; focus = { topic: '去请医生', pendingQuestion: reply, clarification: true };
+      } else if (context.question === '对，我问的是为什么去请医生。') {
+        if (context.activeFocus?.focus.pendingQuestion !== '你是问他为什么让我去请医生吗？') throw new Error('Pending clarification lost');
+        reply = '牧师叫我去请海多克医生，所以我出门了。'; focus = { topic: '去请海多克医生', pendingQuestion: null, clarification: false };
+      } else {
+        if (context.activeFocus?.focus.pendingQuestion !== null) throw new Error('Answered clarification not cleared');
+        reply = '这件事刚才说清楚了。'; focus = { topic: '这件事刚才说清楚了', pendingQuestion: null, clarification: false };
+      }
+      response.setHeader('Content-Type', 'application/json');
+      response.end(JSON.stringify({ choices: [{ finish_reason: 'stop', message: { content: JSON.stringify({ reply, disclosureIds: [], statementUpdates: [], focus }) } }] })); return;
+    }
     // Exact protocol assertions, separate from real-provider continuity review.
     const previous = context.dialogueFocus?.lastSpokenExchange;
     if (context.question === '协议接话：先问我' || (context.question === '对' && previous?.reply === '你是说抽屉里的那支枪吗？') || context.question === '协议接话：另一人物') {
@@ -47,7 +65,7 @@ const server = http.createServer(async (request, response) => {
         reply = '这是我们这次的第一句交谈。';
       }
       response.setHeader('Content-Type', 'application/json');
-      response.end(JSON.stringify({ choices: [{ finish_reason: 'stop', message: { content: JSON.stringify({ reply, disclosureIds: [], statementUpdates: [] }) } }] })); return;
+      response.end(JSON.stringify({ choices: [{ finish_reason: 'stop', message: { content: JSON.stringify(withFocus({ reply, disclosureIds: [], statementUpdates: [] })) } }] })); return;
     }
     // Test the complete checkbox -> request -> frozen input chain, not model semantics.
     if (context.question.startsWith('协议材料：')) {
@@ -55,14 +73,14 @@ const server = http.createServer(async (request, response) => {
       if (!Array.isArray(current) || current.length === 0 || current.some(item => !item.title || !item.text)) throw new Error('Missing selected material text');
       const payload = { reply: '已读到：' + current.map(item => item.title + '：' + item.text).join('\n'), disclosureIds: [], statementUpdates: [] };
       response.setHeader('Content-Type', 'application/json');
-      response.end(JSON.stringify({ choices: [{ finish_reason: 'stop', message: { content: JSON.stringify(payload) } }] })); return;
+      response.end(JSON.stringify({ choices: [{ finish_reason: 'stop', message: { content: JSON.stringify(withFocus(payload)) } }] })); return;
     }
     // UI protocol only: counterquestions carry no new evidence. Real dialogue quality uses DeepSeek.
     if (context.question.startsWith('协议对话：')) {
       const reply = context.question.includes('没有警方结论') ? '只是你的判断？那我先前说的没有什么要改的。' : '你们为什么怀疑安妮？';
       const payload = { reply, disclosureIds: [], ...(context.statementOptions ? { statementUpdates: [] } : {}) };
       response.setHeader('Content-Type', 'application/json');
-      response.end(JSON.stringify({ choices: [{ finish_reason: 'stop', message: { content: JSON.stringify(payload) } }] })); return;
+      response.end(JSON.stringify({ choices: [{ finish_reason: 'stop', message: { content: JSON.stringify(withFocus(payload)) } }] })); return;
     }
     // Version 3 protocol fixture only; semantic quality is tested separately with the real provider.
     if (context.statementOptions) {
@@ -76,7 +94,7 @@ const server = http.createServer(async (request, response) => {
       const payload = { reply, disclosureIds: id && allowed.has(id) ? [id] : [],
         statementUpdates: id && context.statementOptions.includes(id) && basis ? [{ answerId: id, evidenceIds: [basis.id], text: reply }] : [] };
       response.setHeader('Content-Type', 'application/json');
-      response.end(JSON.stringify({ choices: [{ finish_reason: 'stop', message: { content: JSON.stringify(payload) } }] })); return;
+      response.end(JSON.stringify({ choices: [{ finish_reason: 'stop', message: { content: JSON.stringify(withFocus(payload)) } }] })); return;
     }
     let id;
     if (/教堂|凭什么|时间依据/.test(context.question)) id = 'mary_time_basis';
@@ -158,7 +176,7 @@ const server = http.createServer(async (request, response) => {
     const decision = context.question.includes('越界测试') ? { disclosureIds: ['future_confession'], reply: 'DO_NOT_RENDER_FUTURE' }
       : context.disclosures ? { reply, disclosureIds: id && allowed.has(id) ? [id] : [] } : { answerIds: id && allowed.has(id) ? [id] : [] };
     response.setHeader('Content-Type', 'application/json');
-    response.end(JSON.stringify({ choices: [{ finish_reason: 'stop', message: { content: JSON.stringify(decision) } }] }));
+    response.end(JSON.stringify({ choices: [{ finish_reason: 'stop', message: { content: JSON.stringify(withFocus(decision)) } }] }));
   } catch { response.writeHead(400).end('{}'); }
 });
 server.listen(8091, '127.0.0.1', () => console.log('[model fixture ready] 127.0.0.1:8091'));
