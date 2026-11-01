@@ -143,14 +143,21 @@ private[games] object InterviewRules:
   private[games] def decision(raw: String, context: InterviewContext): Option[InterviewDecision] =
     for
       json <- parser.parse(raw).toOption
-      obj <- json.asObject.filter(_.keys.toSet == responseFields(context))
+      // Focus is auxiliary metadata. All other response fields remain mandatory and exact.
+      obj <- json.asObject.filter(o =>
+        (if context.responseVersion == 4 then o.keys.toSet + "focus" else o.keys.toSet) == responseFields(context))
       ids <- obj(if context.responseVersion >= 2 then "disclosureIds" else "answerIds").flatMap(_.as[Vector[WitnessAnswerId]].toOption)
       reply <- if context.responseVersion >= 2 then obj("reply").flatMap(_.asString).map(s => Some(s.trim)) else Some(None)
       updates <- if context.responseVersion >= 3 then obj("statementUpdates").filter(_.asArray.exists(_.forall(_.asObject.exists(_.keys.toSet == Set("answerId","evidenceIds","text")))))
         .flatMap(_.as[Vector[InterviewStatementUpdate]].toOption) else Some(Vector.empty)
-      focus <- if context.responseVersion == 4 then obj("focus").filter(_.asObject.exists(_.keys.toSet == Set("topic","pendingQuestion","clarification")))
-        .flatMap(_.as[DialogueFocus].toOption).map(Some.apply) else Some(None)
-      value = InterviewDecision(ids,reply,updates,focus)
+      // Never turn a claimed clarification into a disclosure, even if its quotes are malformed.
+      if context.responseVersion != 4 || !obj("focus").exists(_.hcursor.get[Boolean]("clarification").contains(true)) || (ids.isEmpty && updates.isEmpty)
+      focus = if context.responseVersion == 4 then obj("focus").filter(_.asObject.exists(_.keys.toSet == Set("topic","pendingQuestion","clarification")))
+        .flatMap(_.as[DialogueFocus].toOption) else None
+      parsed = InterviewDecision(ids,reply,updates,focus)
+      value = if context.responseVersion != 4 || validFocus(parsed,context) then parsed else
+        // Deterministic verbatim excerpt, no inferred question, no extra model call or authority.
+        parsed.copy(focus=reply.filter(_.nonEmpty).map(text => DialogueFocus(text.take(160),None,false)))
       if validDecision(value,context)
     yield value
 

@@ -3,12 +3,14 @@ import type { InvestigationPageState } from '../../features/investigation/object
 import type { useInvestigation } from '../../features/investigation/hooks/useInvestigation';
 import ConversationPanel from '../../features/investigation/components/ConversationPanel';
 import InterviewPanel from './components/InterviewPanel';
+import InvestigationLink from '../../app/components/InvestigationLink';
 type Props = { ready: Extract<InvestigationPageState, { kind: 'ready' }>;
   actions: Pick<ReturnType<typeof useInvestigation>, 'select' | 'execute' | 'investigate' | 'lastReply' | 'ask'> };
 export default function InterviewsPage({ ready, actions }: Props) {
   const points = ready.snapshot.points.filter(p => p.id !== ready.snapshot.police?.point && ready.snapshot.witnesses.some(w => w.point === p.id));
   const selected = points.find(p => ready.selected.kind === 'point' && p.id === ready.selected.id);
   const witness = ready.snapshot.witnesses.find(w => w.point === selected?.id);
+  const unavailable = ready.snapshot.witnesses.filter(w => !ready.snapshot.points.some(p => p.id === w.point));
   const followUp = ready.snapshot.followUps.find(item => item.witness === witness?.id);
   const phaseOperations = new Set(ready.snapshot.followUps.map(item => item.operation));
   const primaryQuestions = new Set(ready.snapshot.followUps.flatMap(item => item.questions.map(question => question.id)));
@@ -16,10 +18,17 @@ export default function InterviewsPage({ ready, actions }: Props) {
   return <section aria-labelledby="interviews-page-title" className="space-y-5">
     <div><h2 id="interviews-page-title" className="text-xl font-medium">人物问询</h2><p className="mt-2 text-sm leading-6 text-stone-400">选择谈话对象，了解各自的经历，也可以出示已经取得的材料继续追问。</p></div>
     <div className="flex flex-wrap gap-2" aria-label="自由问询对象">{ready.snapshot.witnesses.filter(w => points.some(p => p.id === w.point)).map(w => <button key={w.id} type="button" aria-pressed={w.id === witness?.id} onClick={() => actions.select(w.point)} className="rounded-lg border border-white/25 px-4 py-2 text-sm hover:bg-white/10 aria-pressed:border-amber-200 aria-pressed:text-amber-100">与{w.name}交谈</button>)}</div>
+    {unavailable.length ? <section aria-label="暂不可当面交谈的人物" className="rounded-xl border border-white/15 bg-[#182421] p-5">
+      <h3 className="font-medium">已认识，当前无法当面交谈</h3>
+      <p className="mt-2 text-sm leading-7 text-stone-300">{unavailable.map(w => w.name).join('、')}。你当前位于{ready.snapshot.scene.placeName}，需先前往会面地点再问询。</p>
+      <InvestigationLink href="/map" className="mt-3 inline-block text-sm text-amber-200 underline underline-offset-4">查看地点与可行走路线</InvestigationLink>
+    </section> : null}
+    {!points.length && !unavailable.length ? <p className="text-sm leading-7 text-stone-300">当前没有可当面问询的对象。可前往警方交流查看会面安排，或通过地图前往其他地点。</p> : null}
     {followUp && selected ? <FollowUpPanel followUp={followUp} disabled={ready.mutation.kind !== 'idle'} operationLabel={selected.operations.find(item => item.id === followUp.operation)?.label ?? '开始补充问询'} lastReply={actions.lastReply?.point === selected.id ? actions.lastReply.text : undefined}
       onBegin={operation => actions.execute(operation, selected.id)} onQuestion={route => actions.investigate(route, selected.id)}/> : null}
     {witness && ready.snapshot.continuousWitnesses.includes(witness.id) ? <p className="text-sm leading-7 text-stone-300">可以直接追问或出示材料。不同时间的说法会分别记录，在线索整理中对照。</p> : null}
-    {witness ? <ConversationPanel key={`${ready.snapshot.sessionId}:${witness.id}`} witness={witness} clues={ready.snapshot.clues} turns={ready.snapshot.interviews.filter(t => t.witness === witness.id)} disabled={ready.mutation.kind !== 'idle'} onAsk={actions.ask}/> : <p className="text-sm text-stone-400">选择一位人物，开始自由提问。</p>}
+    {witness ? <ConversationPanel key={`${ready.snapshot.sessionId}:${witness.id}`} witness={witness} clues={ready.snapshot.clues} turns={ready.snapshot.interviews.filter(t => t.witness === witness.id)} disabled={ready.mutation.kind !== 'idle'} onAsk={actions.ask}/> : points.length ? <p className="text-sm text-stone-400">选择一位人物，开始自由提问。</p> : null}
+    {ready.snapshot.police ? <InvestigationLink href="/police" className="inline-block text-sm text-amber-200 underline underline-offset-4">前往警方交流，询问或安排会面</InvestigationLink> : null}
     {selected && selected.presentations.length > 0 ? <section aria-label="已出示的材料" className="rounded-2xl border border-white/10 bg-[#182421] p-5"><h3 className="font-medium">与{witness?.name}的材料出示记录</h3>{selected.presentations.map(item => <article key={item.sequence} className="mt-4 border-l-2 border-amber-200/60 pl-4"><p className="text-xs text-stone-400">出示：{item.evidence.map(id => ready.snapshot.clues.find(clue => clue.id === id)?.title ?? id).join('、')}</p><p className="mt-2 whitespace-pre-wrap text-sm leading-7 text-stone-200">{item.reply}</p></article>)}</section> : null}
     <details className="rounded-2xl border border-white/10 bg-[#182421] p-4"><summary className="cursor-pointer text-sm text-stone-300">固定问答与材料笔记（备用）</summary><div className="mt-4 space-y-4">
     <InterviewPanel title="当面询问" description="选择谈话对象。" points={backupPoints} selected={selected?.id ?? null}

@@ -211,13 +211,83 @@ class ConversationalInterviewSuite extends FunSuite:
       _ = assertEquals(context.asJson.as[InterviewContext],Right(context))
       _ = assertEquals(after.clues,before.clues)
       missing=Json.obj("reply" -> clarify.asJson,"disclosureIds" -> Json.arr(),"statementUpdates" -> Json.arr())
-      _ = assert(InterviewRules.decision(missing.noSpaces,context).isEmpty)
-      _ = assert(InterviewRules.decision(missing.deepMerge(Json.obj("focus" -> focus.copy(topic="没有说出的秘密").asJson)).noSpaces,context).isEmpty)
-      _ = assert(InterviewRules.decision(missing.deepMerge(Json.obj("focus" -> focus.copy(pendingQuestion=None).asJson)).noSpaces,context).isEmpty)
+      _ = assertEquals(InterviewRules.decision(missing.noSpaces,context).flatMap(_.focus),Some(DialogueFocus(clarify,None,false)))
+      _ = assertEquals(InterviewRules.decision(missing.deepMerge(Json.obj("focus" -> focus.copy(topic="没有说出的秘密").asJson)).noSpaces,context).flatMap(_.focus),Some(DialogueFocus(clarify,None,false)))
+      _ = assertEquals(InterviewRules.decision(missing.deepMerge(Json.obj("focus" -> focus.copy(pendingQuestion=None).asJson)).noSpaces,context).flatMap(_.focus),Some(DialogueFocus(clarify,None,false)))
       _ = assert(InterviewRules.decision(missing.deepMerge(Json.obj("focus" -> focus.asJson,"disclosureIds" -> Vector("mary_sound").asJson)).noSpaces,context).isEmpty)
       legacy=context.copy(promptVersion=5,responseVersion=3,activeFocus=None)
       _ = assert(InterviewRules.decision(missing.noSpaces,legacy).nonEmpty)
       _ = assert(!legacy.asJson.hcursor.downField("activeFocus").succeeded)
+    yield ()).unsafeRunSync()
+  }
+
+  test("invalid auxiliary focus falls back to reply text while authority and legacy checks stay strict") {
+    val url=database;val id=SessionId(UUID.randomUUID().toString)
+    val text="上校来寓所是要见牧师。"
+    (for
+      _ <- setup(url,id)
+      prepared <- tx(url)(AskWitnessMessage(owner,id,RequestId("focus-validation"),Sequence(0),WitnessId("mary"),"为什么上校会出现在你的寓所？",Set.empty).plan)
+      context=prepared match
+        case InterviewPreparation.Reserved(row) => row.context
+        case _ => throw new IllegalStateException("Expected reservation")
+      base=Json.obj("reply" -> text.asJson,"disclosureIds" -> Json.arr(),"statementUpdates" -> Json.arr())
+      badFocus=Vector(Json.Null,Json.fromString("概括"),Json.obj(),
+        DialogueFocus("摘要而非原文",None,false).asJson,
+        DialogueFocus("",None,false).asJson,
+        DialogueFocus(text,Some("没有说过的问题？"),false).asJson,
+        DialogueFocus(text,None,true).asJson,
+        DialogueFocus(text,None,false).asJson.deepMerge(Json.obj("extra" -> true.asJson)))
+      _ = (Vector(base) ++ badFocus.map(f => base.deepMerge(Json.obj("focus" -> f)))).foreach { raw =>
+        val decision=InterviewRules.decision(raw.noSpaces,context).get
+        assertEquals(decision.reply,Some(text))
+        assertEquals(decision.focus,Some(DialogueFocus(text,None,false)))
+        assert(InterviewRules.validDecision(decision,context))
+      }
+      _ = Vector(
+        base.deepMerge(Json.obj("disclosureIds" -> Vector("not_allowed").asJson)),
+        base.deepMerge(Json.obj("disclosureIds" -> Vector("mary_sound","mary_sound").asJson)),
+        base.deepMerge(Json.obj("reply" -> "".asJson)),
+        base.deepMerge(Json.obj("reply" -> ("长" * 2001).asJson)),
+        base.deepMerge(Json.obj("statementUpdates" -> Json.arr(Json.obj("answerId" -> "mary_sound".asJson,"evidenceIds" -> Json.arr(),"text" -> text.asJson)))),
+        base.deepMerge(Json.obj("extra" -> true.asJson)),
+        base.deepMerge(Json.obj("disclosureIds" -> Vector("mary_sound").asJson,
+          "focus" -> DialogueFocus("坏摘录",None,true).asJson)),
+        base.mapObject(_.remove("statementUpdates")),
+        base.mapObject(_.remove("disclosureIds"))
+      ).foreach(raw => assert(InterviewRules.decision(raw.noSpaces,context).isEmpty))
+      _ = assert(InterviewRules.decision(base.deepMerge(Json.obj("focus" -> Json.Null)).noSpaces,context.copy(responseVersion=3)).isEmpty)
+      _ = assert(InterviewRules.decision(base.noSpaces,context.copy(responseVersion=3)).nonEmpty)
+    yield ()).unsafeRunSync()
+  }
+
+  test("repaired focus persists with the accepted reply, is reused next turn and retries keep the original receipt") {
+    val url=database;val id=SessionId(UUID.randomUUID().toString);val calls=new AtomicInteger()
+    val text="上校来寓所是要见牧师。"
+    val model=new ChatCompletionClient:
+      override def complete(input: ChatCompletionInput): IO[String]=IO {
+        calls.incrementAndGet()
+        Json.obj("reply" -> text.asJson,"disclosureIds" -> Json.arr(),"statementUpdates" -> Json.arr(),
+          "focus" -> DialogueFocus("上校来访的原因",None,false).asJson).noSpaces
+      }
+    (for
+      _ <- setup(url,id)
+      before <- view(url,id)
+      command=AskWitnessMessage(owner,id,RequestId("repaired-focus"),before.sequence,WitnessId("mary"),"为什么上校会出现在你的寓所？",Set.empty)
+      first <- command.run(url,model)
+      replay <- command.run(url,model)
+      _ = assertEquals(first,replay)
+      _ = assertEquals(calls.get(),1)
+      after <- view(url,id)
+      _ = assertEquals(after.interviews.last.mode,InterviewReplyMode.Answered)
+      _ = assertEquals(after.interviews.last.reply,text)
+      _ = assertEquals(after.clues,before.clues)
+      next <- tx(url)(AskWitnessMessage(owner,id,RequestId("after-repaired-focus"),after.sequence,WitnessId("mary"),"然后呢？",Set.empty).plan)
+      row=next match
+        case InterviewPreparation.Reserved(row) => row
+        case _ => throw new IllegalStateException("Expected reservation")
+      _ = assertEquals(row.context.activeFocus,Some(RecordedDialogueFocus(Sequence(1),DialogueFocus(text,None,false))))
+      _ = assertEquals(row.asJson.as[InterviewRequestRecord],Right(row))
+      _ = assertEquals(InterviewRules.prompt(row).history.last.assistant,text)
     yield ()).unsafeRunSync()
   }
 
