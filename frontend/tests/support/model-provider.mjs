@@ -32,6 +32,13 @@ const server = http.createServer(async (request, response) => {
       response.end(JSON.stringify({ choices: [{ finish_reason: 'stop', message: { content: JSON.stringify(payload) } }] })); return;
     }
     if (context.question.includes('接口故障测试')) { response.writeHead(503).end('{"error":"fixture unavailable"}'); return; }
+    // UI protocol only: counterquestions carry no new evidence. Real dialogue quality uses DeepSeek.
+    if (context.question.startsWith('协议对话：')) {
+      const reply = context.question.includes('没有警方结论') ? '只是你的判断？那我先前说的没有什么要改的。' : '你们为什么怀疑安妮？';
+      const payload = { reply, disclosureIds: [], ...(context.statementOptions ? { statementUpdates: [] } : {}) };
+      response.setHeader('Content-Type', 'application/json');
+      response.end(JSON.stringify({ choices: [{ finish_reason: 'stop', message: { content: JSON.stringify(payload) } }] })); return;
+    }
     // Version 3 protocol fixture only; semantic quality is tested separately with the real provider.
     if (context.statementOptions) {
       const allowed = new Set(context.disclosures.map(answer => answer.id));

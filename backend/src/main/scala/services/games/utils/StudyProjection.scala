@@ -10,7 +10,7 @@ private[games] object StudyProjection:
   private[games] val revision = Revision(21)
   // Revision 18 adds study/5; existing games retain study/4 and their authored content.
   private[games] def supports(id: CaseId, value: Revision): Boolean =
-    id == caseId && Set(Revision(3), Revision(4), Revision(5), Revision(6), Revision(7), Revision(8), Revision(9), Revision(10), Revision(11), Revision(12), Revision(13), Revision(14), Revision(15), Revision(16), Revision(17), Revision(18), Revision(19), Revision(20), Revision(22), revision)(value)
+    id == caseId && Set(Revision(3), Revision(4), Revision(5), Revision(6), Revision(7), Revision(8), Revision(9), Revision(10), Revision(11), Revision(12), Revision(13), Revision(14), Revision(15), Revision(16), Revision(17), Revision(18), Revision(19), Revision(20), Revision(22), Revision(23), revision)(value)
   private[games] def supportsScene(bundle: String, revision: String): Boolean = bundle == "study" && Set("4","5")(revision)
   private[games] def snapshot(caseRecord: CaseRevisionRecord, state: GameSessionRecord, records: Vector[SessionRecord], turns: Vector[InterviewTurnRecord], exchanges: Vector[PoliceExchangeRecord] = Vector.empty,
       release: Option[CaseReleaseRecord] = None): InvestigationSnapshot =

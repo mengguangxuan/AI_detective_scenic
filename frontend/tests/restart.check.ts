@@ -318,3 +318,30 @@ test.describe('continuous statement recovery', () => {
     await expect(page.getByRole('button', { name: '开始补充问询', exact: true })).toHaveCount(0);
   });
 });
+
+test.describe('character dialogue recovery', () => {
+  test.use({ storageState: '.build-cache/character-dialogue-browser-state.json' });
+  test('counterquestions and player replies survive restart without creating revised statements', async ({ page }) => {
+    await page.goto('/interviews'); await page.getByRole('button', { name: '与劳伦斯·雷丁交谈', exact: true }).click();
+    const log = page.getByRole('log', { name: '自由问询记录', exact: true });
+    await expect(log).toContainText('你们为什么怀疑安妮？');
+    await expect(log).toContainText('只是你的判断？那我先前说的没有什么要改的。');
+    const saved = await page.evaluate(() => JSON.parse(localStorage.getItem('detective-scenic:server-session:v6')!));
+    const response = await page.request.post('/api/getinvestigationsnapshot', { data: { sessionId: saved.sessionId }, headers: { 'X-Detective-Client': 'web' } });
+    expect(response.status()).toBe(200); const state = await response.json();
+    expect(state.caseRevision.value).toBe(23);
+    expect(state.clues.some((c: { id: string }) => c.id.endsWith('_revised'))).toBe(false);
+  });
+});
+test.describe('character fallback recovery', () => {
+  test.use({ storageState: '.build-cache/character-fallback-browser-state.json' });
+  test('revision23 statements and Archer contact restore after restart', async ({ page }) => {
+    await page.goto('/interviews'); await page.getByRole('button', { name: '与阿彻太太交谈', exact: true }).click();
+    await expect(page.getByRole('heading', { name: '向阿彻太太提问', exact: true })).toBeVisible();
+    const saved = await page.evaluate(() => JSON.parse(localStorage.getItem('detective-scenic:server-session:v6')!));
+    const response = await page.request.post('/api/getinvestigationsnapshot', { data: { sessionId: saved.sessionId }, headers: { 'X-Detective-Client': 'web' } });
+    expect(response.status()).toBe(200); const state = await response.json();
+    expect(state.caseRevision.value).toBe(23); expect(state.followUps).toEqual([]);
+    for (const id of ['clue_redding_gun', 'clue_redding_gun_revised', 'clue_police_archer_review']) expect(state.clues.some((c: { id: string }) => c.id === id)).toBe(true);
+  });
+});

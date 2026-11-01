@@ -79,6 +79,9 @@ final case class AskWitnessMessage(userId: UserId,sessionId: SessionId,requestId
         for
           completion <- client.complete(InterviewRules.prompt(row)).timeout(65.seconds).attempt
           decision = completion.toOption.flatMap(raw => InterviewRules.decision(raw,row.context))
+          _ <- completion match
+            case Right(raw) if decision.isEmpty && row.context.promptVersion == 2 => IO.println("[interview] Reply rejected: " + InterviewRules.rejectionSummary(raw,row.context))
+            case _ => IO.unit
           failure = completion match
             case Left(_) => Some(InterviewReplyMode.Unavailable)
             case Right(_) if decision.isEmpty => Some(InterviewReplyMode.Rejected)

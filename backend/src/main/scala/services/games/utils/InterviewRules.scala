@@ -56,9 +56,9 @@ private[games] object InterviewRules:
         }
       } else Vector.empty
       InterviewContext(profile.copy(answers=available,dossier=DialogueDossier(phaseKnowledge++current++mapKnowledge++conditions,initial.privateContext,phasePolicy)),content.clues.filter(c => known(c.id)),history.takeRight(12),state.caseId,state.caseRevision,
-        if continuous.nonEmpty then 3 else if initial.knowledge.nonEmpty then 2 else 1,
+        if continuous.nonEmpty || content.interviewPromptVersion == 2 then 3 else if initial.knowledge.nonEmpty then 2 else 1,
         continuous.map(_.statementAnswers.filter(id => profile.answers.find(_.id == id).exists(a => a.routes.exists(route => content.routes.exists(r => r.id == route && !r.clues.forall(state.clues.contains)))))).getOrElse(Set.empty),
-        if continuous.nonEmpty then content.clues.filter(c => own(c.id)) else Vector.empty)
+        if continuous.nonEmpty || content.interviewPromptVersion == 2 then content.clues.filter(c => own(c.id)) else Vector.empty, content.interviewPromptVersion)
 
   private[games] def prompt(request: InterviewRequestRecord): ChatCompletionInput =
     val c = request.context
@@ -101,7 +101,7 @@ private[games] object InterviewRules:
       |ID有两个不同命名空间：disclosureIds只能逐字复制disclosures中id（例如redding_revised），绝不能把shownEvidence或recordedStatements的材料ID（例如clue_anne_statement）放入disclosureIds。出示的材料是输入依据，不是你本轮新披露的内容；其ID只放在statementUpdates.evidenceIds。answerId也只能复制statementOptions中的ID。输出前逐一核对所有ID所属列表。
       |只输出JSON三个字段：{"reply":"人物实际答复","disclosureIds":["本轮实际披露ID"],"statementUpdates":[{"answerId":"statementOptions里的ID","evidenceIds":["实际依据ID"],"text":"reply中的新说法原文"}]}。没有新说法则statementUpdates为空数组。每个更新ID也须列入disclosureIds；更新最多3条，引用依据不得为空。人物仍不泄露共谋真相，不替他人改口或替警方完成调查。
       |""".stripMargin
-    val system = if c.responseVersion == 3 then continuousPrompt else if c.responseVersion == 2 then conversational else legacy
+    val system = if c.promptVersion == 2 then ConversationalInterviewPrompt.system(c.responseVersion == 3) else if c.responseVersion == 3 then continuousPrompt else if c.responseVersion == 2 then conversational else legacy
     val user = Json.obj("witness" -> Json.obj("name" -> c.profile.name.asJson, "background" -> c.profile.background.asJson,
       "voice" -> c.profile.voice.asJson),
       "knowledge" -> c.profile.dossier.knowledge.asJson,
@@ -111,9 +111,12 @@ private[games] object InterviewRules:
       "shownEvidence" -> Json.fromValues(c.evidence.map(e => Json.obj("id" -> e.id.asJson,"title" -> e.title.value.asJson,"text" -> e.text.value.asJson))),
       "history" -> Json.fromValues(c.history.map(t => Json.obj("question" -> t.question.asJson,"reply" -> t.reply.asJson,"mode" -> t.mode.asJson))),
       "question" -> request.question.asJson)
-    val expanded=if c.responseVersion < 3 then user else user.deepMerge(Json.obj(
-      "statementOptions" -> c.statementAnswers.toVector.sortBy(_.value).asJson,
+    val constrained=if c.promptVersion < 2 then user else user.deepMerge(Json.obj("allowedDisclosureIds" -> c.profile.answers.map(_.id).asJson,
+      "allowedEvidenceIds" -> (c.evidence ++ c.recordedStatements).map(_.id).distinct.asJson))
+    val withMemory=if c.responseVersion < 3 && c.promptVersion < 2 then constrained else constrained.deepMerge(Json.obj(
       "recordedStatements" -> Json.fromValues(c.recordedStatements.map(e => Json.obj("id" -> e.id.asJson,"title" -> e.title.value.asJson,"text" -> e.text.value.asJson)))))
+    val expanded=if c.responseVersion != 3 then withMemory else withMemory.deepMerge(Json.obj(
+      "statementOptions" -> c.statementAnswers.toVector.sortBy(_.value).asJson))
     ChatCompletionInput(system,expanded.noSpaces)
 
   private[games] def decision(raw: String, context: InterviewContext): Option[InterviewDecision] =
@@ -127,6 +130,27 @@ private[games] object InterviewRules:
       value = InterviewDecision(ids,reply,updates)
       if validDecision(value,context)
     yield value
+
+  // Log only validation flags, never model text, private dossiers or provider payloads.
+  private[games] def rejectionSummary(raw: String,context: InterviewContext): String =
+    val json=parser.parse(raw).toOption
+    val expected=if context.responseVersion == 3 then Set("reply","disclosureIds","statementUpdates") else if context.responseVersion == 2 then Set("reply","disclosureIds") else Set("answerIds")
+    val ids=json.flatMap(_.hcursor.get[Vector[WitnessAnswerId]](if context.responseVersion >= 2 then "disclosureIds" else "answerIds").toOption)
+    val reply=json.flatMap(_.hcursor.get[String]("reply").toOption)
+    val updates=json.flatMap(_.hcursor.get[Vector[InterviewStatementUpdate]]("statementUpdates").toOption)
+    val known=(context.evidence ++ context.recordedStatements).map(_.id).toSet
+    Json.obj("json" -> json.nonEmpty.asJson,
+      "fields" -> json.exists(_.asObject.exists(_.keys.toSet == expected)).asJson,
+      "idsAllowed" -> ids.exists(xs => xs.distinct.size == xs.size && xs.size <= (if context.responseVersion >= 2 then 4 else 2) && xs.forall(id => context.profile.answers.exists(_.id == id))).asJson,
+      "reply" -> reply.exists(t => t.trim.nonEmpty && t.length <= 2000 && !t.exists(c => c < ' ' && c != '\n' && c != '\t')).asJson,
+      "updateCount" -> updates.map(_.size).asJson,
+      "updateTopics" -> updates.exists(xs => ids.exists(is => xs.map(_.answerId).toSet == is.filter(context.statementAnswers).toSet)).asJson,
+      "emptyBasisCount" -> updates.map(_.count(_.evidenceIds.isEmpty)).asJson,
+      "basisUsesDisclosureId" -> updates.exists(_.exists(x => x.evidenceIds.exists(e => context.profile.answers.exists(_.id.value == e.value)))).asJson,
+      "updateBasis" -> updates.exists(_.forall(x => x.evidenceIds.nonEmpty && x.evidenceIds.subsetOf(known))).asJson,
+      "updateQuotes" -> updates.exists(_.forall(x => reply.exists(_.contains(x.text)))).asJson,
+      "updates" -> (if context.responseVersion != 3 then true else json.flatMap(_.hcursor.get[Vector[InterviewStatementUpdate]]("statementUpdates").toOption)
+        .exists(xs => ids.exists(is => validUpdates(InterviewDecision(is,reply,xs),context)))).asJson).noSpaces
 
   private[games] def validDecision(value: InterviewDecision,context: InterviewContext): Boolean =
     value.answerIds.size <= (if context.responseVersion >= 2 then 4 else 2) &&

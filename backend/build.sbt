@@ -4,6 +4,8 @@ ThisBuild / version := "0.1.0-SNAPSHOT"
 
 lazy val root = (project in file(".")).settings(
   name := "detective-minimal-fixture",
+  // CaseContent has more than 32 fields; Circe derivation needs a larger inline budget.
+  scalacOptions += "-Xmax-inlines:64",
   libraryDependencies ++= Seq(
     "org.typelevel" %% "cats-effect" % "3.5.4",
     "io.circe" %% "circe-generic" % "0.14.9",

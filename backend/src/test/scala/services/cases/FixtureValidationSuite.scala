@@ -92,3 +92,12 @@ class FixtureValidationSuite extends FunSuite:
     assertEquals(error.code, ErrorCode.InvalidValue)
     assert(error.publicMessage.contains("scene.nodes[0]"), error.publicMessage)
   }
+
+  test("interview prompt policy versions are explicit and legacy content retains its serialized shape") {
+    val json=summon[io.circe.Encoder[CaseContent]].apply(original.content)
+    assert(!json.hcursor.downField("interviewPromptVersion").succeeded)
+    assertEquals(json.as[CaseContent].toOption.get.interviewPromptVersion,1)
+    val updated=original.copy(content=original.content.copy(interviewPromptVersion=2))
+    assertEquals(FixtureLoader.validation(updated),Right(()))
+    rejected(original.copy(content=original.content.copy(interviewPromptVersion=99)),"investigation.interviewPromptVersion")
+  }

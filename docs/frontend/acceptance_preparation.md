@@ -1,5 +1,14 @@
 # 验收前准备与启动步骤
 
+## 当前验收：人物对话第一档，修订23
+
+从首页案件详情明确开始新调查，顶部确认`vicarage_study/23`。所有人物与警方共用反问、部分回答和策略连续性提示；旧22及更早调查保留原行为。当前操作按[手动指南](manual_test_guide.md)第2—5节；完整路线见[整案流程](full_case_walkthrough.md)，实现及边界见[人物对话提示](../cases/dialogue_prompt.md)。
+
+正常后端配置仍为老师提供的TokenHub DeepSeek。作者真实对话测试：`E:\dev\nodejs\node.exe tools/verify_character_dialogue_live.mjs`，可用`--redding`、`--anne`、`--others`定向核验；实际重启后加`--restore`核对三组最终完整快照。完整新修订取证与真实评审：`E:\dev\nodejs\node.exe tools/verify_case_completion_live.mjs --dialogue --positive`；恢复时用`--dialogue --restore`。记录保存在忽略缓存，脚本不读取或输出密钥。旧22脚本保留用于历史回归，不能代替本轮语义验收。
+
+以下修订22说明为历史记录；日常启动仍按本文第1—8节。
+
+
 ## 2026-11-01：连续问询修订22
 
 新调查发布为`vicarage_study/22`，场景仍为`study/5`。雷丁、安妮均采用连续问询，取消新局补问启动与准备清单；模型依据本人资料、实际出示材料和本人已存记录选择回应或修正。固定备用也保存为问询记录。新说法保存当次实际说出口的原文，首供、原请求、回执和后续引用保留；警方登记、阿彻联系仍需实际调查材料。题材真相、人物责任与原著时代不变，不自动认罪、逮捕或补造检查。

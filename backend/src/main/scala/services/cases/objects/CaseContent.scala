@@ -20,13 +20,16 @@ final case class CaseContent(place: PlaceId, placeName: String, initialStoryTime
   publicPersons: Vector[CasePersonBrief] = Vector.empty, areaMap: Option[AreaMap] = None,
   clock: Option[InvestigationClock] = None, externalChecks: Vector[ExternalCheckSpec] = Vector.empty,
   followUps: Vector[WitnessFollowUpSpec] = Vector.empty, statementComparisons: Vector[StatementComparisonSpec] = Vector.empty, conclusion: Option[CaseConclusionSpec] = None,
-  continuousInterviews: Vector[ContinuousInterviewSpec] = Vector.empty)
+  continuousInterviews: Vector[ContinuousInterviewSpec] = Vector.empty, interviewPromptVersion: Int = 1)
 
 object CaseContent:
   given Encoder[CaseContent] = deriveEncoder[CaseContent].mapJson(json =>
-    if json.hcursor.get[Vector[ContinuousInterviewSpec]]("continuousInterviews").contains(Vector.empty) then json.mapObject(_.remove("continuousInterviews")) else json)
+    val versioned=if json.hcursor.get[Int]("interviewPromptVersion").contains(1) then json.mapObject(_.remove("interviewPromptVersion")) else json
+    if json.hcursor.get[Vector[ContinuousInterviewSpec]]("continuousInterviews").contains(Vector.empty) then versioned.mapObject(_.remove("continuousInterviews")) else versioned)
   private val decoder: Decoder[CaseContent] = deriveDecoder[CaseContent].prepare(_.withFocus(json =>
-    json.mapObject(obj => Vector("observations", "sceneObjects", "witnesses", "publicPersons", "externalChecks", "followUps", "statementComparisons", "continuousInterviews").foldLeft(obj)((fields, name) =>
+    json.mapObject(original =>
+      val obj=if original.contains("interviewPromptVersion") then original else original.add("interviewPromptVersion",io.circe.Json.fromInt(1))
+      Vector("observations", "sceneObjects", "witnesses", "publicPersons", "externalChecks", "followUps", "statementComparisons", "continuousInterviews").foldLeft(obj)((fields, name) =>
       if fields.contains(name) then fields else fields.add(name,io.circe.Json.arr())))))
 
   given Decoder[CaseContent] = Decoder.instance { cursor =>

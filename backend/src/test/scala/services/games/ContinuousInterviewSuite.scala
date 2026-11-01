@@ -23,7 +23,7 @@ class ContinuousInterviewSuite extends FunSuite:
   private def tx[A](url: String)(f: java.sql.Connection => IO[A]): IO[A]=DatabaseSession.connection(url).use(c => DatabaseSession.transaction(c)(f(c)))
   private def setup(url: String,id: SessionId)=DatabaseSession.connection(url).use(c => DatabaseSchema.initialize(c) *> DatabaseSession.transaction(c)(for
     _ <- ImportCaseMessage(Paths.get("../docs/fixtures/browser_investigation_v21.json")).plan(c)
-    _ <- ImportCaseMessage(Paths.get("../docs/fixtures/browser_investigation.json")).plan(c)
+    _ <- ImportCaseMessage(Paths.get("../docs/fixtures/browser_investigation_v22.json")).plan(c)
     _ <- StartGameMessage(owner,id,CaseId("vicarage_study"),Revision(22)).plan(c)
   yield ()))
   private def view(url: String,id: SessionId)=tx(url)(GetInvestigationSnapshotMessage(owner,id).plan)

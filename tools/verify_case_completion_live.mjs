@@ -4,8 +4,10 @@ import assert from 'node:assert/strict';
 import { randomUUID } from 'node:crypto';
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
-const continuous = process.argv.includes('--continuous');
-const cache = fileURLToPath(new URL(continuous ? '../frontend/.build-cache/continuous-completion/' : '../frontend/.build-cache/', import.meta.url));
+const dialogue = process.argv.includes('--dialogue');
+const continuous = process.argv.includes('--continuous') || dialogue;
+const playableRevision = dialogue ? 23 : 22;
+const cache = fileURLToPath(new URL(dialogue ? '../frontend/.build-cache/dialogue-completion/' : continuous ? '../frontend/.build-cache/continuous-completion/' : '../frontend/.build-cache/', import.meta.url));
 mkdirSync(cache, { recursive: true });
 const origin = 'http://127.0.0.1:5175';
 const key = 'detective-scenic:server-session:v6';
@@ -20,8 +22,8 @@ class Investigation {
   }
   async refresh() { this.state = await this.post('getinvestigationsnapshot', { sessionId: this.sessionId }); return this.state; }
   async start() { await this.post('openlocalidentity'); this.state = continuous
-    ? await this.post('openinvestigation', { sessionId: this.sessionId, caseId: 'vicarage_study', revision: { value: 22 } })
-    : await this.post('openstudy', { sessionId: this.sessionId }); assert.equal(this.state.caseRevision.value, continuous ? 22 : 21); }
+    ? await this.post('openinvestigation', { sessionId: this.sessionId, caseId: 'vicarage_study', revision: { value: playableRevision } })
+    : await this.post('openstudy', { sessionId: this.sessionId }); assert.equal(this.state.caseRevision.value, continuous ? playableRevision : 21); }
   async change(name, payload) {
     const request = { sessionId: this.sessionId, requestId: randomUUID(), expectedSequence: this.state.sequence, ...payload };
     const receipt = await this.post(name, request); await this.refresh(); return { request, receipt };

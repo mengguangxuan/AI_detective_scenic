@@ -191,6 +191,7 @@ private[cases] object FixtureLoader:
       clock <- investigation.hcursor.get[Option[InvestigationClock]]("clock")
       checks <- investigation.hcursor.get[Option[Vector[ExternalCheckSpec]]]("externalChecks").map(_.getOrElse(Vector.empty))
       followUps <- investigation.hcursor.get[Option[Vector[WitnessFollowUpSpec]]]("followUps").map(_.getOrElse(Vector.empty))
+      promptVersion <- investigation.hcursor.get[Option[Int]]("interviewPromptVersion").map(_.getOrElse(1))
       continuous <- investigation.hcursor.get[Option[Vector[ContinuousInterviewSpec]]]("continuousInterviews").map(_.getOrElse(Vector.empty))
       conclusion <- investigation.hcursor.get[Option[CaseConclusionSpec]]("conclusion")
       comparisons <- investigation.hcursor.get[Option[Vector[StatementComparisonSpec]]]("statementComparisons").map(_.getOrElse(Vector.empty))
@@ -206,7 +207,7 @@ private[cases] object FixtureLoader:
         case _ => true
       }, "investigation.operations.effects：效果引用了未知实体", c)
       _ <- check(operations.forall(_.openedRequirement.forall(r => entityIds.contains(r.entity))),"investigation.operations.openedRequirement：前提引用了未知实体",c)
-      content = CaseContent(place, placeName, time, origin, position, nodes, points, facts, clues, routes, operations, opened, unlocked, common, observations, stage, sceneObjects, people._2, people._3, people._1, areaMap, clock, checks, followUps, comparisons, conclusion, continuous)
+      content = CaseContent(place, placeName, time, origin, position, nodes, points, facts, clues, routes, operations, opened, unlocked, common, observations, stage, sceneObjects, people._2, people._3, people._1, areaMap, clock, checks, followUps, comparisons, conclusion, continuous, promptVersion)
       record = CaseRevisionRecord(caseId, revision, 1, title, content)
       _ <- validation(record).left.map(message => DecodingFailure(message,c.history))
     yield record).left.map(error => GameError(ErrorCode.InvalidValue, s"案件数据不合法：${error.getMessage}"))
@@ -328,6 +329,7 @@ private[cases] object FixtureLoader:
           _ <- rule(p.witness.forall(id => f.witnesses.exists(_.id == id)), s"$path.witness", "引用了不存在的问询对象")
         yield ()
       }
+      _ <- rule(Set(1,2)(f.interviewPromptVersion), "investigation.interviewPromptVersion", "不支持的问询提示版本")
       _ <- rule(f.police.forall(id => f.witnesses.exists(_.id == id)), "investigation.police", "警方问询身份不存在")
       _ <- unique(f.witnesses.map(_.id), "investigation.witnesses")
       _ <- unique(f.witnesses.map(_.point), "investigation.witnesses.point")
