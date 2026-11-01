@@ -16,6 +16,19 @@ object InterviewRequestTable:
       Using.resource(s.executeQuery())(r => if r.next() then Some(decode[InterviewRequestRecord](r.getString(1)).fold(throw _,identity)) else None)
     }
   }
+  // Local author diagnostics only; no HTTP route exposes another investigation's context.
+  private val recentSql = "SELECT payload_json FROM interview_requests ORDER BY _ROWID_ DESC LIMIT ?"
+  def recent(connection: Connection, limit: Int): IO[Vector[InterviewRequestRecord]] = IO.blocking {
+    require(limit >= 1 && limit <= 50,"Audit limit must be between 1 and 50")
+    Using.resource(connection.prepareStatement(recentSql)) { s =>
+      s.setInt(1,limit)
+      Using.resource(s.executeQuery()) { r =>
+        val rows=Vector.newBuilder[InterviewRequestRecord]
+        while r.next() do rows += decode[InterviewRequestRecord](r.getString(1)).fold(throw _,identity)
+        rows.result()
+      }
+    }
+  }
   private val activeSql = "SELECT 1 FROM interview_requests WHERE session_id=? AND status='pending' AND lease_until>?"
   def hasActive(connection: Connection, session: SessionId, now: Long): IO[Boolean] = IO.blocking {
     Using.resource(connection.prepareStatement(activeSql)) { s =>

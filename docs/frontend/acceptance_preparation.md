@@ -2,7 +2,9 @@
 
 ## 当前验收：人物对话第一档，修订23
 
-从首页案件详情明确开始新调查，顶部确认`vicarage_study/23`。所有人物与警方共用反问、部分回答和策略连续性提示；旧22及更早调查保留原行为。当前操作按[手动指南](manual_test_guide.md)第2—5节；完整路线见[整案流程](full_case_walkthrough.md)，实现及边界见[人物对话提示](../cases/dialogue_prompt.md)。
+本轮材料阅读修复直接用于已有修订23的新问题，无需重开；按[手动指南第0节](manual_test_guide.md)复测。旧请求重试仍返回原回执。作者可运行`E:\dev\nodejs\node.exe tools/verify_material_reading_live.mjs`，实际重启后加`--restore`核对完整快照。
+
+首次测试时，从首页案件详情明确开始新调查，顶部确认`vicarage_study/23`。所有人物与警方共用反问、部分回答和策略连续性提示；旧22及更早调查保留原行为。当前操作按[手动指南](manual_test_guide.md)第2—5节；完整路线见[整案流程](full_case_walkthrough.md)，实现及边界见[人物对话提示](../cases/dialogue_prompt.md)。
 
 正常后端配置仍为老师提供的TokenHub DeepSeek。作者真实对话测试：`E:\dev\nodejs\node.exe tools/verify_character_dialogue_live.mjs`，可用`--redding`、`--anne`、`--others`定向核验；实际重启后加`--restore`核对三组最终完整快照。完整新修订取证与真实评审：`E:\dev\nodejs\node.exe tools/verify_case_completion_live.mjs --dialogue --positive`；恢复时用`--dialogue --restore`。记录保存在忽略缓存，脚本不读取或输出密钥。旧22脚本保留用于历史回归，不能代替本轮语义验收。
 

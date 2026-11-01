@@ -32,6 +32,14 @@ const server = http.createServer(async (request, response) => {
       response.end(JSON.stringify({ choices: [{ finish_reason: 'stop', message: { content: JSON.stringify(payload) } }] })); return;
     }
     if (context.question.includes('接口故障测试')) { response.writeHead(503).end('{"error":"fixture unavailable"}'); return; }
+    // Test the complete checkbox -> request -> frozen input chain, not model semantics.
+    if (context.question.startsWith('协议材料：')) {
+      const current = context.presentedThisTurn;
+      if (!Array.isArray(current) || current.length === 0 || current.some(item => !item.title || !item.text)) throw new Error('Missing selected material text');
+      const payload = { reply: '已读到：' + current.map(item => item.title + '：' + item.text).join('\n'), disclosureIds: [], statementUpdates: [] };
+      response.setHeader('Content-Type', 'application/json');
+      response.end(JSON.stringify({ choices: [{ finish_reason: 'stop', message: { content: JSON.stringify(payload) } }] })); return;
+    }
     // UI protocol only: counterquestions carry no new evidence. Real dialogue quality uses DeepSeek.
     if (context.question.startsWith('协议对话：')) {
       const reply = context.question.includes('没有警方结论') ? '只是你的判断？那我先前说的没有什么要改的。' : '你们为什么怀疑安妮？';

@@ -87,7 +87,9 @@ class ConversationalInterviewSuite extends FunSuite:
       _ = assertEquals(middle.clues,before.clues)
       _ <- AskWitnessMessage(owner,id,RequestId("answer-counterquestion"),middle.sequence,WitnessId("redding"),"这是我的猜测，警方没有告诉我她是否被排除。",Set.empty).run(url,nextModel)
       request <- tx(url)(InterviewRequestTable.find(_,id,RequestId("answer-counterquestion")))
-      _ = assertEquals(request.get.context.promptVersion,2)
+      recent <- tx(url)(InterviewRequestTable.recent(_,1))
+      _ = assertEquals(recent.head.requestId,RequestId("answer-counterquestion"))
+      _ = assertEquals(request.get.context.promptVersion,3)
       restored=request.get.asJson.as[InterviewRequestRecord].toOption.get
       _ = assertEquals(restored,request.get)
       after <- view(url,id)
@@ -149,5 +151,70 @@ class ConversationalInterviewSuite extends FunSuite:
       after <- view(url,id)
       _ = assertEquals(after.interviews.last.mode,InterviewReplyMode.Rejected)
       _ = assertEquals(after.clues,before.clues)
+    yield ()).unsafeRunSync()
+  }
+
+  test("selected Anne and medical texts reach the frozen model input and are not confused with earlier materials") {
+    val url=database;val id=SessionId(UUID.randomUUID().toString)
+    val selected=Set("clue_anne_time","clue_anne_gun","clue_medical_time","clue_medical_visit_record").map(ClueId.apply)
+    val firstModel=new ChatCompletionClient:
+      override def complete(input: ChatCompletionInput): IO[String]=IO {
+        val user=parser.parse(input.user).toOption.get.hcursor
+        val materials=user.get[Vector[Json]]("presentedThisTurn").toOption.get
+        assertEquals(materials.map(_.hcursor.get[String]("id").toOption.get).toSet,selected.map(_.value))
+        assert(materials.exists(_.hcursor.get[String]("text").exists(_.contains("梳妆台"))))
+        assert(materials.exists(_.hcursor.get[String]("text").exists(_.contains("半小时"))))
+        assert(materials.exists(_.hcursor.get[String]("text").exists(_.contains("19:00"))))
+        assert(input.system.contains("没有精确钟点不等于医生没有时间意见"))
+        answer("这两份陈述我看见了；医生说的是检查时已死半小时左右。我仍坚持先前的说法。",true)
+      }
+    val laterModel=new ChatCompletionClient:
+      override def complete(input: ChatCompletionInput): IO[String]=IO {
+        val user=parser.parse(input.user).toOption.get.hcursor
+        assertEquals(user.get[Vector[Json]]("presentedThisTurn"),Right(Vector.empty[Json]))
+        assert(selected.map(_.value).subsetOf(user.get[Vector[Json]]("shownEvidence").toOption.get.map(_.hcursor.get[String]("id").toOption.get).toSet))
+        answer("刚才你给的医生记录，我已经看过了。",true)
+      }
+    (for
+      _ <- setup(url,id)
+      _ <- read(url,id,"route_redding_account")
+      start <- view(url,id)
+      _ <- tx(url)(ExecuteOperationMessage(owner,id,RequestId("meet"),start.sequence,OperationId("open_anne_meeting")).plan)
+      _ <- read(url,id,"route_anne_time")
+      _ <- read(url,id,"route_anne_gun")
+      _ <- read(url,id,"route_police_medical")
+      checking <- view(url,id)
+      _ <- tx(url)(RequestExternalCheckMessage(owner,id,RequestId("medical"),checking.sequence,ExternalCheckId("medical_timing")).plan)
+      waiting <- view(url,id)
+      _ <- tx(url)(AdvanceTimeMessage(owner,id,RequestId("wait"),waiting.sequence,15).plan)
+      before <- view(url,id)
+      _ <- AskWitnessMessage(owner,id,RequestId("read-materials"),before.sequence,WitnessId("redding"),"安妮说了什么，医生意见与你的供述相符吗？",selected).run(url,firstModel)
+      saved <- tx(url)(InterviewRequestTable.find(_,id,RequestId("read-materials")))
+      _ = assertEquals(saved.get.context.promptVersion,3)
+      _ = assertEquals(saved.get.context.revision,Revision(23))
+      old=saved.get.copy(context=saved.get.context.copy(promptVersion=2))
+      _ = assert(!parser.parse(InterviewRules.prompt(old).user).toOption.get.hcursor.downField("presentedThisTurn").succeeded)
+      _ = assert(!InterviewRules.prompt(old).system.contains("实际材料的阅读规则"))
+      next <- view(url,id)
+      _ <- AskWitnessMessage(owner,id,RequestId("recall"),next.sequence,WitnessId("redding"),"还记得刚才给你的材料吗？",Set.empty).run(url,laterModel)
+    yield ()).unsafeRunSync()
+  }
+
+  test("a relative medical estimate does not acquire an unprovided examination timestamp") {
+    val url=database;val id=SessionId(UUID.randomUUID().toString)
+    val model=new ChatCompletionClient:
+      override def complete(input: ChatCompletionInput): IO[String]=IO {
+        val user=parser.parse(input.user).toOption.get.hcursor
+        val material=user.get[Vector[Json]]("presentedThisTurn").toOption.get
+        assertEquals(material.size,1)
+        assertEquals(material.head.hcursor.get[String]("id"),Right("clue_medical_time"))
+        assert(!input.user.contains("约19:00是到场"))
+        answer("这份意见只写检查时已经死了半小时左右，没有精确的检查时刻。",true)
+      }
+    (for
+      _ <- setup(url,id)
+      _ <- read(url,id,"route_police_medical")
+      before <- view(url,id)
+      _ <- AskWitnessMessage(owner,id,RequestId("relative"),before.sequence,WitnessId("redding"),"医生判断的死亡时间呢？",Set(ClueId("clue_medical_time"))).run(url,model)
     yield ()).unsafeRunSync()
   }

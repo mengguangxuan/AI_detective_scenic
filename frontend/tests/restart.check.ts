@@ -345,3 +345,14 @@ test.describe('character fallback recovery', () => {
     for (const id of ['clue_redding_gun', 'clue_redding_gun_revised', 'clue_police_archer_review']) expect(state.clues.some((c: { id: string }) => c.id === id)).toBe(true);
   });
 });
+
+test.describe('selected material reading recovery', () => {
+  test.use({ storageState: '.build-cache/material-reading-browser-state.json' });
+  test('actual selected statements and medical text restore with the original question after restart', async ({ page }) => {
+    await page.goto('/interviews'); await page.getByRole('button', { name: '与劳伦斯·雷丁交谈', exact: true }).click();
+    const log = page.getByRole('log', { name: '自由问询记录', exact: true });
+    await expect(log).toContainText('协议材料：核对本轮医生正文');
+    await expect(log).toContainText('半小时左右');
+    await expect(log).toContainText('约19:00是到场');
+  });
+});

@@ -58,7 +58,7 @@ private[games] object InterviewRules:
       InterviewContext(profile.copy(answers=available,dossier=DialogueDossier(phaseKnowledge++current++mapKnowledge++conditions,initial.privateContext,phasePolicy)),content.clues.filter(c => known(c.id)),history.takeRight(12),state.caseId,state.caseRevision,
         if continuous.nonEmpty || content.interviewPromptVersion == 2 then 3 else if initial.knowledge.nonEmpty then 2 else 1,
         continuous.map(_.statementAnswers.filter(id => profile.answers.find(_.id == id).exists(a => a.routes.exists(route => content.routes.exists(r => r.id == route && !r.clues.forall(state.clues.contains)))))).getOrElse(Set.empty),
-        if continuous.nonEmpty || content.interviewPromptVersion == 2 then content.clues.filter(c => own(c.id)) else Vector.empty, content.interviewPromptVersion)
+        if continuous.nonEmpty || content.interviewPromptVersion == 2 then content.clues.filter(c => own(c.id)) else Vector.empty, if content.interviewPromptVersion == 2 then 3 else 1)
 
   private[games] def prompt(request: InterviewRequestRecord): ChatCompletionInput =
     val c = request.context
@@ -101,7 +101,7 @@ private[games] object InterviewRules:
       |ID有两个不同命名空间：disclosureIds只能逐字复制disclosures中id（例如redding_revised），绝不能把shownEvidence或recordedStatements的材料ID（例如clue_anne_statement）放入disclosureIds。出示的材料是输入依据，不是你本轮新披露的内容；其ID只放在statementUpdates.evidenceIds。answerId也只能复制statementOptions中的ID。输出前逐一核对所有ID所属列表。
       |只输出JSON三个字段：{"reply":"人物实际答复","disclosureIds":["本轮实际披露ID"],"statementUpdates":[{"answerId":"statementOptions里的ID","evidenceIds":["实际依据ID"],"text":"reply中的新说法原文"}]}。没有新说法则statementUpdates为空数组。每个更新ID也须列入disclosureIds；更新最多3条，引用依据不得为空。人物仍不泄露共谋真相，不替他人改口或替警方完成调查。
       |""".stripMargin
-    val system = if c.promptVersion == 2 then ConversationalInterviewPrompt.system(c.responseVersion == 3) else if c.responseVersion == 3 then continuousPrompt else if c.responseVersion == 2 then conversational else legacy
+    val system = if c.promptVersion == 3 then EvidenceAwareInterviewPrompt.system(c.responseVersion == 3) else if c.promptVersion == 2 then ConversationalInterviewPrompt.system(c.responseVersion == 3) else if c.responseVersion == 3 then continuousPrompt else if c.responseVersion == 2 then conversational else legacy
     val user = Json.obj("witness" -> Json.obj("name" -> c.profile.name.asJson, "background" -> c.profile.background.asJson,
       "voice" -> c.profile.voice.asJson),
       "knowledge" -> c.profile.dossier.knowledge.asJson,
@@ -117,7 +117,11 @@ private[games] object InterviewRules:
       "recordedStatements" -> Json.fromValues(c.recordedStatements.map(e => Json.obj("id" -> e.id.asJson,"title" -> e.title.value.asJson,"text" -> e.text.value.asJson)))))
     val expanded=if c.responseVersion != 3 then withMemory else withMemory.deepMerge(Json.obj(
       "statementOptions" -> c.statementAnswers.toVector.sortBy(_.value).asJson))
-    ChatCompletionInput(system,expanded.noSpaces)
+    val presented=if c.promptVersion < 3 then expanded else expanded.deepMerge(Json.obj(
+      "readingReminder" -> "以下presentedThisTurn是本轮已经交到你面前的原文，不是待索取的资料。policy中的试探话术须结合这些原文调整：先回应一条相关的具体记载，再怀疑或反问其中未明之处。材料内容已知，不代表相信或改口。若登记更新，text须逐字复制最终reply里的连续原文，不能另写摘要。".asJson,
+      "presentedThisTurn" -> Json.fromValues(c.evidence.filter(e => request.shownClues(e.id))
+        .map(e => Json.obj("id" -> e.id.asJson,"title" -> e.title.value.asJson,"text" -> e.text.value.asJson)))))
+    ChatCompletionInput(system,presented.noSpaces)
 
   private[games] def decision(raw: String, context: InterviewContext): Option[InterviewDecision] =
     for
