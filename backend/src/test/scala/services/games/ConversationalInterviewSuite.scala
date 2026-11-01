@@ -68,7 +68,8 @@ class ConversationalInterviewSuite extends FunSuite:
     val nextModel=new ChatCompletionClient:
       override def complete(input: ChatCompletionInput): IO[String]=IO {
         val user=parser.parse(input.user).toOption.get.hcursor
-        assert(user.get[Vector[Json]]("history").toOption.get.exists(_.hcursor.get[String]("reply")==Right("你们为什么怀疑安妮？")))
+        assertEquals(input.history.last.assistant,"你们为什么怀疑安妮？")
+        assertEquals(user.downField("dialogueFocus").downField("lastSpokenExchange").get[String]("reply"),Right("你们为什么怀疑安妮？"))
         assertEquals(user.get[String]("question"),Right("这是我的猜测，警方没有告诉我她是否被排除。"))
         assert(user.get[Vector[Json]]("recordedStatements").toOption.get.exists(_.hcursor.get[String]("id")==Right("clue_redding_gun")))
         answer("只是你的猜测？那我先前说的没有什么要改的。",true)
@@ -89,7 +90,7 @@ class ConversationalInterviewSuite extends FunSuite:
       request <- tx(url)(InterviewRequestTable.find(_,id,RequestId("answer-counterquestion")))
       recent <- tx(url)(InterviewRequestTable.recent(_,1))
       _ = assertEquals(recent.head.requestId,RequestId("answer-counterquestion"))
-      _ = assertEquals(request.get.context.promptVersion,3)
+      _ = assertEquals(request.get.context.promptVersion,5)
       restored=request.get.asJson.as[InterviewRequestRecord].toOption.get
       _ = assertEquals(restored,request.get)
       after <- view(url,id)
@@ -111,6 +112,46 @@ class ConversationalInterviewSuite extends FunSuite:
       after <- view(url,id)
       _ = assert(!after.points.flatMap(_.routes).exists(_.id == RouteId("route_redding_revised")))
       _ = assert(after.followUps.isEmpty)
+    yield ()).unsafeRunSync()
+  }
+
+  test("dialogue roles retain only this witness's spoken turns, skip failures and keep frozen template 3 unchanged") {
+    val url=database;val id=SessionId(UUID.randomUUID().toString)
+    def model(reply: String)=new ChatCompletionClient:
+      override def complete(input: ChatCompletionInput): IO[String]=IO.pure(answer(reply,true))
+    def ask(witness: String,question: String,client: ChatCompletionClient)=for
+      before <- view(url,id)
+      _ <- AskWitnessMessage(owner,id,RequestId(UUID.randomUUID().toString),before.sequence,WitnessId(witness),question,Set.empty).run(url,client)
+    yield ()
+    (for
+      _ <- setup(url,id)
+      _ <- ask("mary","你知道什么？",model("玛丽独有的谈话。"))
+      _ <- (0 until 13).foldLeft(IO.unit)((previous,n) => previous *> ask("redding",s"第${n}次追问",model(if n == 12 then "你是说第一支，还是第二支？" else s"答复$n")))
+      _ <- ask("redding","刚才那支",new ChatCompletionClient:
+        override def complete(input: ChatCompletionInput): IO[String]=IO.pure("invalid-json"))
+      // Twelve attempts include the technical failure, so only eleven pairs remain.
+      before <- view(url,id)
+      prepared <- tx(url)(AskWitnessMessage(owner,id,RequestId("role-check"),before.sequence,WitnessId("redding"),"第一支",Set.empty).plan)
+      saved=(prepared match
+        case InterviewPreparation.Reserved(row) => row
+        case _ => throw new IllegalStateException("Expected reservation"))
+      input=InterviewRules.prompt(saved)
+      _ = assertEquals(input.history.size,11)
+      _ = assertEquals(parser.parse(input.history.head.user).toOption.get.hcursor.get[String]("question"),Right("第2次追问"))
+      _ = assert(!input.history.exists(_.assistant.contains("玛丽独有")))
+      _ = assert(!input.history.exists(_.assistant.contains("未通过检查")))
+      _ = assertEquals(input.history.last.assistant,"你是说第一支，还是第二支？")
+      focus=parser.parse(input.user).toOption.get.hcursor.downField("dialogueFocus")
+      _ = assertEquals(focus.downField("latestAttempt").get[String]("mode"),Right("rejected"))
+      _ = assertEquals(focus.downField("lastSpokenExchange").get[String]("reply"),Right("你是说第一支，还是第二支？"))
+      old=InterviewRules.prompt(saved.copy(context=saved.context.copy(promptVersion=3)))
+      _ = assert(old.history.isEmpty)
+      _ = assert(parser.parse(old.user).toOption.get.hcursor.get[Vector[Json]]("history").isRight)
+      _ = assert(!old.system.contains("对话承接规则"))
+      frozenFour=InterviewRules.prompt(saved.copy(context=saved.context.copy(promptVersion=4)))
+      _ = assertEquals(frozenFour.history,input.history)
+      _ = assert(!frozenFour.system.contains("说话人与指代核对"))
+      _ = assertEquals(InterviewRules.prompt(saved.asJson.as[InterviewRequestRecord].toOption.get),input)
     yield ()).unsafeRunSync()
   }
 
@@ -190,7 +231,7 @@ class ConversationalInterviewSuite extends FunSuite:
       before <- view(url,id)
       _ <- AskWitnessMessage(owner,id,RequestId("read-materials"),before.sequence,WitnessId("redding"),"安妮说了什么，医生意见与你的供述相符吗？",selected).run(url,firstModel)
       saved <- tx(url)(InterviewRequestTable.find(_,id,RequestId("read-materials")))
-      _ = assertEquals(saved.get.context.promptVersion,3)
+      _ = assertEquals(saved.get.context.promptVersion,5)
       _ = assertEquals(saved.get.context.revision,Revision(23))
       old=saved.get.copy(context=saved.get.context.copy(promptVersion=2))
       _ = assert(!parser.parse(InterviewRules.prompt(old).user).toOption.get.hcursor.downField("presentedThisTurn").succeeded)

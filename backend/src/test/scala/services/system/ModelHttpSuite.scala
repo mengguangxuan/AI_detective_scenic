@@ -4,6 +4,7 @@ import cats.effect.{IO,Resource}
 import cats.effect.unsafe.implicits.global
 import com.sun.net.httpserver.HttpServer
 import io.circe.{Json,parser}
+import io.circe.syntax.*
 import java.net.{InetSocketAddress,URI}
 import java.net.http.{HttpClient,HttpRequest,HttpResponse}
 import java.nio.charset.StandardCharsets
@@ -12,7 +13,7 @@ import java.util.UUID
 import java.util.concurrent.{ConcurrentLinkedQueue,Executors}
 import munit.FunSuite
 import services.models.api.ChatCompletionClient
-import services.models.objects.{ChatCompletionInput,ModelApiSettings}
+import services.models.objects.{ChatCompletionExchange,ChatCompletionInput,ModelApiSettings}
 import services.system.api.*
 import services.accounts.tables.LocalIdentityTable.LocalIdentityTableInitializer
 import services.cases.api.ImportCaseMessage
@@ -75,6 +76,22 @@ class ModelHttpSuite extends FunSuite:
       messages=sent._2.hcursor.get[Vector[Json]]("messages").toOption.get
       _ = assertEquals(messages.map(_.hcursor.get[String]("role").toOption.get),Vector("system","user"))
       _ = assert(!sent._2.noSpaces.contains("dummy-test-key"))
+    yield () }.unsafeRunSync()
+  }
+
+  test("completed exchanges reach the provider in role order and empty history retains the old input shape") {
+    val requests=new ConcurrentLinkedQueue[(Boolean,Json)]()
+    val input=ChatCompletionInput("json","current",Vector(ChatCompletionExchange("question one","reply one"),ChatCompletionExchange("对","reply two")))
+    provider(200,envelope("{}"),requests).use { port => for
+      client <- ChatCompletionClient.fromSettings(settings(port))
+      _ <- client.complete(input)
+      messages=requests.peek()._2.hcursor.get[Vector[Json]]("messages").toOption.get
+      _ = assertEquals(messages.map(_.hcursor.get[String]("role").toOption.get),Vector("system","user","assistant","user","assistant","user"))
+      _ = assertEquals(messages.map(_.hcursor.get[String]("content").toOption.get),Vector("json","question one","reply one","对","reply two","current"))
+      _ = assertEquals(input.asJson.as[ChatCompletionInput],Right(input))
+      old=ChatCompletionInput("json","current")
+      _ = assertEquals(old.asJson.noSpaces,"""{"system":"json","user":"current"}""")
+      _ = assertEquals(old.asJson.as[ChatCompletionInput],Right(old))
     yield () }.unsafeRunSync()
   }
 

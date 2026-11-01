@@ -15,10 +15,12 @@ private[models] final class OpenAICompatibleChatClient(settings: ModelApiSetting
   private val client = HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(5))
     .followRedirects(HttpClient.Redirect.NEVER).build()
   override def complete(input: ChatCompletionInput): IO[String] =
+    def message(role: String, content: String): Json = Json.obj("role" -> Json.fromString(role), "content" -> Json.fromString(content))
+    val messages = Vector(message("system",input.system)) ++ input.history.flatMap(turn =>
+      Vector(message("user",turn.user),message("assistant",turn.assistant))) :+ message("user",input.user)
     val basic = Json.obj("model" -> Json.fromString(settings.model), "stream" -> Json.False,
       "max_tokens" -> Json.fromInt(settings.maxTokens), "response_format" -> Json.obj("type" -> Json.fromString("json_object")),
-      "messages" -> Json.arr(Json.obj("role" -> Json.fromString("system"), "content" -> Json.fromString(input.system)),
-        Json.obj("role" -> Json.fromString("user"), "content" -> Json.fromString(input.user))))
+      "messages" -> Json.fromValues(messages))
     val body = if settings.disableThinking then basic.deepMerge(Json.obj("thinking" -> Json.obj("type" -> Json.fromString("disabled")))) else basic
     IO.interruptibleMany {
       val request = HttpRequest.newBuilder(URI.create(settings.baseUrl.stripSuffix("/") + "/chat/completions"))

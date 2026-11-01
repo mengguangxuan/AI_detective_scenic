@@ -356,3 +356,14 @@ test.describe('selected material reading recovery', () => {
     await expect(log).toContainText('约19:00是到场');
   });
 });
+
+test.describe('short-answer continuity recovery', () => {
+  test.use({ storageState: '.build-cache/continuity-browser-state.json' });
+  test('saved short-answer exchange and witness separation survive actual restart', async ({ page }) => {
+    await page.goto('/interviews'); await page.getByRole('button', { name: '与劳伦斯·雷丁交谈', exact: true }).click();
+    const log = page.getByRole('log', { name: '自由问询记录', exact: true });
+    await expect(log).toContainText('你是说抽屉里的那支枪吗？');
+    await expect(log).toContainText('明白，你指的是抽屉里的那支枪。');
+    await expect(log).not.toContainText('这是我们这次的第一句交谈。');
+  });
+});

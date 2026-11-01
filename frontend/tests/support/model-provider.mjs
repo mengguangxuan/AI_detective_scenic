@@ -12,7 +12,7 @@ const server = http.createServer(async (request, response) => {
     let raw = '';
     for await (const chunk of request) raw += chunk;
     const body = JSON.parse(raw);
-    const context = JSON.parse(body.messages.find(message => message.role === 'user').content);
+    const context = JSON.parse(body.messages.findLast(message => message.role === 'user').content);
     if (context.task === 'reasoning_judge' || context.task === 'reasoning_guidance') {
       const explanation = context.playerSubmission.explanation;
       if (explanation.includes('评审接口故障测试')) { response.writeHead(503).end('{}'); return; }
@@ -32,6 +32,23 @@ const server = http.createServer(async (request, response) => {
       response.end(JSON.stringify({ choices: [{ finish_reason: 'stop', message: { content: JSON.stringify(payload) } }] })); return;
     }
     if (context.question.includes('接口故障测试')) { response.writeHead(503).end('{"error":"fixture unavailable"}'); return; }
+    // Exact protocol assertions, separate from real-provider continuity review.
+    const previous = context.dialogueFocus?.lastSpokenExchange;
+    if (context.question === '协议接话：先问我' || (context.question === '对' && previous?.reply === '你是说抽屉里的那支枪吗？') || context.question === '协议接话：另一人物') {
+      let reply;
+      if (context.question === '协议接话：先问我') reply = '你是说抽屉里的那支枪吗？';
+      else if (context.question === '对') {
+        const history = body.messages.slice(1, -1);
+        if (history.length !== 2 || history[0].role !== 'user' || history[1].role !== 'assistant' || history[1].content !== previous.reply) throw new Error('Role history lost');
+        if ('history' in context) throw new Error('Duplicate dialogue in current payload');
+        reply = '明白，你指的是抽屉里的那支枪。';
+      } else {
+        if (body.messages.length !== 2 || previous !== null) throw new Error('Another witness dialogue leaked');
+        reply = '这是我们这次的第一句交谈。';
+      }
+      response.setHeader('Content-Type', 'application/json');
+      response.end(JSON.stringify({ choices: [{ finish_reason: 'stop', message: { content: JSON.stringify({ reply, disclosureIds: [], statementUpdates: [] }) } }] })); return;
+    }
     // Test the complete checkbox -> request -> frozen input chain, not model semantics.
     if (context.question.startsWith('协议材料：')) {
       const current = context.presentedThisTurn;

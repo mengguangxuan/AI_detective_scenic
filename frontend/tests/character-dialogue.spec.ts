@@ -39,6 +39,26 @@ test('a saved counterquestion waits for the player and restores without acquirin
   expect((await game.snapshot()).clues).toEqual(before.clues);
   await page.context().storageState({ path: '.build-cache/character-dialogue-browser-state.json' });
 });
+test('a short answer uses role history after refresh and another witness starts separately', async ({ page }) => {
+  test.skip(process.env.DETECTIVE_TEST_MODEL !== '1', 'Role-history protocol fixture.');
+  const game = await start(page); const before = await game.snapshot();
+  await page.goto('/interviews'); await page.getByRole('button', { name: '与劳伦斯·雷丁交谈', exact: true }).click();
+  await page.getByLabel('你的问题', { exact: true }).fill('协议接话：先问我');
+  await page.getByRole('button', { name: '发送问题', exact: true }).click();
+  const log = page.getByRole('log', { name: '自由问询记录', exact: true });
+  await expect(log).toContainText('你是说抽屉里的那支枪吗？');
+  await page.reload(); await page.getByRole('button', { name: '与劳伦斯·雷丁交谈', exact: true }).click();
+  await page.getByLabel('你的问题', { exact: true }).fill('对');
+  await page.getByRole('button', { name: '发送问题', exact: true }).click();
+  await expect(log).toContainText('明白，你指的是抽屉里的那支枪。');
+  await page.getByRole('button', { name: '与玛丽交谈', exact: true }).click();
+  await page.getByLabel('你的问题', { exact: true }).fill('协议接话：另一人物');
+  await page.getByRole('button', { name: '发送问题', exact: true }).click();
+  await expect(log).toContainText('这是我们这次的第一句交谈。');
+  expect((await game.snapshot()).clues).toEqual(before.clues);
+  await page.context().storageState({ path: '.build-cache/continuity-browser-state.json' });
+});
+
 test('revision23 fixed fallback needs actual challenges and still reaches Archer without a phase button', async ({ page }) => {
   const game = await start(page);
   await game.read('route_redding_account'); await game.read('route_redding_gun');

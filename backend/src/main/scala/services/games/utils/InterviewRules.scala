@@ -58,7 +58,7 @@ private[games] object InterviewRules:
       InterviewContext(profile.copy(answers=available,dossier=DialogueDossier(phaseKnowledge++current++mapKnowledge++conditions,initial.privateContext,phasePolicy)),content.clues.filter(c => known(c.id)),history.takeRight(12),state.caseId,state.caseRevision,
         if continuous.nonEmpty || content.interviewPromptVersion == 2 then 3 else if initial.knowledge.nonEmpty then 2 else 1,
         continuous.map(_.statementAnswers.filter(id => profile.answers.find(_.id == id).exists(a => a.routes.exists(route => content.routes.exists(r => r.id == route && !r.clues.forall(state.clues.contains)))))).getOrElse(Set.empty),
-        if continuous.nonEmpty || content.interviewPromptVersion == 2 then content.clues.filter(c => own(c.id)) else Vector.empty, if content.interviewPromptVersion == 2 then 3 else 1)
+        if continuous.nonEmpty || content.interviewPromptVersion == 2 then content.clues.filter(c => own(c.id)) else Vector.empty, if content.interviewPromptVersion == 2 then 5 else 1)
 
   private[games] def prompt(request: InterviewRequestRecord): ChatCompletionInput =
     val c = request.context
@@ -121,7 +121,8 @@ private[games] object InterviewRules:
       "readingReminder" -> "以下presentedThisTurn是本轮已经交到你面前的原文，不是待索取的资料。policy中的试探话术须结合这些原文调整：先回应一条相关的具体记载，再怀疑或反问其中未明之处。材料内容已知，不代表相信或改口。若登记更新，text须逐字复制最终reply里的连续原文，不能另写摘要。".asJson,
       "presentedThisTurn" -> Json.fromValues(c.evidence.filter(e => request.shownClues(e.id))
         .map(e => Json.obj("id" -> e.id.asJson,"title" -> e.title.value.asJson,"text" -> e.text.value.asJson)))))
-    ChatCompletionInput(system,presented.noSpaces)
+    if c.promptVersion == 5 then DialogueContinuityPrompt.groundedInput(c,presented)
+    else if c.promptVersion == 4 then DialogueContinuityPrompt.input(c,presented) else ChatCompletionInput(system,presented.noSpaces)
 
   private[games] def decision(raw: String, context: InterviewContext): Option[InterviewDecision] =
     for
