@@ -1,16 +1,12 @@
 # 验收前准备与启动步骤
 
-## 当前验收：人物对话第一档，修订23
+## 当前验收：树林实地探索，修订24
 
-本轮澄清焦点、连续接话与材料阅读修复直接用于已有修订23的新问题，无需重开；按[手动指南第0节](manual_test_guide.md)复测。旧请求重试仍返回原回执。作者可运行`E:\dev\nodejs\node.exe tools/verify_material_reading_live.mjs`，实际重启后加`--restore`核对完整快照。
+新建调查顶部应为`vicarage_study/24`，书房与树林组成场景包`study/6`。从地图点“前往树林”，按[指南第0节](manual_test_guide.md)验收走近、显露与采集、返回和专业辨认。原23不升级，保留其警方查访与原始进度；问询仍复用模板6／答复协议4。
 
-连续接话真实检查：`E:\dev\nodejs\node.exe tools/verify_dialogue_continuity_live.mjs`，加`--restore`核对实际重启后的完整快照。
+正常后端继续使用老师提供的TokenHub DeepSeek配置。真实整案：`E:\dev\nodejs\node.exe tools/verify_case_completion_live.mjs --woodland --positive`；实际重启后用`--woodland --restore`核对。缓存按新版本隔离，不读取或输出密钥。旧对话与结案脚本的原参数继续用于旧修订恢复，不代替新24实测。
 
-澄清焦点实测：`E:\dev\nodejs\node.exe tools/verify_clarification_focus_live.mjs`；实际重启后`--continue`接着回答澄清，最终`--restore`核对快照。加`--redding`可独立抽测雷丁，配合`--continue`换一个明确指代问题继续，`--redding --restore`核对其快照；原失败记录保留。
-
-首次测试时，从首页案件详情明确开始新调查，顶部确认`vicarage_study/23`。所有人物与警方共用反问、部分回答和策略连续性提示；旧22及更早调查保留原行为。当前操作按[手动指南](manual_test_guide.md)第2—5节；完整路线见[整案流程](full_case_walkthrough.md)，实现及边界见[人物对话提示](../cases/dialogue_prompt.md)。
-
-正常后端配置仍为老师提供的TokenHub DeepSeek。作者真实对话测试：`E:\dev\nodejs\node.exe tools/verify_character_dialogue_live.mjs`，可用`--redding`、`--anne`、`--others`定向核验；实际重启后加`--restore`核对三组最终完整快照。完整新修订取证与真实评审：`E:\dev\nodejs\node.exe tools/verify_case_completion_live.mjs --dialogue --positive`；恢复时用`--dialogue --restore`。记录保存在忽略缓存，脚本不读取或输出密钥。旧22脚本保留用于历史回归，不能代替本轮语义验收。
+课堂展示与场景登记见[树林说明](woodland_scene_manifest.md)，完整取证见[整案流程](full_case_walkthrough.md)。
 
 以下修订22说明为历史记录；日常启动仍按本文第1—8节。
 
@@ -126,7 +122,7 @@ Local: http://127.0.0.1:5173/
 
 如果要从头验收，点击右上角“新建调查”进入本案详情，再点“开始新调查”；如果要检查恢复，则保留当前会话，不要新建或清除浏览器数据。
 
-当前修订21可完成首案的取证、问询与补询、警方核查、推理评审、结案与复盘。自由问询和评审需配置模型；新调查不再提供独立时间核对，纯出示和收件保存交流记录，不重复发证据卡。首页、案件区、独立开局与恢复列表已实现；当前只公开首案，树林3D与用户上传尚未实现。具体玩法与验收范围见 [实现说明](implementation.md)。
+当前修订24可完成首案的取证、连续问询、警方核查、推理评审、结案与复盘，并可进入书房和小型树林两个3D现场。自由问询和评审需配置模型；新调查不提供独立时间核对，纯出示和收件保存交流记录，不重复发证据卡。首页、案件区、独立开局与恢复列表已实现；当前只公开首案，用户上传尚未实现。具体玩法与验收范围见 [实现说明](implementation.md)。
 
 ## 5. 验收结束后停止服务
 

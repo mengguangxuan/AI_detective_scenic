@@ -20,6 +20,7 @@ import InvestigationNavigation from './components/InvestigationNavigation';
 import { useInvestigationPage } from './hooks/useInvestigationPage';
 import { investigationPages } from './objects/InvestigationPage';
 import { navigate } from './hooks/usePathname';
+import TravelPanel from '../features/investigation/components/TravelPanel';
 
 export default function InvestigationApp() {
   const investigation = useInvestigation();
@@ -54,10 +55,11 @@ export default function InvestigationApp() {
           <CaseClockPanel clock={ready.snapshot.clock} disabled={disabled} onWait={investigation.advanceTime}/>
           {page !== '/case' ? <StagePanel snapshot={ready.snapshot} compact reviewLink={page !== '/conclusion'}/> : null}
           <div ref={content} tabIndex={-1} className="outline-none">
+            {ready.snapshot.scene.bundleId === 'woodland' && page !== '/scene' && page !== '/map' ? <div className="mb-5 space-y-2"><p className="text-sm text-stone-300">你正在林地现场。返回牧师寓所后可继续当面问询和交送材料。</p><TravelPanel choices={(ready.snapshot.scene.travel ?? []).filter(c => c.destinationName !== ready.snapshot.scene.placeName)} disabled={disabled} onTravel={choice => { investigation.execute(choice.operation, choice.point); }}/></div> : null}
             {page === '/conclusion' ? <ConclusionPage snapshot={ready.snapshot} disabled={disabled} onSubmit={investigation.conclude} onEvaluate={investigation.evaluate} onReveal={investigation.revealReasoning}
               draft={conclusionDraft?.sessionId === ready.snapshot.sessionId ? conclusionDraft.value : emptyConclusionDraft}
               onChange={value => setConclusionDraft({ sessionId: ready.snapshot.sessionId, value })}/> : null}
-            {page === '/map' ? <MapPage key={ready.snapshot.sessionId} map={ready.snapshot.areaMap}/> : null}
+            {page === '/map' ? <MapPage key={ready.snapshot.sessionId} map={ready.snapshot.areaMap} travel={(ready.snapshot.scene.travel ?? []).filter(c => c.destinationName !== ready.snapshot.scene.placeName)} disabled={disabled} onTravel={choice => { investigation.execute(choice.operation, choice.point); navigate('/scene'); }}/> : null}
             {page === '/case' ? <CasePage snapshot={ready.snapshot} onSelect={investigation.select}/> : null}
             {page === '/people' ? <PeoplePage snapshot={ready.snapshot} onSelect={investigation.select}/> : null}
             {page === '/journal' ? <JournalPage key={ready.snapshot.sessionId} snapshot={ready.snapshot}/> : null}

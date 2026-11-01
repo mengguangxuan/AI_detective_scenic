@@ -1,13 +1,15 @@
 import { useState } from 'react';
 import type { AreaMap } from '../../apis/games/objects/AreaMap';
 import { estimateRoute } from './functions/estimateRoute';
+import type { TravelChoiceView } from '../../apis/games/objects/TravelChoiceView';
+import TravelPanel from '../../features/investigation/components/TravelPanel';
 // Offsets belong to this published schematic's presentation, not to route distances.
 const roadLabels: Record<string, { x: number; y: number }> = {
   farm_path: { x: 508, y: 565 },
   doctor_neighbor: { x: 508, y: 473 },
   studio_house: { x: 190, y: 385 },
 };
-export default function MapPage({ map }: { map: AreaMap | null }) {
+export default function MapPage({ map, travel, disabled = false, onTravel }: { map: AreaMap | null; travel?: readonly TravelChoiceView[]; disabled?: boolean; onTravel?: (choice: TravelChoiceView) => void }) {
   const [from, setFrom] = useState('study');
   const [to, setTo] = useState('old_hall');
   if (!map) return <section><h2 className="text-xl">地点地图</h2><p className="mt-3 text-sm text-stone-400">这份旧调查尚无地点地图；可保留原进度，另建调查查看新版。</p></section>;
@@ -16,6 +18,7 @@ export default function MapPage({ map }: { map: AreaMap | null }) {
   const highlighted = new Set(estimate?.roads.map(road => road.id));
   return <section aria-labelledby="map-title" className="space-y-5">
     <div><h2 id="map-title" className="text-xl font-medium">地点地图</h2><p className="mt-2 text-sm leading-7 text-stone-400">{map.note} 图上道路交叉不表示另有路口。</p></div>
+    {travel && onTravel ? <TravelPanel choices={travel} disabled={disabled} onTravel={onTravel}/> : null}
     <section aria-label="步行路线估算" className="rounded-2xl border border-white/10 bg-[#182421] p-5">
       <div className="grid gap-4 sm:grid-cols-2"><div><label htmlFor="map-route-start" className="text-sm">起点</label><select id="map-route-start" value={from} onChange={event => setFrom(event.target.value)} className="mt-2 block w-full rounded-lg border border-white/25 bg-[#101918] px-3 py-2">{map.locations.map(location => <option key={location.id} value={location.id}>{location.name}</option>)}</select></div><div><label htmlFor="map-route-end" className="text-sm">终点</label><select id="map-route-end" value={to} onChange={event => setTo(event.target.value)} className="mt-2 block w-full rounded-lg border border-white/25 bg-[#101918] px-3 py-2">{map.locations.map(location => <option key={location.id} value={location.id}>{location.name}</option>)}</select></div></div>
       <p aria-live="polite" className="mt-4 text-sm leading-7 text-amber-100">{estimate ? `图中道路约 ${estimate.meters} 米，步行约 ${estimate.minutes} 分钟。` : '图中尚无连接这两个地点的道路记录。'}{estimate && estimate.roads.length > 0 ? ` 途经：${estimate.roads.map(road => road.label).join(' → ')}。` : ''}</p>

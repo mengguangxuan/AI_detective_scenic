@@ -4,10 +4,11 @@ import assert from 'node:assert/strict';
 import { randomUUID } from 'node:crypto';
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
-const dialogue = process.argv.includes('--dialogue');
+const woodland = process.argv.includes('--woodland');
+const dialogue = process.argv.includes('--dialogue') || woodland;
 const continuous = process.argv.includes('--continuous') || dialogue;
-const playableRevision = dialogue ? 23 : 22;
-const cache = fileURLToPath(new URL(dialogue ? '../frontend/.build-cache/dialogue-completion/' : continuous ? '../frontend/.build-cache/continuous-completion/' : '../frontend/.build-cache/', import.meta.url));
+const playableRevision = woodland ? 24 : dialogue ? 23 : 22;
+const cache = fileURLToPath(new URL(woodland ? '../frontend/.build-cache/woodland-completion/' : dialogue ? '../frontend/.build-cache/dialogue-completion/' : continuous ? '../frontend/.build-cache/continuous-completion/' : '../frontend/.build-cache/', import.meta.url));
 mkdirSync(cache, { recursive: true });
 const origin = 'http://127.0.0.1:5175';
 const key = 'detective-scenic:server-session:v6';
@@ -74,7 +75,11 @@ async function collect(game, natural = false) {
   for (const route of ['route_redding_revised', 'route_redding_gun_revised', 'route_redding_scene_revised', 'route_anne_gun_challenge', 'route_anne_redding_challenge']) await game.read(route);
   if (!continuous) await game.operate('begin_anne_followup'); await game.read('route_anne_revised'); await game.read('route_anne_visit_revised');
   await game.read('route_call_basis'); await game.check('call_origin');
-  await game.read('route_police_sound_check'); await game.check('woodland_search');
+  await game.read('route_police_sound_check');
+  if (woodland) {
+    for (const operation of ['enter_woodland', 'woodland_to_clearing', 'woodland_to_log', 'brush_woodland_leaves']) await game.operate(operation);
+    await game.read('route_collect_woodland_sample'); await game.operate('return_study_log');
+  } else await game.check('woodland_search');
   await game.operate('lift_planter'); await game.read('route_planter_interior'); await game.operate('replace_planter');
   await game.wait(15); await game.check('crystal_opinion'); await game.check('call_lodge_inspection');
   await game.wait(15);
@@ -116,7 +121,7 @@ else if (process.argv.includes('--positive')) {
     const storage = JSON.parse(readFileSync(cache + 'completion-live-open-state.json', 'utf8'));
     game.cookie = storage.cookies.map(c => c.name + '=' + c.value).join('; ');
     game.sessionId = JSON.parse(storage.origins[0].localStorage[0].value).sessionId; await game.refresh();
-    assert.equal(game.state.caseRevision.value, 20); assert.equal(game.state.reasoning.ending, null);
+    assert.equal(game.state.caseRevision.value, continuous ? playableRevision : 20); assert.equal(game.state.reasoning.ending, null);
   } else await collect(game);
   await assess(game, 'supported_reconstruction', correct, 'Established');
   await game.change('revealreasoning', { abandon: false });

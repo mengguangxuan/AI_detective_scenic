@@ -1,7 +1,7 @@
 {
   "id": "vicarage_study",
   "revision": {
-    "value": 23
+    "value": 24
   },
   "schemaVersion": {
     "value": 2
@@ -146,8 +146,21 @@
         "name": "树林",
         "parent": null,
         "geography": null,
-        "background": "位于寓所周边的林地，方位仅作示意。",
-        "walkable": []
+        "background": "周五可实地查看的一小段林间小径与空地；调查只记录当下所见。",
+        "walkable": [
+          {
+            "min": {
+              "x": -5,
+              "y": 0,
+              "z": -8
+            },
+            "max": {
+              "x": 5,
+              "y": 2,
+              "z": 7
+            }
+          }
+        ]
       },
       {
         "id": "lower_farm",
@@ -230,6 +243,55 @@
         "initialPlace": "study",
         "owner": null,
         "background": "书房窗边陈设；本局可在原位提起内盆检查，检查后放回。"
+      },
+      {
+        "id": "garden_gate",
+        "name": "花园出口",
+        "initialPlace": "study",
+        "owner": null,
+        "background": "从花园小路可以前往寓所附近的树林。"
+      },
+      {
+        "id": "woodland_trail",
+        "name": "林缘小径",
+        "initialPlace": "woods",
+        "owner": null,
+        "background": "一条窄小径伸入林间，尽头的树冠疏开，能看见一片空地。"
+      },
+      {
+        "id": "woodland_clearing",
+        "name": "林间空地",
+        "initialPlace": "woods",
+        "owner": null,
+        "background": "树木在这里让出一小片空地。一侧有倒木，地面覆着落叶与碎石。"
+      },
+      {
+        "id": "woodland_leaves",
+        "name": "倒木旁的落叶",
+        "initialPlace": "woods",
+        "owner": null,
+        "background": "倒木旁的落叶间混着泥土与细碎石粒，可以走近拨开查看。"
+      },
+      {
+        "id": "woodland_fragment",
+        "name": "棕色小碎块",
+        "initialPlace": "woods",
+        "owner": null,
+        "background": "落叶下露出一块带棱面的棕色小碎块。仅凭外观还不能判断它是什么。"
+      },
+      {
+        "id": "woodland_trees",
+        "name": "林木与灌丛",
+        "initialPlace": "woods",
+        "owner": null,
+        "background": "林木与灌丛沿小径分布。树干遮挡了更远处的视线；这次查看的范围限于小径和空地。"
+      },
+      {
+        "id": "woodland_stones",
+        "name": "小径旁的石头",
+        "initialPlace": "woods",
+        "owner": null,
+        "background": "几块覆着苔色的石头散在小径边。本次外观检查没有确认它们与案件的关系。"
       }
     ],
     "relationships": [],
@@ -2445,7 +2507,7 @@
         "id": "fact_woodland_sample",
         "value": {
           "kind": "AuthoredDetail",
-          "detail": "警方查访记录：沿寓所附近树林的小径查看，在一处灌木较稀疏的小空地地面收取一小块棕色晶体，作为样本单独保存，留待辨认。本项记录尚未确定它是什么、何时留下、由谁留下，也没有确认它与两人所述响声的关系。"
+          "detail": "现场采集记录：沿寓所附近树林的小径走到一处空地，在倒木旁拨开落叶，发现并收取一小块带棱面的棕色晶体，单独保存，留待辨认。本次观察尚未确定它是什么、何时留下、由谁留下，也没有确认它与听闻的响声有何关系。"
         },
         "requiresOccurred": [],
         "explanation": "固定的初查材料；陈述及推论的归属见正文，不等同于完整案件真相。",
@@ -3258,6 +3320,181 @@
         "represents": "planter_interior",
         "place": "study",
         "initiallyVisible": false
+      },
+      {
+        "id": "node_garden_gate",
+        "asset": "model_placeholder",
+        "transform": {
+          "position": {
+            "x": 2,
+            "y": 0,
+            "z": 1.4
+          },
+          "rotation": {
+            "xRad": 0,
+            "yRad": 0,
+            "zRad": 0
+          },
+          "scale": {
+            "x": 1,
+            "y": 1,
+            "z": 1
+          }
+        },
+        "parent": null,
+        "represents": "garden_gate",
+        "place": "study",
+        "initiallyVisible": true
+      },
+      {
+        "id": "node_woodland_trail",
+        "asset": "model_placeholder",
+        "transform": {
+          "position": {
+            "x": 0,
+            "y": 0,
+            "z": 5
+          },
+          "rotation": {
+            "xRad": 0,
+            "yRad": 0,
+            "zRad": 0
+          },
+          "scale": {
+            "x": 1,
+            "y": 1,
+            "z": 1
+          }
+        },
+        "parent": null,
+        "represents": "woodland_trail",
+        "place": "woods",
+        "initiallyVisible": true
+      },
+      {
+        "id": "node_woodland_clearing",
+        "asset": "model_placeholder",
+        "transform": {
+          "position": {
+            "x": 0,
+            "y": 0,
+            "z": -1
+          },
+          "rotation": {
+            "xRad": 0,
+            "yRad": 0,
+            "zRad": 0
+          },
+          "scale": {
+            "x": 1,
+            "y": 1,
+            "z": 1
+          }
+        },
+        "parent": null,
+        "represents": "woodland_clearing",
+        "place": "woods",
+        "initiallyVisible": true
+      },
+      {
+        "id": "node_woodland_leaves",
+        "asset": "model_placeholder",
+        "transform": {
+          "position": {
+            "x": 2.8,
+            "y": 0,
+            "z": -4.5
+          },
+          "rotation": {
+            "xRad": 0,
+            "yRad": 0,
+            "zRad": 0
+          },
+          "scale": {
+            "x": 1,
+            "y": 1,
+            "z": 1
+          }
+        },
+        "parent": null,
+        "represents": "woodland_leaves",
+        "place": "woods",
+        "initiallyVisible": true
+      },
+      {
+        "id": "node_woodland_fragment",
+        "asset": "model_placeholder",
+        "transform": {
+          "position": {
+            "x": 2.8,
+            "y": 0.08,
+            "z": -4.5
+          },
+          "rotation": {
+            "xRad": 0,
+            "yRad": 0,
+            "zRad": 0
+          },
+          "scale": {
+            "x": 1,
+            "y": 1,
+            "z": 1
+          }
+        },
+        "parent": null,
+        "represents": "woodland_fragment",
+        "place": "woods",
+        "initiallyVisible": false
+      },
+      {
+        "id": "node_woodland_trees",
+        "asset": "model_placeholder",
+        "transform": {
+          "position": {
+            "x": -4,
+            "y": 0,
+            "z": -2
+          },
+          "rotation": {
+            "xRad": 0,
+            "yRad": 0,
+            "zRad": 0
+          },
+          "scale": {
+            "x": 1,
+            "y": 1,
+            "z": 1
+          }
+        },
+        "parent": null,
+        "represents": "woodland_trees",
+        "place": "woods",
+        "initiallyVisible": true
+      },
+      {
+        "id": "node_woodland_stones",
+        "asset": "model_placeholder",
+        "transform": {
+          "position": {
+            "x": -2,
+            "y": 0,
+            "z": -2.5
+          },
+          "rotation": {
+            "xRad": 0,
+            "yRad": 0,
+            "zRad": 0
+          },
+          "scale": {
+            "x": 1,
+            "y": 1,
+            "z": 1
+          }
+        },
+        "parent": null,
+        "represents": "woodland_stones",
+        "place": "woods",
+        "initiallyVisible": true
       }
     ],
     "cues": [],
@@ -3621,6 +3858,106 @@
         },
         "topics": [],
         "fallbackFinding": null
+      },
+      {
+        "id": "point_garden_gate",
+        "subject": {
+          "kind": "Entity",
+          "id": "garden_gate"
+        },
+        "label": "花园出口",
+        "entry": {
+          "kind": "OnNode",
+          "node": "node_garden_gate",
+          "localPoint": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "radiusMeters": 4
+        },
+        "topics": [],
+        "fallbackFinding": null
+      },
+      {
+        "id": "point_woodland_trail",
+        "subject": {
+          "kind": "Entity",
+          "id": "woodland_trail"
+        },
+        "label": "林缘小径",
+        "entry": {
+          "kind": "OnNode",
+          "node": "node_woodland_trail",
+          "localPoint": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "radiusMeters": 1.8
+        },
+        "topics": [],
+        "fallbackFinding": null
+      },
+      {
+        "id": "point_woodland_clearing",
+        "subject": {
+          "kind": "Entity",
+          "id": "woodland_clearing"
+        },
+        "label": "林间空地",
+        "entry": {
+          "kind": "OnNode",
+          "node": "node_woodland_clearing",
+          "localPoint": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "radiusMeters": 1.8
+        },
+        "topics": [],
+        "fallbackFinding": null
+      },
+      {
+        "id": "point_woodland_leaves",
+        "subject": {
+          "kind": "Entity",
+          "id": "woodland_leaves"
+        },
+        "label": "倒木旁的落叶",
+        "entry": {
+          "kind": "OnNode",
+          "node": "node_woodland_leaves",
+          "localPoint": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "radiusMeters": 1.8
+        },
+        "topics": [],
+        "fallbackFinding": null
+      },
+      {
+        "id": "point_woodland_fragment",
+        "subject": {
+          "kind": "Entity",
+          "id": "woodland_fragment"
+        },
+        "label": "棕色小碎块",
+        "entry": {
+          "kind": "OnNode",
+          "node": "node_woodland_fragment",
+          "localPoint": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "radiusMeters": 1.9
+        },
+        "topics": [],
+        "fallbackFinding": null
       }
     ],
     "requirementBindings": [],
@@ -3659,6 +3996,34 @@
       {
         "node": "node_planter",
         "description": "窗边的花架上放着一株棕榈，陶制外盆的边缘露在内盆周围。"
+      },
+      {
+        "node": "node_garden_gate",
+        "description": "从花园小路可以前往寓所附近的树林。"
+      },
+      {
+        "node": "node_woodland_trail",
+        "description": "一条窄小径伸入林间，尽头的树冠疏开，能看见一片空地。"
+      },
+      {
+        "node": "node_woodland_clearing",
+        "description": "树木在这里让出一小片空地。一侧有倒木，地面覆着落叶与碎石。"
+      },
+      {
+        "node": "node_woodland_leaves",
+        "description": "倒木旁的落叶间混着泥土与细碎石粒，可以走近拨开查看。"
+      },
+      {
+        "node": "node_woodland_fragment",
+        "description": "落叶下露出一块带棱面的棕色小碎块。仅凭外观还不能判断它是什么。"
+      },
+      {
+        "node": "node_woodland_trees",
+        "description": "林木与灌丛沿小径分布。树干遮挡了更远处的视线；这次查看的范围限于小径和空地。"
+      },
+      {
+        "node": "node_woodland_stones",
+        "description": "几块覆着苔色的石头散在小径边。本次外观检查没有确认它们与案件的关系。"
       }
     ],
     "objects": [
@@ -3731,6 +4096,93 @@
         "label": "外盆内部",
         "point": "point_planter_interior",
         "readRoute": "route_planter_interior"
+      },
+      {
+        "node": "node_garden_gate",
+        "entity": "garden_gate",
+        "label": "花园出口",
+        "point": "point_garden_gate",
+        "readRoute": null
+      },
+      {
+        "node": "node_woodland_trail",
+        "entity": "woodland_trail",
+        "label": "林缘小径",
+        "point": "point_woodland_trail",
+        "readRoute": null
+      },
+      {
+        "node": "node_woodland_clearing",
+        "entity": "woodland_clearing",
+        "label": "林间空地",
+        "point": "point_woodland_clearing",
+        "readRoute": null
+      },
+      {
+        "node": "node_woodland_leaves",
+        "entity": "woodland_leaves",
+        "label": "倒木旁的落叶",
+        "point": "point_woodland_leaves",
+        "readRoute": null
+      },
+      {
+        "node": "node_woodland_fragment",
+        "entity": "woodland_fragment",
+        "label": "棕色小碎块",
+        "point": "point_woodland_fragment",
+        "readRoute": "route_collect_woodland_sample"
+      },
+      {
+        "node": "node_woodland_trees",
+        "entity": "woodland_trees",
+        "label": "林木与灌丛",
+        "point": null,
+        "readRoute": null
+      },
+      {
+        "node": "node_woodland_stones",
+        "entity": "woodland_stones",
+        "label": "小径旁的石头",
+        "point": null,
+        "readRoute": null
+      }
+    ],
+    "locations": [
+      {
+        "place": "study",
+        "name": "牧师寓所 · 书房",
+        "bundleId": "study",
+        "revision": "5",
+        "stops": [
+          {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          }
+        ]
+      },
+      {
+        "place": "woods",
+        "name": "寓所附近 · 林间小径",
+        "bundleId": "woodland",
+        "revision": "1",
+        "stops": [
+          {
+            "x": 0,
+            "y": 0,
+            "z": 5
+          },
+          {
+            "x": 0,
+            "y": 0,
+            "z": -1
+          },
+          {
+            "x": 2.8,
+            "y": 0,
+            "z": -4.5
+          }
+        ]
       }
     ]
   },
@@ -4662,14 +5114,14 @@
       },
       {
         "id": "clue_woodland_sample",
-        "title": "树林查访：棕色晶体样本",
-        "finding": "警方查访记录：沿寓所附近树林的小径查看，在一处灌木较稀疏的小空地地面收取一小块棕色晶体，作为样本单独保存，留待辨认。本项记录尚未确定它是什么、何时留下、由谁留下，也没有确认它与两人所述响声的关系。",
+        "title": "树林现场：棕色晶体样本",
+        "finding": "现场采集记录：沿寓所附近树林的小径走到一处空地，在倒木旁拨开落叶，发现并收取一小块带棱面的棕色晶体，单独保存，留待辨认。本次观察尚未确定它是什么、何时留下、由谁留下，也没有确认它与听闻的响声有何关系。",
         "facts": [
           "fact_woodland_sample"
         ],
         "relatedClaims": [],
         "result": {
-          "text": "警方查访记录：沿寓所附近树林的小径查看，在一处灌木较稀疏的小空地地面收取一小块棕色晶体，作为样本单独保存，留待辨认。本项记录尚未确定它是什么、何时留下、由谁留下，也没有确认它与两人所述响声的关系。",
+          "text": "现场采集记录：沿寓所附近树林的小径走到一处空地，在倒木旁拨开落叶，发现并收取一小块带棱面的棕色晶体，单独保存，留待辨认。本次观察尚未确定它是什么、何时留下、由谁留下，也没有确认它与听闻的响声有何关系。",
           "media": []
         },
         "suggests": []
@@ -4677,13 +5129,13 @@
       {
         "id": "clue_crystal_opinion",
         "title": "海多克对晶体的初步意见",
-        "finding": "警方将本次收取的棕色晶体交海多克医生查看。海多克说：“看起来像苦味酸。”他说明这种物质既可用作爆炸物，也有医用用途。这是医生凭外观作出的初步辨认，并非化验确认；不能据此确定样本的化学身份、用途、来历或那声响的成因。",
+        "finding": "警方将本次送交的棕色晶体交海多克医生查看。海多克说：“看起来像苦味酸。”他说明这种物质既可用作爆炸物，也有医用用途。这是医生凭外观作出的初步辨认，并非化验确认；不能据此确定样本的化学身份、用途、来历或那声响的成因。",
         "facts": [
           "fact_crystal_opinion"
         ],
         "relatedClaims": [],
         "result": {
-          "text": "警方将本次收取的棕色晶体交海多克医生查看。海多克说：“看起来像苦味酸。”他说明这种物质既可用作爆炸物，也有医用用途。这是医生凭外观作出的初步辨认，并非化验确认；不能据此确定样本的化学身份、用途、来历或那声响的成因。",
+          "text": "警方将本次送交的棕色晶体交海多克医生查看。海多克说：“看起来像苦味酸。”他说明这种物质既可用作爆炸物，也有医用用途。这是医生凭外观作出的初步辨认，并非化验确认；不能据此确定样本的化学身份、用途、来历或那声响的成因。",
           "media": []
         },
         "suggests": []
@@ -6004,6 +6456,22 @@
           "clue_clement_early_visit"
         ],
         "reports": []
+      },
+      {
+        "id": "route_collect_woodland_sample",
+        "point": "point_woodland_fragment",
+        "condition": {
+          "kind": "OperationDone",
+          "operation": "brush_woodland_leaves"
+        },
+        "method": {
+          "kind": "Fixed",
+          "label": "查看并收取棕色碎块"
+        },
+        "grants": [
+          "clue_woodland_sample"
+        ],
+        "reports": []
       }
     ],
     "operations": [
@@ -6246,6 +6714,218 @@
           }
         ],
         "repeatable": true
+      },
+      {
+        "id": "enter_woodland",
+        "point": "point_garden_gate",
+        "label": "前往树林",
+        "condition": {
+          "kind": "All",
+          "items": []
+        },
+        "effects": [
+          {
+            "kind": "World",
+            "effect": {
+              "kind": "Relocate",
+              "place": "woods",
+              "position": {
+                "x": 0,
+                "y": 0,
+                "z": 5
+              }
+            }
+          }
+        ],
+        "repeatable": true
+      },
+      {
+        "id": "woodland_to_clearing",
+        "point": "point_woodland_trail",
+        "label": "沿小径走向空地",
+        "condition": {
+          "kind": "All",
+          "items": []
+        },
+        "effects": [
+          {
+            "kind": "World",
+            "effect": {
+              "kind": "Relocate",
+              "place": "woods",
+              "position": {
+                "x": 0,
+                "y": 0,
+                "z": -1
+              }
+            }
+          }
+        ],
+        "repeatable": true
+      },
+      {
+        "id": "woodland_to_log",
+        "point": "point_woodland_clearing",
+        "label": "走近倒木旁",
+        "condition": {
+          "kind": "All",
+          "items": []
+        },
+        "effects": [
+          {
+            "kind": "World",
+            "effect": {
+              "kind": "Relocate",
+              "place": "woods",
+              "position": {
+                "x": 2.8,
+                "y": 0,
+                "z": -4.5
+              }
+            }
+          }
+        ],
+        "repeatable": true
+      },
+      {
+        "id": "woodland_back_trail",
+        "point": "point_woodland_clearing",
+        "label": "回到林缘小径",
+        "condition": {
+          "kind": "All",
+          "items": []
+        },
+        "effects": [
+          {
+            "kind": "World",
+            "effect": {
+              "kind": "Relocate",
+              "place": "woods",
+              "position": {
+                "x": 0,
+                "y": 0,
+                "z": 5
+              }
+            }
+          }
+        ],
+        "repeatable": true
+      },
+      {
+        "id": "woodland_back_clearing",
+        "point": "point_woodland_leaves",
+        "label": "回到空地",
+        "condition": {
+          "kind": "All",
+          "items": []
+        },
+        "effects": [
+          {
+            "kind": "World",
+            "effect": {
+              "kind": "Relocate",
+              "place": "woods",
+              "position": {
+                "x": 0,
+                "y": 0,
+                "z": -1
+              }
+            }
+          }
+        ],
+        "repeatable": true
+      },
+      {
+        "id": "return_study_trail",
+        "point": "point_woodland_trail",
+        "label": "返回牧师寓所",
+        "condition": {
+          "kind": "All",
+          "items": []
+        },
+        "effects": [
+          {
+            "kind": "World",
+            "effect": {
+              "kind": "Relocate",
+              "place": "study",
+              "position": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              }
+            }
+          }
+        ],
+        "repeatable": true
+      },
+      {
+        "id": "return_study_clearing",
+        "point": "point_woodland_clearing",
+        "label": "返回牧师寓所",
+        "condition": {
+          "kind": "All",
+          "items": []
+        },
+        "effects": [
+          {
+            "kind": "World",
+            "effect": {
+              "kind": "Relocate",
+              "place": "study",
+              "position": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              }
+            }
+          }
+        ],
+        "repeatable": true
+      },
+      {
+        "id": "return_study_log",
+        "point": "point_woodland_leaves",
+        "label": "返回牧师寓所",
+        "condition": {
+          "kind": "All",
+          "items": []
+        },
+        "effects": [
+          {
+            "kind": "World",
+            "effect": {
+              "kind": "Relocate",
+              "place": "study",
+              "position": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              }
+            }
+          }
+        ],
+        "repeatable": true
+      },
+      {
+        "id": "brush_woodland_leaves",
+        "point": "point_woodland_leaves",
+        "label": "拨开落叶查看",
+        "condition": {
+          "kind": "All",
+          "items": []
+        },
+        "effects": [
+          {
+            "kind": "World",
+            "effect": {
+              "kind": "SetNodeVisible",
+              "node": "node_woodland_fragment",
+              "visible": true
+            }
+          }
+        ],
+        "repeatable": false
       }
     ],
     "rules": [],
@@ -6254,9 +6934,9 @@
     "initial": {
       "spawnPlace": "study",
       "spawnPosition": {
-        "x": 0.8,
-        "y": 0.9,
-        "z": 1.1
+        "x": 0,
+        "y": 0,
+        "z": 0
       },
       "opened": [],
       "unlocked": [],
@@ -6370,22 +7050,9 @@
         ]
       },
       {
-        "id": "woodland_search",
-        "title": "树林声响现场查访",
-        "requestLabel": "申请查访树林声响附近现场",
-        "point": "point_police",
-        "requiredClues": [
-          "clue_police_sound_check"
-        ],
-        "delaySeconds": 900,
-        "resultClues": [
-          "clue_woodland_sample"
-        ]
-      },
-      {
         "id": "crystal_opinion",
         "title": "树林样本初步辨认",
-        "requestLabel": "申请请海多克辨认树林样本",
+        "requestLabel": "交送树林样本，请海多克辨认",
         "point": "point_police",
         "requiredClues": [
           "clue_woodland_sample"

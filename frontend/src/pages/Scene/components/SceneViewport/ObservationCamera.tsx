@@ -16,7 +16,7 @@ export default function ObservationCamera({ resetVersion, memory, sessionId }: {
   const initialized = useRef(false);
   useEffect(() => {
     if (!controls.current) return;
-    const saved = resetVersion === 0 && memory.current?.sessionId === sessionId ? memory.current : null;
+    const saved = resetVersion === 0 && memory.current?.sessionId === sessionId && memory.current.sceneKey !== 'woodland' ? memory.current : null;
     camera.position.fromArray(saved?.position ?? [4, 3.5, 5]);
     controls.current.target.fromArray(saved?.target ?? [0, 0.95, 0]);
     initialized.current = true;
@@ -29,7 +29,7 @@ export default function ObservationCamera({ resetVersion, memory, sessionId }: {
     beforeClamp.current.copy(orbit.target);
     orbit.target.clamp(minimum, maximum);
     camera.position.add(beforeClamp.current.sub(orbit.target).negate());
-    memory.current = { sessionId, position: [camera.position.x, camera.position.y, camera.position.z], target: [orbit.target.x, orbit.target.y, orbit.target.z] };
+    memory.current = { sessionId, sceneKey: 'study', position: [camera.position.x, camera.position.y, camera.position.z], target: [orbit.target.x, orbit.target.y, orbit.target.z] };
   }
   return <OrbitControls ref={controls} makeDefault enablePan screenSpacePanning enableDamping={false}
     mouseButtons={mouseButtons} touches={touches} minDistance={2.2} maxDistance={8}

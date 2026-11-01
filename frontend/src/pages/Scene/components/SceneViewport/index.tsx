@@ -9,6 +9,7 @@ import type { RouteId } from '../../../../objects/RouteId';
 import type { SceneCameraMemory } from '../../objects/SceneCameraMemory';
 import ObjectMenu from './ObjectMenu';
 const StudyScene = lazy(() => import('./StudyScene'));
+const WoodlandScene = lazy(() => import('./WoodlandScene'));
 class SceneBoundary extends Component<{ children: ReactNode }, { failed: boolean }> {
   state = { failed: false };
   static getDerivedStateFromError() { return { failed: true }; }
@@ -19,6 +20,14 @@ class SceneBoundary extends Component<{ children: ReactNode }, { failed: boolean
 type Props = { cameraMemory: RefObject<SceneCameraMemory | null>; snapshot: InvestigationSnapshot; selected: SceneSelection; disabled: boolean;
   onInspect: (object: SceneObjectBinding) => void; onExecute: (operation: OperationId) => void; onInvestigate: (route: RouteId) => void };
 export default function SceneViewport({ snapshot, selected, disabled, onInspect, onExecute, onInvestigate, cameraMemory }: Props) {
+  const woodland = snapshot.scene.bundleId === 'woodland';
+  const [webgl, setWebgl] = useState<boolean | null>(null);
+  useEffect(() => {
+    try {
+      const probe = document.createElement('canvas').getContext('webgl2');
+      setWebgl(probe !== null); probe?.getExtension('WEBGL_lose_context')?.loseContext();
+    } catch { setWebgl(false); }
+  }, []);
   const frame = useRef<HTMLDivElement>(null);
   const gesture = useRef({ x: 0, y: 0, dragged: false });
   const [menu, setMenu] = useState<{ node: SceneNodeId; x: number; y: number } | null>(null);
@@ -50,16 +59,18 @@ export default function SceneViewport({ snapshot, selected, disabled, onInspect,
       Math.max(52, Math.min(event.clientY - rect.top, rect.height - 310)));
   }
   return <section aria-label="现场探索" className="min-w-0 overflow-hidden rounded-2xl border border-white/10 bg-[#202d2b]">
-    <div ref={frame} aria-label="书房三维场景" className="relative h-[460px] min-w-0 lg:h-[540px]"
+    <div ref={frame} aria-label={woodland ? '树林三维场景' : '书房三维场景'} className="relative h-[460px] min-w-0 lg:h-[540px]"
       onPointerDownCapture={event => { gesture.current = { x: event.clientX, y: event.clientY, dragged: false }; }}
       onPointerMoveCapture={event => { if (Math.hypot(event.clientX - gesture.current.x, event.clientY - gesture.current.y) > 5) gesture.current.dragged = true; }}>
-      <div className="pointer-events-none absolute left-4 top-4 z-10 rounded-full bg-stone-950/60 px-3 py-2 text-xs text-stone-200">牧师寓所 / 书房</div>
+      <div className="pointer-events-none absolute left-4 top-4 z-10 rounded-full bg-stone-950/60 px-3 py-2 text-xs text-stone-200">{woodland ? '周五 · 林间小径' : '牧师寓所 / 书房'}</div>
       <button type="button" onClick={() => { setResetVersion(v => v + 1); setMenu(null); }} className="absolute right-4 top-4 z-10 rounded-lg border border-white/25 bg-stone-950/70 px-3 py-2 text-xs text-stone-100 hover:bg-stone-800">恢复全景</button>
-      <SceneBoundary><Suspense fallback={<p className="p-16 text-stone-300">正在准备书房…</p>}>
-        <Canvas shadows camera={{ position: [4, 3.5, 5], fov: 43 }} onPointerMissed={() => { if (!gesture.current.dragged) setMenu(null); }}
+      <SceneBoundary key={snapshot.scene.bundleId}><Suspense fallback={<p className="p-16 text-stone-300">{woodland ? '正在准备林地…' : '正在准备书房…'}</p>}>
+        {webgl ? <Canvas key={snapshot.scene.bundleId} shadows frameloop={woodland ? 'demand' : 'always'} dpr={woodland ? 1 : [1, 1.5]} camera={{ position: [4, 3.5, 5], fov: woodland ? 48 : 43, far: 80 }} onPointerMissed={() => { if (!gesture.current.dragged) setMenu(null); }}
+          onCreated={({ gl }) => { gl.domElement.addEventListener('webglcontextlost', () => setWebgl(false), { once: true }); }}
           fallback={<p className="p-16">浏览器不支持 WebGL，请使用下方物品列表。</p>}>
-          <StudyScene scene={snapshot.scene} sessionId={snapshot.sessionId} cameraMemory={cameraMemory} resetVersion={resetVersion} onPick={pickModel}/>
-        </Canvas>
+          {woodland ? <WoodlandScene snapshot={snapshot} cameraMemory={cameraMemory} resetVersion={resetVersion} onPick={pickModel}/>
+            : <StudyScene scene={snapshot.scene} sessionId={snapshot.sessionId} cameraMemory={cameraMemory} resetVersion={resetVersion} onPick={pickModel}/>}
+        </Canvas> : <p role="status" className="p-16 text-stone-300">{webgl === null ? '正在准备三维视图…' : '浏览器不支持 WebGL，请使用下方物品列表。'}</p>}
       </Suspense></SceneBoundary>
       {menu && object && isSelected ? <ObjectMenu object={object} point={snapshot.points.find(p => p.id === object.point)}
         observation={snapshot.observations.find(o => o.node === object.node)}

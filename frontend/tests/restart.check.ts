@@ -378,3 +378,30 @@ test.describe('clarification focus recovery', () => {
     await expect(log).toContainText('这件事刚才说清楚了。');
   });
 });
+
+test.describe('woodland exploration recovery', () => {
+  test.use({ storageState: '.build-cache/woodland-exploration-browser-state.json' });
+  test('the actual woodland stop, uncovered ground and acquired sample restore after process restart', async ({ page }) => {
+    await page.goto('/scene'); await expect(page.getByLabel('树林三维场景', { exact: true })).toBeVisible();
+    const sessionId = await page.evaluate(() => JSON.parse(localStorage.getItem('detective-scenic:server-session:v6')!).sessionId);
+    const response = await page.request.post('/api/getinvestigationsnapshot', { headers: { 'X-Detective-Client': 'web' }, data: { sessionId } });
+    expect(response.status()).toBe(200);
+    const state = await response.json();
+    expect(state).toEqual(JSON.parse(readFileSync('.build-cache/woodland-exploration-snapshot.json', 'utf8')));
+    expect(state.scene.playerPosition).toEqual({ x: 2.8, y: 0, z: -4.5 });
+    expect(state.clues.filter((c: { id: string }) => c.id === 'clue_woodland_sample')).toHaveLength(1);
+  });
+});
+
+if (existsSync('.build-cache/woodland-completion/completion-live-solved-state.json')) test.describe('revision24 woodland real-model ending recovery', () => {
+  test.use({ storageState: '.build-cache/woodland-completion/completion-live-solved-state.json' });
+  test('manual discovery and the real assessment remain in their original frozen review', async ({ page }) => {
+    await page.goto('/conclusion'); await expect(page.getByRole('region', { name: '推理评审记录', exact: true })).toBeVisible();
+    const sessionId = await page.evaluate(() => JSON.parse(localStorage.getItem('detective-scenic:server-session:v6')!).sessionId);
+    const response = await page.request.post('/api/getinvestigationsnapshot', { headers: { 'X-Detective-Client': 'web' }, data: { sessionId } });
+    expect(response.status()).toBe(200); const state = await response.json();
+    expect(state).toEqual(JSON.parse(readFileSync('.build-cache/woodland-completion/completion-live-solved-snapshot.json', 'utf8')));
+    expect(state.reasoning.ending.mode).toBe('Solved'); expect(state.reasoning.ending.sections).toHaveLength(6);
+    expect(state.clues.find((c: { id: string }) => c.id === 'clue_woodland_sample').text).toContain('现场采集记录');
+  });
+});

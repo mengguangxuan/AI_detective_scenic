@@ -5,7 +5,7 @@ import io.circe.{Decoder, DecodingFailure, HCursor, Json}
 import io.circe.parser.parse
 import services.cases.objects.*
 import services.system.objects.*
-import services.cases.objects.scene.{FixtureNode, FixturePoint, SceneObservation, SceneObjectBinding, AreaMap}
+import services.cases.objects.scene.{FixtureNode, FixturePoint, SceneObservation, SceneObjectBinding, SceneLocation, AreaMap}
 import services.cases.objects.content.{FixtureFact, FixtureClue}
 import services.cases.objects.investigation.{ContinuousInterviewSpec, EntityOpenRequirement, ExternalCheckSpec, FixtureEffect, FixtureOperation, FixtureRoute, InvestigationClock, InvestigationStage, WitnessAnswer, WitnessFollowUpSpec, StatementComparisonSpec, CaseConclusionSpec}
 
@@ -159,6 +159,7 @@ private[cases] object FixtureLoader:
       origin <- c.get[String]("timeOriginLabel")
       rawNodes <- scene.hcursor.get[Vector[Json]]("nodes")
       nodes <- decodeEntries(rawNodes, "scene.nodes")(node)
+      locations <- scene.hcursor.get[Option[Vector[SceneLocation]]]("locations").map(_.getOrElse(Vector.empty))
       sceneObjects <- scene.hcursor.get[Option[Vector[SceneObjectBinding]]]("objects").map(_.getOrElse(Vector.empty))
       rawObservations <- scene.hcursor.get[Option[Vector[Json]]]("observations").map(_.getOrElse(Vector.empty))
       observations <- decodeEntries(rawObservations,"scene.observations")(raw => observation(raw,sceneObjects))
@@ -197,6 +198,7 @@ private[cases] object FixtureLoader:
       comparisons <- investigation.hcursor.get[Option[Vector[StatementComparisonSpec]]]("statementComparisons").map(_.getOrElse(Vector.empty))
       placeIds <- places.traverse(_.hcursor.get[PlaceId]("id"))
       _ <- check(placeIds.distinct.size == placeIds.size && areaMap.forall(_.locations.forall(l => placeIds.contains(l.id))),"publicInfo.background.areaMap.locations：地点不在world.places中或world.places有重复编号",c)
+      _ <- check(locations.forall(l => placeIds.contains(l.place)),"scene.locations：地点不在world.places中",c)
       entities <- world.hcursor.get[Vector[Json]]("entities")
       entityIds <- entities.traverse(_.hcursor.get[EntityId]("id"))
       _ <- check(sceneObjects.forall(o => entityIds.contains(o.entity)), "scene.objects.entity：实体不在world.entities中", c)
@@ -207,7 +209,7 @@ private[cases] object FixtureLoader:
         case _ => true
       }, "investigation.operations.effects：效果引用了未知实体", c)
       _ <- check(operations.forall(_.openedRequirement.forall(r => entityIds.contains(r.entity))),"investigation.operations.openedRequirement：前提引用了未知实体",c)
-      content = CaseContent(place, placeName, time, origin, position, nodes, points, facts, clues, routes, operations, opened, unlocked, common, observations, stage, sceneObjects, people._2, people._3, people._1, areaMap, clock, checks, followUps, comparisons, conclusion, continuous, promptVersion)
+      content = CaseContent(place, placeName, time, origin, position, nodes, points, facts, clues, routes, operations, opened, unlocked, common, observations, stage, sceneObjects, people._2, people._3, people._1, areaMap, clock, checks, followUps, comparisons, conclusion, continuous, promptVersion, locations)
       record = CaseRevisionRecord(caseId, revision, 1, title, content)
       _ <- validation(record).left.map(message => DecodingFailure(message,c.history))
     yield record).left.map(error => GameError(ErrorCode.InvalidValue, s"案件数据不合法：${error.getMessage}"))
@@ -270,15 +272,23 @@ private[cases] object FixtureLoader:
 
   private def validateScene(f: CaseContent): Either[String, Unit] =
     val nodes = f.nodes.map(n => n.id -> n).toMap
-    def validChain(id: SceneNodeId, seen: Set[SceneNodeId]): Boolean =
-      !seen(id) && nodes.get(id).exists(n => n.place == f.place && n.parent.forall(validChain(_, seen + id)))
+    val places=if f.sceneLocations.isEmpty then Set(f.place) else f.sceneLocations.map(_.place).toSet
+    def validChain(id: SceneNodeId, seen: Set[SceneNodeId], place: PlaceId): Boolean =
+      !seen(id) && nodes.get(id).exists(n => n.place == place && n.parent.forall(validChain(_, seen + id,place)))
     for
+      _ <- unique(f.sceneLocations.map(_.place), "scene.locations")
+      _ <- rule(f.sceneLocations.isEmpty || f.sceneLocations.exists(l => l.place == f.place && l.stops.contains(f.spawnPosition)),"scene.locations","初始位置需要已登记的行走点")
+      _ <- entries(f.sceneLocations,"scene.locations") { (l,path) =>
+        rule(l.name.trim.nonEmpty && l.stops.nonEmpty && l.stops.size <= 12 && l.stops.distinct.size == l.stops.size &&
+          Set(("study","5"),("woodland","1"))((l.bundleId,l.revision)) &&
+          l.stops.forall(p => finite(p) && p.y == 0 && math.abs(p.x) <= 8 && p.z >= -10 && p.z <= 8),path,"不支持的场景版本或行走点越界")
+      }
       _ <- unique(f.nodes.map(_.id), "scene.nodes")
       _ <- unique(f.points.map(_.id), "scene.points")
       _ <- entries(f.nodes, "scene.nodes") { (n, path) =>
         for
           _ <- rule(finite(n.position), s"$path.transform.position", "坐标必须是有限数值")
-          _ <- rule(validChain(n.id, Set.empty), s"$path.parent", "父链有循环、缺失节点或跨地点引用")
+          _ <- rule(places(n.place) && validChain(n.id, Set.empty,n.place), s"$path.parent", "父链有循环、缺失节点或跨地点引用")
         yield ()
       }
       _ <- entries(f.points, "scene.points") { (p, path) =>
@@ -383,7 +393,9 @@ private[cases] object FixtureLoader:
           _ <- rule(o.effects.nonEmpty || f.followUps.exists(_.operation == o.id), s"$path.effects", "只有已登记补充问询允许无实体效果")
           _ <- rule(f.points.exists(_.id == o.point), s"$path.point", "操作入口不存在")
           _ <- rule(o.requiredClues.subsetOf(clues), s"$path.requiredClues", "所需线索不存在")
+          _ <- rule(o.effects.count { case FixtureEffect.Relocate(_,_) => true; case _ => false } <= 1,s"$path.effects","一次操作只能指定一个行走目的地")
           _ <- entries(o.effects, s"$path.effects") { (effect, effectPath) => effect match
+            case FixtureEffect.Relocate(place,position) => rule(f.sceneLocations.exists(l => l.place == place && l.stops.contains(position)),s"$effectPath.position","目的地不是已登记的行走点")
             case FixtureEffect.SetNodeVisible(node, _) => rule(f.nodes.exists(_.id == node), s"$effectPath.node", "目标节点不存在")
             case _ => Right(())
           }

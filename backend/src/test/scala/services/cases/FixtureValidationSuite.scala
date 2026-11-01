@@ -40,6 +40,21 @@ class FixtureValidationSuite extends FunSuite:
     rejected(original.copy(content=original.content.copy(conclusion=Some(duplicate))),"investigation.conclusion")
   }
 
+  test("multi-scene movement rejects unregistered stops, renderer versions and cross-place parent chains") {
+    val record=FixtureLoader.decode(Files.readString(Paths.get("../docs/fixtures/browser_investigation.json"))).toOption.get
+    val content=record.content
+    assertEquals(content.sceneLocations.size,2)
+    val unsupported=content.sceneLocations.map(l => if l.place == PlaceId("woods") then l.copy(revision="999") else l)
+    rejected(record.copy(content=content.copy(sceneLocations=unsupported)),"scene.locations")
+    val moves=content.operations.map(o => if o.id == OperationId("enter_woodland") then o.copy(effects=Vector(
+      services.cases.objects.investigation.FixtureEffect.Relocate(PlaceId("woods"),services.system.objects.Vec3(999,0,0)))) else o)
+    rejected(record.copy(content=content.copy(operations=moves)),"position")
+    val crossing=content.nodes.map(n => if n.id == SceneNodeId("node_woodland_fragment") then n.copy(parent=Some(SceneNodeId("node_desk"))) else n)
+    rejected(record.copy(content=content.copy(nodes=crossing)),"parent")
+    val old=summon[io.circe.Encoder[CaseContent]].apply(original.content)
+    assert(!old.hcursor.downField("sceneLocations").succeeded)
+  }
+
   test("node cycles and missing parents identify the offending scene entry") {
     val f = original.content
     val head = f.nodes.head

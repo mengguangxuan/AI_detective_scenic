@@ -18,6 +18,14 @@ import { inquiryPointSchema } from './InquiryPointView';
 import { clueViewSchema } from './ClueView';
 import { investigationLogSchema } from './InvestigationLogEntry';
 import { sceneObjectBindingSchema } from './SceneObjectBinding';
+import { travelChoiceSchema } from './TravelChoiceView';
+const sceneFields = { placeName: z.string(), drawerOpened: z.boolean(), windowOpened: z.boolean(), objects: z.array(sceneObjectBindingSchema),
+  playerPosition: z.object({ x: z.number().finite(), y: z.number().finite(), z: z.number().finite() }).strict().nullable().optional(),
+  travel: z.array(travelChoiceSchema).optional() };
+const sceneSchema = z.discriminatedUnion('bundleId', [
+  z.object({ ...sceneFields, bundleId: z.literal('study'), revision: z.enum(['4', '5', '6']) }).strict(),
+  z.object({ ...sceneFields, bundleId: z.literal('woodland'), revision: z.literal('1') }).strict(),
+]);
 export const investigationSnapshotSchema = z.object({
   continuousWitnesses: z.array(witnessIdSchema).default([]),
   reasoning: reasoningProgressSchema.nullable().default(null),
@@ -30,13 +38,15 @@ export const investigationSnapshotSchema = z.object({
   externalChecks: z.array(externalCheckViewSchema).default([]),
   sessionId: sessionIdSchema, caseId: z.string().min(1), caseRevision: z.object({ value: z.number().int().positive().safe() }).strict().transform(v => v.value),
   sequence: sequenceSchema, title: z.string(),
-  scene: z.object({ bundleId: z.literal('study'), revision: z.enum(['4', '5']), placeName: z.string(), drawerOpened: z.boolean(), windowOpened: z.boolean(), objects: z.array(sceneObjectBindingSchema) }).strict(),
+  scene: sceneSchema,
   points: z.array(inquiryPointSchema), clues: z.array(clueViewSchema), journal: z.array(investigationLogSchema), observations: z.array(sceneObservationSchema),
   witnesses: z.array(witnessViewSchema), interviews: z.array(interviewTurnSchema),
   police: policeDeskSchema.nullable(),
   people: z.array(casePersonBriefSchema),
   stage: z.object({ introduction: z.string(), objective: z.string(), completed: z.boolean(), nextObjective: z.string().nullable(), hasTimeComparison: z.boolean().default(true) }).strict().nullable(),
 }).strict().superRefine((snapshot, context) => {
+  if (snapshot.scene.travel?.some(choice => !snapshot.points.some(p => p.id === choice.point && p.operations.some(o => o.id === choice.operation))))
+    context.addIssue({ code: 'custom', message: '行走入口不在当前可用位置' });
   if (snapshot.continuousWitnesses.some(id => !snapshot.witnesses.some(witness => witness.id === id)))
     context.addIssue({ code: 'custom', message: '连续问询对象不可接触' });
   if (snapshot.reasoning) {

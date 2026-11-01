@@ -25,6 +25,7 @@ object WebDemo extends IOApp.Simple:
         _ <- DatabaseSession.transaction(c)(ImportCaseMessage(Paths.get("../docs/fixtures/browser_investigation_v20.json")).plan(c))
         _ <- DatabaseSession.transaction(c)(ImportCaseMessage(Paths.get("../docs/fixtures/browser_investigation_v21.json")).plan(c))
         _ <- DatabaseSession.transaction(c)(ImportCaseMessage(Paths.get("../docs/fixtures/browser_investigation_v22.json")).plan(c))
+        _ <- DatabaseSession.transaction(c)(ImportCaseMessage(Paths.get("../docs/fixtures/browser_investigation_v23.json")).plan(c))
         _ <- DatabaseSession.transaction(c)(ImportCaseMessage(Paths.get("../docs/fixtures/browser_investigation.json")).plan(c))
         _ <- DatabaseSession.transaction(c)(RegisterPlayableCaseMessage(CaseReleaseRecord(CaseId("vicarage_study"),Revision(21),
           "1930年的圣玛丽米德，上校死在牧师寓所的书房。走进保留现场，询问相关人物，对照证词与检查记录，提出你对案件的解释。",
@@ -35,6 +36,9 @@ object WebDemo extends IOApp.Simple:
         _ <- DatabaseSession.transaction(c)(RegisterPlayableCaseMessage(CaseReleaseRecord(CaseId("vicarage_study"),Revision(23),
           "1930年的圣玛丽米德，上校死在牧师寓所的书房。走进保留现场，询问相关人物，对照证词与检查记录，提出你对案件的解释。",
           Vector("经典推理","现场探索","人物问询"),"study","5")).plan(c))
+        _ <- DatabaseSession.transaction(c)(RegisterPlayableCaseMessage(CaseReleaseRecord(CaseId("vicarage_study"),Revision(24),
+          "走进牧师寓所与附近林地，亲手寻找现场线索，询问相关人物，对照材料提出你的解释。",
+          Vector("经典推理","双场景探索","人物问询"),"study","6")).plan(c))
       yield () }
       modelPath = Option(System.getenv("DETECTIVE_MODEL_CONFIG")).filter(_.trim.nonEmpty)
         .map(Paths.get(_)).getOrElse(Paths.get("config","model-api.local.json"))

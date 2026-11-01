@@ -34,6 +34,7 @@ private[games] object FixtureRules:
         case FixtureEffect.SetOpened(entity, opened) => s.copy(opened=if opened then s.opened+entity else s.opened-entity)
         case FixtureEffect.SetNodeVisible(node,true) => s.copy(visibleNodes=s.visibleNodes+node)
         case FixtureEffect.SetNodeVisible(node,false) => s.copy(visibleNodes=s.visibleNodes-node)
+        case FixtureEffect.Relocate(place,position) => s.copy(playerPlace=place,playerPosition=position)
       }
       val next=changed.copy(sequence=Sequence(state.sequence.value+1),completedOperations=changed.completedOperations+operation)
       val record=SessionRecord(RecordId(s"${request.value}:operation"),state.id,request,next.sequence,next.storyTimeSeconds,

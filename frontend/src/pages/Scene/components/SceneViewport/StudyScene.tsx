@@ -81,6 +81,13 @@ export default function StudyScene({ scene, resetVersion, onPick, sessionId, cam
       </SceneItem>
     </SceneItem>
     {scene.objects.some(o => o.node === studyNodes.planter) && <Planter {...item}/>}
+    {scene.objects.some(o => o.node === studyNodes.gardenGate) ? <SceneItem node={studyNodes.gardenGate} {...item}><group position={[2.9, 0, 0.7]} rotation={[0, -0.5, 0]}>
+      <Box position={[0, 1.1, 0]} size={[0.12, 2.2, 0.18]} color="#52634a"/>
+      <Box position={[0.95, 1.1, 0]} size={[0.12, 2.2, 0.18]} color="#52634a"/>
+      <Box position={[0.47, 2.16, 0]} size={[1.07, 0.12, 0.18]} color="#52634a"/>
+      <Box position={[0.47, 0.02, -0.4]} size={[1, 0.04, 1.2]} color="#858063"/>
+      <Box position={[0.47, 1.08, -0.65]} size={[0.9, 2.05, 0.02]} color="#536d4a"/>
+    </group></SceneItem> : null}
     <ObservationCamera resetVersion={resetVersion} sessionId={sessionId} memory={cameraMemory}/>
   </>;
 }
