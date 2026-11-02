@@ -77,6 +77,7 @@ export function useInvestigation() {
     if (inFlight.current || state.kind !== 'ready' || !stored.current) return;
     inFlight.current = true;
     const previous = { ...state, selected: selection ?? state.selected };
+    const latestReady = (current: InvestigationPageState) => current.kind === 'ready' && current.snapshot.sessionId === command.sessionId ? current : previous;
     try {
       // Save before sending: a reload must retain the exact request ID and payload.
       remember({ ...stored.current, pending: { command, resultSequence: null } });
@@ -102,17 +103,17 @@ export function useInvestigation() {
         }
       })();
       remember({ ...stored.current, pending: { command, resultSequence: result.sequence } });
-      setState({ ...previous, mutation: { kind: 'awaitingSnapshot', problem: '操作已保存，正在刷新当前视图…' } });
+      setState(current => ({ ...latestReady(current), mutation: { kind: 'awaitingSnapshot', problem: '操作已保存，正在刷新当前视图…' } }));
       try {
         const next = await new GetInvestigationSnapshotAPI(command.sessionId).send();
         if (next.sequence < result.sequence) throw new Error('视图尚未更新');
         const snapshot = acceptSnapshot(previous.snapshot, next);
         remember({ ...stored.current, pending: null });
         if (command.kind === 'investigate') setLastReply({ point: command.point, text: result.findings.join('\n') });
-        setState({ kind: 'ready', snapshot, selected: retainSelection(previous.selected,snapshot),
-          mutation: { kind: 'idle' }, notice: '调查结果已保存，当前视图已更新。' });
+        setState(current => ({ kind: 'ready', snapshot, selected: retainSelection(latestReady(current).selected,snapshot),
+          mutation: { kind: 'idle' }, notice: '调查结果已保存，当前视图已更新。' }));
       } catch (error) {
-        setState({ ...previous, mutation: { kind: 'awaitingSnapshot', problem: `操作已经保存。${problem(error)} 请重新读取视图。` } });
+        setState(current => ({ ...latestReady(current), mutation: { kind: 'awaitingSnapshot', problem: `操作已经保存。${problem(error)} 请重新读取视图。` } }));
       }
     } catch (error) {
       if (error instanceof APIError && error.status !== null && error.status >= 400 && error.status < 500) {
@@ -120,13 +121,13 @@ export function useInvestigation() {
           remember({ ...stored.current, pending: null });
           const next = await new GetInvestigationSnapshotAPI(command.sessionId).send();
           const snapshot = acceptSnapshot(previous.snapshot, next);
-          setState({ ...previous, snapshot, selected: retainSelection(previous.selected,snapshot),
-            mutation: { kind: 'idle' }, notice: error.message });
+          setState(current => ({ ...latestReady(current), snapshot, selected: retainSelection(latestReady(current).selected,snapshot),
+            mutation: { kind: 'idle' }, notice: error.message }));
         } catch {
-          setState({ ...previous, mutation: { kind: 'awaitingSnapshot', problem: `${error.message} 请重新连接并读取当前视图。` } });
+          setState(current => ({ ...latestReady(current), mutation: { kind: 'awaitingSnapshot', problem: `${error.message} 请重新连接并读取当前视图。` } }));
         }
       } else {
-        setState({ ...previous, mutation: { kind: 'outcomeUnknown', pending: command, problem: problem(error) } });
+        setState(current => ({ ...latestReady(current), mutation: { kind: 'outcomeUnknown', pending: command, problem: problem(error) } }));
       }
     } finally { inFlight.current = false; }
   }

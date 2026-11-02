@@ -35,7 +35,8 @@ object InspectInterviewEvidence extends IOApp.Simple:
               "selectedInModelInput" -> selected.asJson,
               "presentedThisTurn" -> input.hcursor.get[Vector[Json]]("presentedThisTurn").toOption.asJson,
               "missingSelectedIds" -> request.shownClues.filterNot(id => selected.exists(_.hcursor.get[String]("id").contains(id.value))).asJson,
-              "reply" -> turn.map(_.reply).asJson,"mode" -> turn.map(_.mode).asJson)
+              "reply" -> turn.map(_.reply).asJson,"mode" -> turn.map(_.mode).asJson,
+              "recognition" -> turn.flatMap(_.recognition).asJson,"hasSavedDraft" -> request.draft.nonEmpty.asJson,"draftReply" -> request.draft.flatMap(_.reply).asJson)
             _ <- IO.println(report.noSpaces)
           yield ()
         }

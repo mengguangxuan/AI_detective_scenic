@@ -27,7 +27,7 @@ private[games] object FixtureRules:
     for
       op <- f.operations.find(_.id==operation).toRight(denied)
       _ <- f.points.find(_.id==op.point).filter(SceneAccessRules.accessible(f,state,_)).toRight(denied)
-      _ <- Either.cond(operationAvailable(state,op) && FollowUpRules.permitted(f,state,operation,records,turns),(),GameError(ErrorCode.ConditionFailed,"当前状态不允许执行该操作。"))
+      _ <- Either.cond(operationAvailable(SemanticEvidence.forChecks(f,state),op) && FollowUpRules.permitted(f,state,operation,records,turns),(),GameError(ErrorCode.ConditionFailed,"当前状态不允许执行该操作。"))
     yield
       val changed=op.effects.foldLeft(state) { (s,effect) => effect match
         case FixtureEffect.Open(entity) => s.copy(opened=s.opened+entity)
@@ -46,7 +46,7 @@ private[games] object FixtureRules:
     for
       _ <- f.points.find(_.id==pointId).filter(SceneAccessRules.accessible(f,state,_)).toRight(denied)
       route <- f.routes.find(r => r.id==routeId && r.point==pointId).toRight(denied)
-      _ <- Either.cond(routeAvailable(state,route),(),GameError(ErrorCode.ConditionFailed,"需要先取得所需材料或完成前置操作。"))
+      _ <- Either.cond(routeAvailable(SemanticEvidence.forChecks(f,state),route),(),GameError(ErrorCode.ConditionFailed,"需要先取得所需材料或完成前置操作。"))
       _ <- Either.cond(routePending(f,state,route,records,turns),(),GameError(ErrorCode.ConditionFailed,"该途径的信息已经记录。"))
     yield
       val disclosed=f.clues.filter(c => route.clues.contains(c.id) && !state.clues(c.id))

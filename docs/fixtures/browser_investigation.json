@@ -1,7 +1,7 @@
 {
   "id": "vicarage_study",
   "revision": {
-    "value": 25
+    "value": 26
   },
   "schemaVersion": {
     "value": 2
@@ -7953,7 +7953,45 @@
         ]
       }
     ],
-    "interviewPromptVersion": 2
+    "interviewPromptVersion": 3,
+    "claimRules": [
+      {
+        "witness": "redding",
+        "clue": "clue_redding_revised",
+        "priorStatement": "clue_redding_account",
+        "basisInstruction": "必须已经有本人的独自开枪原供；本轮须明确撤回，并实际说出进书房时已见上校伏桌、拿走自己的枪及为安妮承担的解释。仅获知安妮自首或问枪来源不够。依据须是实际收到的有关陈述、医学／行踪矛盾与本人的解释，不能用无关材料凑数。"
+      },
+      {
+        "witness": "redding",
+        "clue": "clue_redding_gun_revised",
+        "priorStatement": "clue_redding_gun",
+        "basisInstruction": "须已有本人原先随身带枪的说法；本轮确实改说枪平时放在自己住处书架、他人可能接触。不因普通追问枪来源就登记，需结合本人已作出的新解释或相关实际矛盾。"
+      },
+      {
+        "witness": "redding",
+        "clue": "clue_redding_scene_revised",
+        "priorStatement": "clue_redding_clock",
+        "basisInstruction": "须已有本人对座钟和纸张的原说法。本轮明确改变这项说法，区分他对动钟和纸张的实际承认／否认，不以提到钟就登记整套新供。"
+      },
+      {
+        "witness": "anne",
+        "clue": "clue_anne_revised",
+        "priorStatement": "clue_anne_statement",
+        "basisInstruction": "须已有本人认罪原供；本轮明确撤回携枪杀人的说法，并实际说出为雷丁承担及窗边／画室的补充解释。仅收到雷丁口供、反问他是否安全或愿意解释，不等于改口。需与本人的顾虑及收到的有关材料相关。"
+      },
+      {
+        "witness": "anne",
+        "clue": "clue_anne_visit_revised",
+        "priorStatement": "clue_anne_time",
+        "basisInstruction": "须已有本人原先的来访说法，本轮明确补充／修正在寓所窗边与画室的实际观察，依据应关联本人已作出的新解释及相关来访记录，不把对方转述当自己目击。"
+      },
+      {
+        "witness": "anne",
+        "clue": "clue_anne_gun_revised",
+        "priorStatement": "clue_anne_gun",
+        "basisInstruction": "须已有本人关于枪来源的原说法，本轮明确否认拿过雷丁的枪并实际说明所知存放／接触情况；按真实收到的枪来源矛盾或本人新说法登记，不以只问是否认识那支枪就登记。"
+      }
+    ]
   },
   "characters": [
     {

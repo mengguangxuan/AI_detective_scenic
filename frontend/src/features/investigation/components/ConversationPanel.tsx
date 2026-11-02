@@ -41,6 +41,13 @@ export default function ConversationPanel({ witness, clues, turns, disabled, onA
         <p className="whitespace-pre-wrap text-sm text-amber-100">你：{turn.question}</p>
         <p className="mt-2 whitespace-pre-wrap text-sm leading-7 text-stone-200">{turn.mode === 'answered' || turn.mode === 'unknown' ? `${witness.name}：${turn.reply}` : turn.reply}</p>
         {turn.shownClues.length ? <p className="mt-2 text-xs text-stone-500">已出示：{turn.shownClues.map(id => clues.find(c => c.id === id)?.title ?? id).join('、')}</p> : null}
+        {turn.recognition ? <div className="mt-3 text-xs leading-6 text-stone-400" aria-label="本轮调查记录">
+          {turn.recognition.claims.length ? <ul>{turn.recognition.claims.map(claim => <li key={claim.clue}>
+            已记录：{clues.find(c => c.id === claim.clue)?.title ?? '调查陈述'}
+            {claim.evidence.length ? <span>；依据：{claim.evidence.map(id => clues.find(c => c.id === id)?.title ?? '已出示材料').join('、')}</span> : null}
+          </li>)}</ul> : <p>本轮没有新增调查记录，可以继续交谈。</p>}
+          {turn.recognition.unconfirmed ? <p className="mt-1 text-amber-200">部分记录尚未确认，已保留原话；可继续明确追问。</p> : null}
+        </div> : null}
       </article>)}
       {turns.length === 0 ? <p className="text-sm text-stone-500">尚未进行自由问询。</p> : null}
     </div>

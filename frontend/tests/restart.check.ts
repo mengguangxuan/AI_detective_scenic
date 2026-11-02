@@ -15,6 +15,31 @@ if (existsSync('.build-cache/open-meetings-state.json')) test.describe('revision
     for (const id of ['anne','valet','stone','hartnell','archer']) expect(state.witnesses.some((w: { id: string }) => w.id === id)).toBe(true);
   });
 });
+if (existsSync('.build-cache/semantic-browser-state.json')) test.describe('semantic registration recovery', () => {
+  test.use({ storageState: '.build-cache/semantic-browser-state.json' });
+  test('actual speech and per-claim recognition restore exactly after backend restart', async ({ page }) => {
+    await page.goto('/interviews');
+    await page.getByRole('button', { name: '与克莱门特牧师交谈', exact: true }).click();
+    await expect(page.getByLabel('本轮调查记录', { exact: true })).toContainText('牧师谈座钟');
+    const sessionId = await page.evaluate(() => JSON.parse(localStorage.getItem('detective-scenic:server-session:v6')!).sessionId);
+    const response = await page.request.post('/api/getinvestigationsnapshot', { headers: { 'X-Detective-Client': 'web' }, data: { sessionId } });
+    expect(response.status()).toBe(200);
+    expect(await response.json()).toEqual(JSON.parse(readFileSync('.build-cache/semantic-browser-snapshot.json', 'utf8')));
+  });
+});
+if (existsSync('.build-cache/semantic-completion/completion-live-solved-state.json')) test.describe('revision26 semantic ending recovery', () => {
+  test.use({ storageState: '.build-cache/semantic-completion/completion-live-solved-state.json' });
+  test('semantic testimony and the real established ending remain in the original frozen review', async ({ page }) => {
+    await page.goto('/conclusion');
+    await expect(page.getByRole('region', { name: '推理评审记录', exact: true })).toBeVisible();
+    const sessionId = await page.evaluate(() => JSON.parse(localStorage.getItem('detective-scenic:server-session:v6')!).sessionId);
+    const response = await page.request.post('/api/getinvestigationsnapshot', { headers: { 'X-Detective-Client': 'web' }, data: { sessionId } });
+    expect(response.status()).toBe(200); const state = await response.json();
+    expect(state).toEqual(JSON.parse(readFileSync('.build-cache/semantic-completion/completion-live-solved-snapshot.json', 'utf8')));
+    expect(state.caseRevision.value).toBe(26); expect(state.reasoning.ending.mode).toBe('Solved');
+    expect(state.reasoning.ending.sections).toHaveLength(6);
+  });
+});
 test.describe('case hub recovery', () => {
   test.use({ storageState: '.build-cache/case-hub-state.json' });
   test('the home page lists both saved investigations and restores the original without creating another', async ({ page }) => {

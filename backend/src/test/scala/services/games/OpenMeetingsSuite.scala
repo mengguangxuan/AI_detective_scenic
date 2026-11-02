@@ -21,7 +21,7 @@ class OpenMeetingsSuite extends FunSuite:
   private def view(url: String,id: SessionId)=tx(url)(GetInvestigationSnapshotMessage(owner,id).plan)
   private def setup(url: String)=DatabaseSession.connection(url).use(c => DatabaseSchema.initialize(c) *>
     DatabaseSession.transaction(c)(ImportCaseMessage(Paths.get("../docs/fixtures/browser_investigation_v24.json")).plan(c) *>
-      ImportCaseMessage(Paths.get("../docs/fixtures/browser_investigation.json")).plan(c)))
+      ImportCaseMessage(Paths.get("../docs/fixtures/browser_investigation_v25.json")).plan(c)))
 
   test("revision25 changes only contact prerequisites and labels while retaining all testimony and evidence rules") {
     val url=s"jdbc:h2:mem:${UUID.randomUUID()};DB_CLOSE_DELAY=-1"

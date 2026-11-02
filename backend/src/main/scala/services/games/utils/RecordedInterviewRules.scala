@@ -8,7 +8,7 @@ private[games] object RecordedInterviewRules:
   private[games] def content(source: CaseContent, turns: Vector[InterviewTurnRecord]): CaseContent =
     val entries=turns.filter(_.mode == InterviewReplyMode.Answered).sortBy(_.sequence.value).flatMap { turn =>
       val witness=source.witnesses.find(_.id == turn.witness)
-      turn.statementUpdates.flatMap(update => witness.toVector.flatMap(_.answers.filter(_.id == update.answerId))
+      turn.recognition.toVector.flatMap(_.claims).map(c => c.clue -> c.text) ++ turn.statementUpdates.flatMap(update => witness.toVector.flatMap(_.answers.filter(_.id == update.answerId))
         .flatMap(_.routes).flatMap(id => source.routes.filter(_.id == id)).flatMap(_.clues).map(_ -> update.text))
     }
     val first=entries.reverse.toMap
@@ -20,4 +20,4 @@ private[games] object RecordedInterviewRules:
     val spoken=turns.filter(t => t.witness == witness && t.mode == InterviewReplyMode.Answered).flatMap(_.answerIds)
       .flatMap(id => person.toVector.flatMap(_.answers.filter(_.id == id))).flatMap(_.routes)
       .flatMap(id => content.routes.filter(_.id == id)).flatMap(_.clues)
-    fixed.toSet ++ spoken
+    fixed.toSet ++ spoken ++ turns.filter(t => t.witness == witness && t.mode == InterviewReplyMode.Answered).flatMap(_.recognition.toVector.flatMap(_.claims.map(_.clue)))

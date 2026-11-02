@@ -10,7 +10,7 @@ private[games] object StudyProjection:
   private[games] val revision = Revision(21)
   // Revision 18 adds study/5; existing games retain study/4 and their authored content.
   private[games] def supports(id: CaseId, value: Revision): Boolean =
-    id == caseId && Set(Revision(3), Revision(4), Revision(5), Revision(6), Revision(7), Revision(8), Revision(9), Revision(10), Revision(11), Revision(12), Revision(13), Revision(14), Revision(15), Revision(16), Revision(17), Revision(18), Revision(19), Revision(20), Revision(22), Revision(23), Revision(24), Revision(25), revision)(value)
+    id == caseId && Set(Revision(3), Revision(4), Revision(5), Revision(6), Revision(7), Revision(8), Revision(9), Revision(10), Revision(11), Revision(12), Revision(13), Revision(14), Revision(15), Revision(16), Revision(17), Revision(18), Revision(19), Revision(20), Revision(22), Revision(23), Revision(24), Revision(25), Revision(26), revision)(value)
   private[games] def supportsScene(bundle: String, revision: String): Boolean = bundle == "study" && Set("4","5","6")(revision)
   private[games] def snapshot(caseRecord: CaseRevisionRecord, state: GameSessionRecord, records: Vector[SessionRecord], turns: Vector[InterviewTurnRecord], exchanges: Vector[PoliceExchangeRecord] = Vector.empty,
       release: Option[CaseReleaseRecord] = None): InvestigationSnapshot =
@@ -19,18 +19,19 @@ private[games] object StudyProjection:
     if !supported then
       throw GameError(ErrorCode.ConflictingContent,"这份调查使用的场景版本暂不支持，请保留原存档；可以另建一次调查使用当前版本。")
     val content = RecordedInterviewRules.content(caseRecord.content,turns)
+    val checkState=SemanticEvidence.forChecks(content,state)
     val location=content.sceneLocations.find(_.place == state.playerPlace)
     val police = content.police.flatMap(id => content.witnesses.find(_.id == id))
     val positions = SceneAccessRules.positions(content,state)
     val points = content.points.filter(p => SceneAccessRules.withinRange(positions.get(p.node),state.playerPosition,p)).map { point =>
-      val operations = content.operations.filter(o => o.point == point.id && FixtureRules.operationAvailable(state,o) && FollowUpRules.permitted(content,state,o.id,records,turns))
+      val operations = content.operations.filter(o => o.point == point.id && FixtureRules.operationAvailable(checkState,o) && FollowUpRules.permitted(content,state,o.id,records,turns))
         .map(o => OperationChoiceView(o.id,o.label))
-      val routes = content.routes.filter(r => r.point == point.id && FixtureRules.routeAvailable(state,r) && FixtureRules.routePending(content,state,r,records,turns))
+      val routes = content.routes.filter(r => r.point == point.id && FixtureRules.routeAvailable(checkState,r) && FixtureRules.routePending(content,state,r,records,turns))
         .map(r => RouteChoiceView(r.id,r.label))
       val pointClues = content.routes.filter(_.point == point.id).flatMap(_.clues).toSet ++ content.externalChecks.filter(_.point == point.id).flatMap(_.resultClues)
       val findings = content.clues.filter(c => pointClues(c.id) && state.clues(c.id)).map(c => ClueView(c.id,c.title.value,c.text.value))
       val presentations = records.filter(_.point == point.id).flatMap(r => r.route.flatMap(id =>
-        content.routes.find(route => route.id == id && route.clues.isEmpty).map(route => RecordedPresentationView(r.sequence,route.presentedClues,r.text))))
+        content.routes.find(route => route.id == id && route.clues.isEmpty).map(route => RecordedPresentationView(r.sequence,if content.interviewPromptVersion >= 3 then turns.find(_.requestId == r.requestId).map(_.shownClues).getOrElse(SemanticEvidence.resolve(content,route.presentedClues,state.clues).getOrElse(Set.empty)) else route.presentedClues,r.text))))
       InquiryPointView(point.id,point.label,operations,routes,findings,presentations)
     }
     val travel=points.flatMap(p => content.operations.filter(o => o.point == p.id && p.operations.exists(_.id == o.id)).flatMap(o =>
@@ -51,7 +52,7 @@ private[games] object StudyProjection:
       content.stage.map(s => InvestigationStageView(s.introduction,s.objective,s.completionClue.exists(state.clues.contains),s.nextObjective,
         Option.when(s.comparison.isEmpty)(false))),
       knownWitnesses.map(w => WitnessView(w.id,w.point,w.name,w.background)),
-      turns.filter(_.sequence.value <= state.sequence.value).map(t => InterviewTurnView(t.requestId,t.sequence,t.witness,t.question,t.shownClues,t.reply,t.mode)),
+      turns.filter(_.sequence.value <= state.sequence.value).map(t => InterviewTurnView(t.requestId,t.sequence,t.witness,t.question,t.shownClues,t.reply,t.mode,t.recognition)),
       police.filter(p => points.exists(_.id == p.point)).map { p =>
         val visible = exchanges.filter(_.sequence.value <= state.sequence.value)
         PoliceDeskView(p.point,p.name,p.background,visible.flatMap(_.evidence).toSet,

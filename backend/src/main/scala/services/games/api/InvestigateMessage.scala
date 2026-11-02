@@ -33,12 +33,12 @@ final case class InvestigateMessage(userId: UserId,sessionId: SessionId,requestI
             records <- SessionRecordTable.list(connection,sessionId)
             turns <- InterviewTurnTable.list(connection,sessionId)
             content=RecordedInterviewRules.content(revision.content,turns)
-            continuous=content.witnesses.exists(w => w.point == point && content.continuousInterviews.exists(_.witness == w.id))
+            continuous=content.witnesses.exists(w => w.point == point && (content.interviewPromptVersion >= 3 || content.continuousInterviews.exists(_.witness == w.id)))
             planned <- if continuous then IO.fromEither(ContinuousInterviewRules.fixed(content,session,requestId,point,route,records,turns)).map((action,turn) => (action,Some(turn)))
               else IO.fromEither(FixtureRules.investigate(content,session,requestId,point,route,records,turns)).map(action => (action,None))
             (plan,turn)=planned
             _ <- turn.fold(IO.unit)(InterviewTurnTable.insert(connection,_))
-            presented = revision.content.routes.find(_.id == route).map(_.presentedClues).getOrElse(Set.empty)
+            presented = turn.map(_.shownClues).getOrElse(revision.content.routes.find(_.id == route).map(_.presentedClues).getOrElse(Set.empty))
             _ <- if revision.content.police.flatMap(id => revision.content.witnesses.find(_.id == id)).exists(_.point == point) && presented.nonEmpty then
               PoliceExchangeTable.insert(connection,PoliceExchangeRecord(sessionId,requestId,plan.session.sequence,presented,plan.record.text)) else IO.unit
             result <- MutationSupport.commit(connection,session,requestId,digest,plan)

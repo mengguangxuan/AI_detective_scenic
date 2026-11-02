@@ -75,6 +75,7 @@ final case class AskWitnessMessage(userId: UserId,sessionId: SessionId,requestId
     DatabaseSession.connection(databaseUrl).use(c => DatabaseSession.transaction(c)(plan(c))).flatMap {
       case InterviewPreparation.Cached(result) => IO.pure(result)
       case InterviewPreparation.Rejected(error) => IO.raiseError(error)
+      case InterviewPreparation.Reserved(row) if row.context.responseVersion == 5 => ReviewInterviewMessage.run(userId,databaseUrl,client,row)
       case InterviewPreparation.Reserved(row) =>
         for
           completion <- client.complete(InterviewRules.prompt(row)).timeout(65.seconds).attempt

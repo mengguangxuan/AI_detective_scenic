@@ -7,7 +7,7 @@ import services.cases.utils.LegacyPoliceProfile
 import services.cases.objects.scene.{FixtureNode, FixturePoint, SceneObservation, SceneObjectBinding, SceneLocation, AreaMap}
 import services.cases.objects.content.{FixtureFact, FixtureClue, CasePersonBrief}
 import services.cases.objects.dialogue.WitnessProfile
-import services.cases.objects.investigation.{ContinuousInterviewSpec, ExternalCheckSpec, FixtureOperation, FixtureRoute, InvestigationClock, InvestigationStage, WitnessFollowUpSpec, StatementComparisonSpec, CaseConclusionSpec}
+import services.cases.objects.investigation.{WitnessClaimRule, ContinuousInterviewSpec, ExternalCheckSpec, FixtureOperation, FixtureRoute, InvestigationClock, InvestigationStage, WitnessFollowUpSpec, StatementComparisonSpec, CaseConclusionSpec}
 
 
 final case class CaseContent(place: PlaceId, placeName: String, initialStoryTimeSeconds: Long, timeOriginLabel: String,
@@ -21,17 +21,18 @@ final case class CaseContent(place: PlaceId, placeName: String, initialStoryTime
   clock: Option[InvestigationClock] = None, externalChecks: Vector[ExternalCheckSpec] = Vector.empty,
   followUps: Vector[WitnessFollowUpSpec] = Vector.empty, statementComparisons: Vector[StatementComparisonSpec] = Vector.empty, conclusion: Option[CaseConclusionSpec] = None,
   continuousInterviews: Vector[ContinuousInterviewSpec] = Vector.empty, interviewPromptVersion: Int = 1,
-  sceneLocations: Vector[SceneLocation] = Vector.empty)
+  sceneLocations: Vector[SceneLocation] = Vector.empty, claimRules: Vector[WitnessClaimRule] = Vector.empty)
 
 object CaseContent:
   given Encoder[CaseContent] = deriveEncoder[CaseContent].mapJson(json =>
-    val located=if json.hcursor.get[Vector[SceneLocation]]("sceneLocations").contains(Vector.empty) then json.mapObject(_.remove("sceneLocations")) else json
+    val semantic=if json.hcursor.get[Vector[WitnessClaimRule]]("claimRules").contains(Vector.empty) then json.mapObject(_.remove("claimRules")) else json
+    val located=if json.hcursor.get[Vector[SceneLocation]]("sceneLocations").contains(Vector.empty) then semantic.mapObject(_.remove("sceneLocations")) else semantic
     val versioned=if json.hcursor.get[Int]("interviewPromptVersion").contains(1) then located.mapObject(_.remove("interviewPromptVersion")) else located
     if json.hcursor.get[Vector[ContinuousInterviewSpec]]("continuousInterviews").contains(Vector.empty) then versioned.mapObject(_.remove("continuousInterviews")) else versioned)
   private val decoder: Decoder[CaseContent] = deriveDecoder[CaseContent].prepare(_.withFocus(json =>
     json.mapObject(original =>
       val obj=if original.contains("interviewPromptVersion") then original else original.add("interviewPromptVersion",io.circe.Json.fromInt(1))
-      Vector("observations", "sceneObjects", "witnesses", "publicPersons", "externalChecks", "followUps", "statementComparisons", "continuousInterviews", "sceneLocations").foldLeft(obj)((fields, name) =>
+      Vector("observations", "sceneObjects", "witnesses", "publicPersons", "externalChecks", "followUps", "statementComparisons", "continuousInterviews", "sceneLocations", "claimRules").foldLeft(obj)((fields, name) =>
       if fields.contains(name) then fields else fields.add(name,io.circe.Json.arr())))))
 
   given Decoder[CaseContent] = Decoder.instance { cursor =>

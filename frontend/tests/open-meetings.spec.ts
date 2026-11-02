@@ -1,4 +1,5 @@
 import { test, expect, type Page } from '@playwright/test';
+import { randomUUID } from 'node:crypto';
 import { writeFileSync } from 'node:fs';
 const headers = { 'X-Detective-Client': 'web' };
 const key = 'detective-scenic:server-session:v6';
@@ -11,8 +12,11 @@ async function go(page: Page, name: string) {
   await page.getByRole('navigation', { name: '调查导航' }).getByRole('link', { name, exact: true }).click();
 }
 test('revision25 offers every existing contact without clues and persists early Archer testimony', async ({ page }) => {
-  await page.goto('/cases/vicarage_study');
-  await page.getByRole('button', { name: '开始新调查', exact: true }).click();
+  expect((await page.request.post('/api/openlocalidentity', { headers, data: {} })).status()).toBe(200);
+  const sessionId = randomUUID();
+  expect((await page.request.post('/api/openinvestigation', { headers, data: { sessionId, caseId: 'vicarage_study', revision: { value: 25 } } })).status()).toBe(200);
+  await page.addInitScript(({ key, sessionId }) => localStorage.setItem(key, JSON.stringify({ version: 1, sessionId, creationPending: false, pending: null })), { key, sessionId });
+  await page.goto('/case');
   await expect(page.getByRole('heading', { name: '案件简介', exact: true })).toBeVisible();
   expect((await state(page)).caseRevision.value).toBe(25);
   await go(page, '警方交流');

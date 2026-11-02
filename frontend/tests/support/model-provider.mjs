@@ -2,7 +2,12 @@
 import http from 'node:http';
 const approvedKey = 'Bearer dummy-browser-key';
 const completionPaths = new Set(['/chat/completions', '/v1/chat/completions']);
+const semanticCounts = new Map();
 const server = http.createServer(async (request, response) => {
+  if (request.url?.startsWith('/semantic-counts?') && request.method === 'GET') {
+    const question = new URL(request.url, 'http://localhost').searchParams.get('question');
+    response.setHeader('Content-Type', 'application/json'); response.end(JSON.stringify(semanticCounts.get(question) ?? { actor: 0, review: 0 })); return;
+  }
   if (request.url === '/shutdown' && request.method === 'POST') {
     response.end('stopping'); server.close(); return;
   }
@@ -15,6 +20,27 @@ const server = http.createServer(async (request, response) => {
     const context = JSON.parse(body.messages.findLast(message => message.role === 'user').content);
     const withFocus = payload => context.focusInstruction && typeof payload.reply === 'string' && !('focus' in payload)
       ? { ...payload, focus: { topic: payload.reply.slice(0, 160), pendingQuestion: null, clarification: false } } : payload;
+    // Synthetic role/review protocol cases; these assertions are not a semantic model.
+    const semanticRole = body.messages[0].content.includes('证据登记由另一个步骤核对');
+    const semanticReview = body.messages[0].content.includes('语义登记核对器');
+    if (semanticRole || semanticReview) {
+      const count = semanticCounts.get(context.question) ?? { actor: 0, review: 0 };
+      count[semanticReview ? 'review' : 'actor']++; semanticCounts.set(context.question, count);
+      const send = payload => { response.setHeader('Content-Type', 'application/json'); response.end(JSON.stringify({ choices: [{ finish_reason: 'stop', message: { content: JSON.stringify(payload) } }] })); };
+      if (semanticReview) {
+        if ('privateContext' in context || 'policy' in context || 'authorTruth' in context) throw new Error('Reviewer received private dossier');
+        if (context.question.startsWith('协议语义：核对中断') && count.review === 1) { response.writeHead(503).end('{}'); return; }
+        const clue = context.question.includes('死亡时间') ? 'clue_medical_time' : 'clue_habit';
+        const allowed = context.allowedClaims.some(item => item.clue === clue);
+        const claims = allowed ? [{ clue, text: context.reply, evidence: [] }] : [];
+        if (context.question.includes('混入登记')) claims.push({ clue: 'clue_unauthorized', text: context.reply, evidence: [] });
+        send({ kind: 'answer', claims });
+      } else {
+        const reply = context.question.includes('死亡时间') ? '海多克说，检查时已经死亡半小时左右。' : '我习惯把书房座钟拨快十五分钟。';
+        send({ reply, focus: { topic: reply, pendingQuestion: null, clarification: false } });
+      }
+      return;
+    }
     if (context.task === 'reasoning_judge' || context.task === 'reasoning_guidance') {
       const explanation = context.playerSubmission.explanation;
       if (explanation.includes('评审接口故障测试')) { response.writeHead(503).end('{}'); return; }
