@@ -1,7 +1,7 @@
 {
   "id": "vicarage_study",
   "revision": {
-    "value": 24
+    "value": 25
   },
   "schemaVersion": {
     "value": 2
@@ -6565,10 +6565,8 @@
         "label": "安排与安妮正式会面",
         "repeatable": false,
         "condition": {
-          "kind": "CluesKnown",
-          "clues": [
-            "clue_redding_account"
-          ]
+          "kind": "All",
+          "items": []
         },
         "effects": [
           {
@@ -6584,13 +6582,11 @@
       {
         "id": "open_valet_meeting",
         "point": "point_police",
-        "label": "联系男仆，核查枪的来源",
+        "label": "联系上校的贴身男仆，安排会面",
         "repeatable": false,
         "condition": {
-          "kind": "CluesKnown",
-          "clues": [
-            "clue_anne_gun"
-          ]
+          "kind": "All",
+          "items": []
         },
         "effects": [
           {
@@ -6606,14 +6602,11 @@
       {
         "id": "open_movement_meetings",
         "point": "point_police",
-        "label": "联系斯通和哈特内尔，核实行踪",
+        "label": "联系斯通和哈特内尔，安排会面",
         "repeatable": false,
         "condition": {
-          "kind": "CluesKnown",
-          "clues": [
-            "clue_redding_account",
-            "clue_anne_statement"
-          ]
+          "kind": "All",
+          "items": []
         },
         "effects": [
           {
@@ -6637,14 +6630,11 @@
       {
         "id": "open_archer_meeting",
         "point": "point_police",
-        "label": "联系阿彻太太，核实雷丁住处的情况",
+        "label": "联系阿彻太太，安排会面",
         "repeatable": false,
         "condition": {
-          "kind": "CluesKnown",
-          "clues": [
-            "clue_police_revised_review",
-            "clue_redding_gun_revised"
-          ]
+          "kind": "All",
+          "items": []
         },
         "effects": [
           {

@@ -1,10 +1,12 @@
 # 验收前准备与启动步骤
 
-## 当前验收：树林实地探索，修订24
+## 当前验收：自由联系会面人物，修订25
 
-新建调查顶部应为`vicarage_study/24`，书房与树林组成场景包`study/6`。从地图点“前往树林”，按[指南第0节](manual_test_guide.md)验收走近、显露与采集、返回和专业辨认。原23不升级，保留其警方查访与原始进度；问询仍复用模板6／答复协议4。
+新建调查顶部应为`vicarage_study/25`，书房与树林组成场景包`study/6`。从地图点“前往树林”，按[指南第0节](manual_test_guide.md)验收走近、显露与采集、返回和专业辨认。原23不升级，保留其警方查访与原始进度；问询仍复用模板6／答复协议4。
 
-正常后端继续使用老师提供的TokenHub DeepSeek配置。真实整案：`E:\dev\nodejs\node.exe tools/verify_case_completion_live.mjs --woodland --positive`；实际重启后用`--woodland --restore`核对。缓存按新版本隔离，不读取或输出密钥。旧对话与结案脚本的原参数继续用于旧修订恢复，不代替新24实测。
+修订25在警方调查安排中开局提供全部现有会面联系，不要求先取得特定线索；联系不自动发证言。旧24保留原前置，已有调查不升级。具体步骤见[手动指南](manual_test_guide.md)。
+
+正常后端继续使用老师提供的TokenHub DeepSeek配置。既有真实整案工具固定使用旧24，作为兼容回归而非新25验收：`E:\dev\nodejs\node.exe tools/verify_case_completion_live.mjs --woodland --positive`；实际重启后用`--woodland --restore`核对。缓存按新版本隔离，不读取或输出密钥。旧对话与结案脚本的原参数继续用于旧修订恢复，不代替新25实测。
 
 课堂展示与场景登记见[树林说明](woodland_scene_manifest.md)，完整取证见[整案流程](full_case_walkthrough.md)。
 

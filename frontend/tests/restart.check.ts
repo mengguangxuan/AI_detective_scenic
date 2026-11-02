@@ -1,5 +1,20 @@
 import { readFileSync, existsSync } from 'node:fs';
 import { test, expect } from '@playwright/test';
+if (existsSync('.build-cache/open-meetings-state.json')) test.describe('revision25 early contact recovery', () => {
+  test.use({ storageState: '.build-cache/open-meetings-state.json' });
+  test('freely arranged people and actual early Archer testimony restore exactly after restart', async ({ page }) => {
+    await page.goto('/interviews');
+    await page.getByRole('button', { name: '与阿彻太太交谈', exact: true }).click();
+    await expect(page.getByRole('heading', { name: '向阿彻太太提问', exact: true })).toBeVisible();
+    const sessionId = await page.evaluate(() => JSON.parse(localStorage.getItem('detective-scenic:server-session:v6')!).sessionId);
+    const response = await page.request.post('/api/getinvestigationsnapshot', { headers: { 'X-Detective-Client': 'web' }, data: { sessionId } });
+    expect(response.status()).toBe(200);
+    const state = await response.json();
+    expect(state).toEqual(JSON.parse(readFileSync('.build-cache/open-meetings-snapshot.json', 'utf8')));
+    expect(state.caseRevision.value).toBe(25);
+    for (const id of ['anne','valet','stone','hartnell','archer']) expect(state.witnesses.some((w: { id: string }) => w.id === id)).toBe(true);
+  });
+});
 test.describe('case hub recovery', () => {
   test.use({ storageState: '.build-cache/case-hub-state.json' });
   test('the home page lists both saved investigations and restores the original without creating another', async ({ page }) => {
