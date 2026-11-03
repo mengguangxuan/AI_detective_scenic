@@ -19,8 +19,8 @@ class Investigation {
   async refresh() { this.state = await this.post('getinvestigationsnapshot', { sessionId: this.sessionId }); }
   async start() {
     await this.post('openlocalidentity');
-    this.state = await this.post('openinvestigation', { sessionId: this.sessionId, caseId: 'vicarage_study', revision: { value: 22 } });
-    assert.equal(this.state.caseRevision.value, 22); assert.deepEqual(this.state.followUps, []);
+    this.state = await this.post('openinvestigation', { sessionId: this.sessionId, caseId: 'vicarage_study' });
+    assert.deepEqual(this.state.followUps, []);
     await this.read('route_redding_account');
     await this.change('executeoperation', { operation: 'open_anne_meeting' });
     await this.read('route_anne_statement');

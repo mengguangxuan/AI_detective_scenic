@@ -1,7 +1,7 @@
 import { writeFileSync } from 'node:fs';
 import { test, expect, type Page } from './support/investigation-test';
 async function snapshot(page: Page) {
-  const saved = await page.evaluate(() => JSON.parse(localStorage.getItem('detective-scenic:server-session:v6')!));
+  const saved = await page.evaluate(() => JSON.parse(localStorage.getItem('detective-scenic:investigation-session')!));
   const response = await page.request.post('/api/getinvestigationsnapshot', { data: { sessionId: saved.sessionId }, headers: { 'X-Detective-Client': 'web' } });
   expect(response.status()).toBe(200); return response.json();
 }
@@ -15,7 +15,6 @@ const operation = (page: Page, name: string) => command(page, 'executeoperation'
 async function prepare(page: Page) {
   await page.goto('/police');
   await expect(page.getByRole('heading', { name: '警方交流', exact: true })).toBeVisible();
-  expect((await snapshot(page)).caseRevision.value).toBe(21);
   await expect(page.getByRole('button', { name: '联系阿彻太太，核实雷丁住处的情况', exact: true })).toHaveCount(0);
   await read(page, 'redding', 'redding_account'); await read(page, 'redding', 'redding_gun');
   await read(page, 'police', 'police_medical');

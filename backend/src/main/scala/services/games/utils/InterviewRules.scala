@@ -27,7 +27,7 @@ private[games] object InterviewRules:
       val history = turns.filter(_.witness == witness)
       val continuous=content.continuousInterviews.find(_.witness == witness)
       val own=RecordedInterviewRules.ownClues(content,witness,records,turns)
-      val fixedIds = records.filter(_.point == profile.point).flatMap(_.route)
+      val fixedIds = records.filter(_.point.contains(profile.point)).flatMap(_.route)
         .flatMap(id => content.routes.find(_.id == id).toVector.flatMap(_.presentedClues))
       val fixedPresentations = if content.interviewPromptVersion >= 3 then SemanticEvidence.resolve(content,fixedIds.toSet,state.clues).getOrElse(Set.empty) else fixedIds.toSet
       val policeEvidence = if content.police.contains(profile.id) then exchanges.flatMap(_.evidence).toSet else Set.empty[ClueId]
@@ -57,7 +57,7 @@ private[games] object InterviewRules:
           p.completedAt.fold(s"${c.title}：${p.requestedAt}受理，预计${p.readyAt}完成，目前仍在办理。") { at => s"${c.title}：$at 已完成，可依据shownEvidence中的实际核查结果回答。" }
         }
       } else Vector.empty
-      val base=InterviewContext(profile.copy(answers=available,dossier=DialogueDossier(phaseKnowledge++current++mapKnowledge++conditions,initial.privateContext,phasePolicy)),content.clues.filter(c => known(c.id)),history.takeRight(12),state.caseId,state.caseRevision,
+      val base=InterviewContext(profile.copy(answers=available,dossier=DialogueDossier(phaseKnowledge++current++mapKnowledge++conditions,initial.privateContext,phasePolicy)),content.clues.filter(c => known(c.id)),history.takeRight(12),state.caseId,
         if content.interviewPromptVersion >= 3 then 5 else if content.interviewPromptVersion == 2 then 4 else if continuous.nonEmpty then 3 else if initial.knowledge.nonEmpty then 2 else 1,
         continuous.map(_.statementAnswers.filter(id => profile.answers.find(_.id == id).exists(a => a.routes.exists(route => content.routes.exists(r => r.id == route && !r.clues.forall(state.clues.contains)))))).getOrElse(Set.empty),
         if continuous.nonEmpty || content.interviewPromptVersion >= 2 then content.clues.filter(c => own(c.id)) else Vector.empty, if content.interviewPromptVersion >= 3 then 10 else if content.interviewPromptVersion == 2 then 6 else 1,
@@ -249,6 +249,6 @@ private[games] object InterviewRules:
         if mode == InterviewReplyMode.Answered then decision.flatMap(_.focus) else None)
       val text=s"问询${request.context.profile.name}：${request.question}\n$reply"
       val record=SessionRecord(RecordId(s"${request.requestId.value}:interview"),state.id,request.requestId,next.sequence,next.storyTimeSeconds,
-        request.context.profile.point,Some(RouteId(s"interview_${request.witness.value}")),None,text,clues,facts)
+        Some(request.context.profile.point),Some(RouteId(s"interview_${request.witness.value}")),None,text,clues,facts)
       (ActionPlan(next,record,CommandResult(next.sequence,Vector(Text(reply)),clues)),turn)
     }

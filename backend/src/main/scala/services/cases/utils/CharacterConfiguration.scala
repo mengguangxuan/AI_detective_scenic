@@ -16,7 +16,7 @@ private[cases] object CharacterConfiguration:
     def check(ok: Boolean, path: String, message: String): Decoder.Result[Unit] =
       Either.cond(ok,(),DecodingFailure(s"$path：$message",root.history))
     if !root.downField("characters").succeeded then
-      // Existing authoring and stored revisions retain their original compiled shape.
+      // Minimal investigation examples may omit character authoring.
       for
         people <- background.hcursor.get[Vector[CasePersonBrief]]("persons")
         witnesses <- investigation.hcursor.get[Option[Vector[WitnessProfile]]]("witnesses")

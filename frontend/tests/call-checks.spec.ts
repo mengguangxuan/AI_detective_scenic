@@ -1,7 +1,7 @@
 import { writeFileSync } from 'node:fs';
 import { test, expect, type Page } from './support/investigation-test';
 async function snapshot(page: Page) {
-  const saved = await page.evaluate(() => JSON.parse(localStorage.getItem('detective-scenic:server-session:v6')!));
+  const saved = await page.evaluate(() => JSON.parse(localStorage.getItem('detective-scenic:investigation-session')!));
   const response = await page.request.post('/api/getinvestigationsnapshot', { data: { sessionId: saved.sessionId }, headers: { 'X-Detective-Client': 'web' } });
   expect(response.status()).toBe(200); return response.json();
 }
@@ -26,7 +26,6 @@ async function fixedPolice(page: Page, label: string) {
 async function basis(page: Page) {
   await page.goto('/police');
   await expect(page.getByRole('heading', { name: '警方交流', exact: true })).toBeVisible();
-  expect((await snapshot(page)).caseRevision.value).toBe(21);
   await fixedPerson(page, '克莱门特牧师', '询问：你为什么离开寓所？');
   await fixedPolice(page, '出示牧师的来电陈述，登记追查依据');
 }

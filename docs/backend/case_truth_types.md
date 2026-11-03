@@ -57,7 +57,6 @@ final case class SourceId(value: String)
 final case class RecordId(value: String)
 final case class AiCallId(value: String)
 final case class Text(value: String)
-final case class Revision(value: Int)
 final case class Sequence(value: Long)
 final case class PerspectiveRevision(value: Long)
 final case class CaseTime(seconds: Long)
@@ -70,14 +69,14 @@ final case class SceneBounds(min: Vec3, max: Vec3)
 final case class MovementPolicy(maximumStepMeters: Double)
 ```
 
-- ID、Text 非空；Revision > 0；Sequence、PerspectiveRevision 从 0 开始递增。`NonEmptyVector[A]` 为经过校验的非空有序集合，采用项目统一的集合实现。
+- ID、Text 非空；Sequence、PerspectiveRevision 从 0 开始递增。`NonEmptyVector[A]` 为经过校验的非空有序集合，采用项目统一的集合实现。
 - `Instant` 为系统 UTC 时间；`OffsetDateTime` 为可选的公历原点；`URI` 为登记资源地址，均使用标准库类型。
 - CaseTime 是相对剧情原点的秒数，允许负值；TimeWindow 为闭区间，earliest ≤ latest。精确时刻用两端相同值。不补造原作未给出的精确时刻。
 - Vec3 单位米，右手系、Y 向上；Rotation 为 XYZ 弧度、按 X→Y→Z 应用；scale 分量 > 0；所有数值须有限。
 - Option 表示不适用或未提供引用，不承担“确认不存在”的语义。缺失事实使用 Existence.Absent。
 - EventId 指向 CaseTruth.events 中的 Event；BelievedEventId 指向某人当前视角中的 BelievedEvent，两者不能互换。后者在 `(PersonId, PerspectiveRevision)` 内唯一。
 - RecordId 指向本局日志中的检查、对话、获知、认知变化或指控记录；所有此类记录 ID 在同一会话内唯一。RequestId 指向一次外部请求，Sequence 标识一次原子提交的顺序。
-- 所有案件引用限定同一 `(CaseId, Revision)`；发布修订不可原地修改，会话固定绑定修订。禁止 Any、任意 JSON 参数袋和可执行脚本字符串。
+- 所有案件引用限定同一 CaseId；已导入的当前内容不可原地覆盖，会话按 CaseId 关联。禁止 Any、任意 JSON 参数袋和可执行脚本字符串。
 
 ## 3. 三条时间线和一个提交顺序
 
@@ -361,6 +360,7 @@ final case class InquiryPoint(
   entry: Entry, topics: Set[TopicId], fallbackFinding: Option[FindingContent]
 )
 final case class SceneSpec(
+  bundleId: String,
   nodes: Vector[SceneNode], cues: Vector[SceneCue], points: Vector[InquiryPoint],
   requirementBindings: Vector[SceneRequirementBinding], movement: MovementPolicy
 )
@@ -374,7 +374,7 @@ final case class RequirementReview(
   method: Text, evidence: Vector[AssetId], notes: Text
 )
 final case class SceneReview(
-  caseId: CaseId, caseRevision: Revision, sceneFingerprint: Text,
+  caseId: CaseId, sceneFingerprint: Text,
   checks: Vector[RequirementReview], reviewer: Text, reviewedAt: Instant
 )
 ```
@@ -703,7 +703,7 @@ final case class PlayerRole(mode: GameMode, character: Option[PersonId])
 enum SessionStatus:
   case Active, Completed, Abandoned
 final case class GameSession(
-  id: SessionId, owner: UserId, caseId: CaseId, caseRevision: Revision,
+  id: SessionId, owner: UserId, caseId: CaseId,
   role: PlayerRole, status: SessionStatus, createdAt: Instant, updatedAt: Instant
 )
 final case class WorldState(
@@ -755,7 +755,7 @@ final case class SessionCommit(
   changes: NonEmptyVector[SessionChange]
 )
 final case class Snapshot(
-  session: SessionId, caseId: CaseId, caseRevision: Revision,
+  session: SessionId, caseId: CaseId,
   atSequence: Sequence, reducerVersion: ReducerVersion,
   state: GameState, status: SessionStatus,
   createdAt: Instant
@@ -833,7 +833,7 @@ final case class InvestigationSpec(
   assessment: AssessmentSpec
 )
 final case class CasePackage(
-  id: CaseId, revision: Revision, schemaVersion: SchemaVersion,
+  id: CaseId, schemaVersion: SchemaVersion,
   reducerVersion: ReducerVersion, title: Text,
   initialStoryTime: CaseTime, timeOriginLabel: Text,
   calendarOrigin: Option[OffsetDateTime], assets: Vector[Asset],
@@ -844,7 +844,7 @@ final case class CasePackage(
 
 初始化必须是确定性步骤：
 
-1. 验证案件为已发布、绑定具体修订和 reducerVersion。建立 GameSession，核验 UserId；按所选模式校验角色，不给其他人读取嫌疑人秘密。
+1. 验证案件为已发布、按 CaseId 关联内容并校验 reducerVersion。建立 GameSession，核验 UserId；按所选模式校验角色，不给其他人读取嫌疑人秘密。
 2. GameState.sequence=0，storyTime=initialStoryTime；玩家位置、开合和解锁状态读 initial；entityPlaces 由 Entity.initialPlace 建立；nodeOverrides 为空，visibleNodes 来自 initiallyVisible 的节点。
 3. occurredEvents 读 initial；每个实际时刻须处于相应 Event.account.when 内，且不晚于开局；未来 ScheduledOccurrence 不写入该集合。
 4. PlayerKnowledge.facts 从 commonKnowledge 起步，clues／heardClaims 为空；availableReports、materials 来自公开背景。可打开报告不等于已经读过；取得报告内容须走合法读取路线，随后按已批准披露包加入 verifiedFacts／claims。不要开局遍历全部报告事实。
@@ -914,7 +914,7 @@ final case class GameError(code: ErrorCode, publicMessage: Text)
 | 归属 | 建议集合 | 约束 |
 |---|---|---|
 | accounts | 用户资料、认证会话 | 令牌验证在路由边界；不与案件真相混存 |
-| cases | 案件修订元数据、定稿聚合／按域拆表、资产目录 | CaseId+Revision 唯一、发布后不可改 |
+| cases | 案件元数据、定稿聚合／按域拆表、资产目录 | CaseId 唯一、发布后不可改 |
 | cases | SceneReview 制作验收记录 | 按案件修订和 sceneFingerprint 关联；历史验收可保留，只有当前场景摘要的通过结果有效 |
 | games | GameSession、当前 GameState、序号0及后续 Snapshot | SessionId 归属可信用户，修订与 reducer 版本固定 |
 | games | SessionCommit、按 RecordId 建立的记录索引 | SessionId+Sequence 唯一，记录可定位到提交及序号内位置 |
@@ -987,7 +987,7 @@ SceneBounds 是轴对齐盒，各轴 min < max。可探索 Place.walkable 必须
 ```scala
 final case class AssetLibrary(available: Vector[Asset])
 final case class SceneAuthoringInput(
-  caseId: CaseId, caseRevision: Revision, scene: SemanticScene,
+  caseId: CaseId, scene: SemanticScene,
   entities: Vector[Entity], relevantFacts: Vector[Fact],
   cues: Vector[SceneCue], supportedOperations: Vector[Operation],
   allowedAssets: AssetLibrary, bounds: SceneBounds, freeRein: Vector[Text]

@@ -1,6 +1,6 @@
 import { test, expect, type Page } from './support/investigation-test';
 
-const sessionKey = 'detective-scenic:server-session:v6';
+const sessionKey = 'detective-scenic:investigation-session';
 async function go(page: Page, name: string) {
   await page.getByRole('navigation', { name: '调查导航' }).getByRole('link', { name, exact: true }).click();
   await expect(page.getByRole('heading', { name, exact: true })).toBeVisible();

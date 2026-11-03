@@ -2,7 +2,7 @@ import { test, expect, type Page } from '@playwright/test';
 import { randomUUID } from 'node:crypto';
 import { writeFileSync } from 'node:fs';
 const headers = { 'X-Detective-Client': 'web' };
-const key = 'detective-scenic:server-session:v6';
+const key = 'detective-scenic:investigation-session';
 async function snapshot(page: Page) {
   const sessionId = await page.evaluate(key => JSON.parse(localStorage.getItem(key)!).sessionId, key);
   const response = await page.request.post('/api/getinvestigationsnapshot', { headers, data: { sessionId } });
@@ -12,12 +12,11 @@ async function begin(page: Page) {
   await page.goto('/cases/vicarage_study');
   await page.getByRole('button', { name: '开始新调查', exact: true }).click();
   await expect(page.getByRole('heading', { name: '案件简介', exact: true })).toBeVisible();
-  expect((await snapshot(page)).caseRevision.value).toBe(26);
 }
 async function go(page: Page, name: string) {
   await page.getByRole('navigation', { name: '调查导航' }).getByRole('link', { name, exact: true }).click();
 }
-test('revision26 fixed questions use the same per-claim records without a model', async ({ page }) => {
+test('fixed questions use the same per-claim records without a model', async ({ page }) => {
   await begin(page); await go(page, '人物问询');
   await page.getByRole('button', { name: '与克莱门特牧师交谈', exact: true }).click();
   await page.getByText('固定问答与材料笔记（备用）', { exact: true }).click();

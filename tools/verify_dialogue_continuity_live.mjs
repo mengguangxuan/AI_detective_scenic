@@ -41,7 +41,7 @@ if (process.argv.includes('--restore')) {
   cookie = saved.cookie; sessionId = saved.sessionId; await refresh(); assert.deepEqual(state, saved.state);
   console.log('Exact continuity dialogue snapshot restored.');
 } else {
-  await post('openlocalidentity'); state = await post('openinvestigation', { sessionId, caseId: 'vicarage_study', revision: { value: 23 } });
+  await post('openlocalidentity'); state = await post('openinvestigation', { sessionId, caseId: 'vicarage_study' });
   await read('route_redding_account'); await read('route_redding_gun');
   await change('executeoperation', { operation: 'open_anne_meeting' }); await read('route_anne_time'); await read('route_anne_gun');
   const anne = ['clue_anne_time', 'clue_anne_gun'];

@@ -9,9 +9,9 @@ import services.cases.objects.investigation.{FixtureEffect, FixtureOperation, Fi
 private[games] object FixtureRules:
   private def denied = GameError(ErrorCode.AccessDenied,"当前无法访问该调查入口。")
 
-  private[games] def initial(f: CaseRevisionRecord,id: SessionId,owner: UserId): GameSessionRecord =
+  private[games] def initial(f: CaseRecord,id: SessionId,owner: UserId): GameSessionRecord =
     val c=f.content
-    GameSessionRecord(id,owner,f.caseId,f.revision,1,Sequence(0),c.initialStoryTimeSeconds,c.place,c.spawnPosition,
+    GameSessionRecord(id,owner,f.caseId,1,Sequence(0),c.initialStoryTimeSeconds,c.place,c.spawnPosition,
       c.initiallyOpened,c.initiallyUnlocked,c.nodes.filter(_.initiallyVisible).map(_.id).toSet,Set.empty,Set.empty,c.commonFacts)
 
   private[games] def operationAvailable(state: GameSessionRecord,operation: FixtureOperation): Boolean =
@@ -38,7 +38,7 @@ private[games] object FixtureRules:
       }
       val next=changed.copy(sequence=Sequence(state.sequence.value+1),completedOperations=changed.completedOperations+operation)
       val record=SessionRecord(RecordId(s"${request.value}:operation"),state.id,request,next.sequence,next.storyTimeSeconds,
-        op.point,None,Some(operation),op.label,Set.empty,Set.empty)
+        Some(op.point),None,Some(operation),op.label,Set.empty,Set.empty)
       ActionPlan(next,record,CommandResult(next.sequence,Vector.empty,Set.empty))
 
   private[games] def investigate(f: CaseContent,state: GameSessionRecord,request: RequestId,
@@ -55,14 +55,14 @@ private[games] object FixtureRules:
       val text=route.reply.getOrElse(disclosed.map(_.text.value).mkString("\n"))
       val next=state.copy(sequence=Sequence(state.sequence.value+1),clues=state.clues++clues,facts=state.facts++facts)
       val record=SessionRecord(RecordId(s"${request.value}:investigation"),state.id,request,next.sequence,next.storyTimeSeconds,
-        pointId,Some(routeId),None,text,clues,facts)
+        Some(pointId),Some(routeId),None,text,clues,facts)
       ActionPlan(next,record,CommandResult(next.sequence,Vector(Text(text)),clues))
 
   private[games] def routePending(f: CaseContent,state: GameSessionRecord,route: FixtureRoute,
       records: Vector[SessionRecord],turns: Vector[InterviewTurnRecord]): Boolean =
     if route.clues.nonEmpty then !route.clues.forall(state.clues.contains)
     else
-      val fixed = records.exists(r => r.point == route.point && r.route.contains(route.id))
+      val fixed = records.exists(r => r.point.contains(route.point) && r.route.contains(route.id))
       val answered = turns.exists(t => t.mode == InterviewReplyMode.Answered && f.witnesses.find(_.id == t.witness).exists(w =>
         w.point == route.point && w.answers.exists(a => t.answerIds.contains(a.id) && a.routes.contains(route.id))))
       !fixed && !answered
@@ -87,5 +87,5 @@ private[games] object FixtureRules:
       val next = state.copy(sequence=Sequence(state.sequence.value+1),clues=state.clues+clue.id,facts=state.facts++clue.facts)
       val cited = evidence.toVector.sortBy(_.value).flatMap(id => f.clues.find(_.id == id).map(_.title.value)).mkString("、")
       val record = SessionRecord(RecordId(s"${request.value}:comparison"),state.id,request,next.sequence,next.storyTimeSeconds,
-        spec.point,Some(spec.route),None,s"${clue.text.value}\n引用材料：$cited",Set(clue.id),clue.facts)
+        Some(spec.point),Some(spec.route),None,s"${clue.text.value}\n引用材料：$cited",Set(clue.id),clue.facts)
       ActionPlan(next,record,CommandResult(next.sequence,Vector(clue.text),Set(clue.id)))

@@ -11,14 +11,14 @@ import services.games.objects.*
 import services.games.objects.apiTypes.*
 
 object SessionRecordTable:
-  private val insertSql = "INSERT INTO session_records(record_id,session_id,request_id,sequence_no,story_time_seconds,point_id,route_id,operation_id,text,clues_json,facts_json) VALUES (?,?,?,?,?,?,?,?,?,?,?)"
+  private val insertSql = "INSERT INTO session_records(record_id,session_id,request_id,sequence_no,story_time_seconds,point_id,route_id,operation_id,text,clues_json,facts_json,system_action) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)"
   def insert(connection: Connection, r: SessionRecord): IO[Unit] = IO.blocking {
     Using.resource(connection.prepareStatement(insertSql)) { s =>
       s.setString(1,r.id.value); s.setString(2,r.sessionId.value); s.setString(3,r.requestId.value)
-      s.setLong(4,r.sequence.value); s.setLong(5,r.storyTimeSeconds); s.setString(6,r.point.value)
+      s.setLong(4,r.sequence.value); s.setLong(5,r.storyTimeSeconds); s.setString(6,r.point.map(_.value).orNull)
       s.setString(7,r.route.map(_.value).orNull); s.setString(8,r.operation.map(_.value).orNull)
       s.setString(9,r.text); s.setString(10,r.disclosedClues.asJson.noSpaces); s.setString(11,r.disclosedFacts.asJson.noSpaces)
-      s.executeUpdate()
+      s.setString(12,r.systemAction.map(_.toString).orNull); s.executeUpdate()
     }
     ()
   }
@@ -36,4 +36,4 @@ object SessionRecordTable:
   }
 
   private def read(r: ResultSet): SessionRecord =
-    SessionRecord(RecordId(r.getString("record_id")),SessionId(r.getString("session_id")),RequestId(r.getString("request_id")),Sequence(r.getLong("sequence_no")),r.getLong("story_time_seconds"),PointId(r.getString("point_id")),Option(r.getString("route_id")).map(RouteId.apply),Option(r.getString("operation_id")).map(OperationId.apply),r.getString("text"),decode[Set[ClueId]](r.getString("clues_json")).fold(throw _,identity),decode[Set[FactId]](r.getString("facts_json")).fold(throw _,identity))
+    SessionRecord(RecordId(r.getString("record_id")),SessionId(r.getString("session_id")),RequestId(r.getString("request_id")),Sequence(r.getLong("sequence_no")),r.getLong("story_time_seconds"),Option(r.getString("point_id")).map(PointId.apply),Option(r.getString("route_id")).map(RouteId.apply),Option(r.getString("operation_id")).map(OperationId.apply),r.getString("text"),decode[Set[ClueId]](r.getString("clues_json")).fold(throw _,identity),decode[Set[FactId]](r.getString("facts_json")).fold(throw _,identity),Option(r.getString("system_action")).map(InvestigationSystemAction.valueOf))

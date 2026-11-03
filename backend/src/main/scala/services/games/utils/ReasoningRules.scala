@@ -22,7 +22,7 @@ private[games] object ReasoningRules:
       _ <- Either.cond(state.reasoning.ending.isEmpty && !state.reasoning.attempts.lastOption.exists(_.status == ReasoningStatus.Established),(),GameError(ErrorCode.ConditionFailed,"本次评审已经成立或收尾，请查看已保存的结果。"))
       _ <- Either.cond(suspects.nonEmpty && suspects.subsetOf(spec.candidates) && evidence.nonEmpty && evidence.size <= 50 && explanation.trim.length >= 10 && textValid(explanation,1000),(),GameError(ErrorCode.InvalidValue,"请选择人物、引用1至50份材料，并填写10至1000字的推理。"))
       _ <- Either.cond(evidence.subsetOf(state.clues),(),GameError(ErrorCode.AccessDenied,"只能引用本局实际取得的材料。"))
-    yield ReasoningContext(state.caseId,state.caseRevision,evaluator,spec.culprits,
+    yield ReasoningContext(state.caseId,evaluator,spec.culprits,
       content.publicPersons,content.clues.filter(c => evidence(c.id)),state.reasoning.attempts.takeRight(6),content.clues)
 
   private[games] def judgePrompt(request: ReasoningRequestRecord): ChatCompletionInput =
@@ -102,7 +102,6 @@ private[games] object ReasoningRules:
   private[games] def finish(content: CaseContent,state: GameSessionRecord,request: ReasoningRequestRecord,decision: Option[ReasoningDecision],feedback: Option[String],failure: Option[ReasoningStatus]): Either[GameError,ActionPlan] =
     for
       _ <- content.conclusion.flatMap(_.evaluation).toRight(denied)
-      point <- content.police.flatMap(id => content.witnesses.find(_.id == id)).map(_.point).toRight(denied)
     yield
       val safeFailure=failure.filter(s => s == ReasoningStatus.Unavailable || s == ReasoningStatus.Rejected)
       val valid=decision.exists(d => d.checks.nonEmpty && d.checks.map(_.id).toSet == request.context.evaluator.criteria.map(_.id).toSet &&
@@ -112,20 +111,19 @@ private[games] object ReasoningRules:
       val reply=status match
         case ReasoningStatus.Unavailable => "评审模型暂时无法响应，本次推理原文已保存，尚未作出判断。请继续调查或稍后重新提交评审。"
         case ReasoningStatus.Rejected => "本次模型评审未通过格式或引用检查，推理原文已保存，尚未作出判断。可以稍后重新提交。"
-        case ReasoningStatus.Established if request.context.revision.value >= 19 => establishedFeedback
+        case ReasoningStatus.Established => establishedFeedback
         case _ => feedback.get.trim
       val sequence=Sequence(state.sequence.value+1)
       val checks=if status == ReasoningStatus.Established || status == ReasoningStatus.Revise then decision.get.checks else Vector.empty
       val attempt=ReasoningAttempt(sequence,request.requestId,request.suspects,request.evidence,request.explanation,status,checks,reply)
       val next=state.copy(sequence=sequence,reasoning=state.reasoning.copy(attempts=state.reasoning.attempts:+attempt))
-      val record=SessionRecord(RecordId(s"${request.requestId.value}:reasoning"),state.id,request.requestId,sequence,state.storyTimeSeconds,point,Some(RouteId("evaluate_reasoning")),None,"推理评审已保存；完整解答尚未公开。",Set.empty,Set.empty)
+      val record=SessionRecord(RecordId(s"${request.requestId.value}:reasoning"),state.id,request.requestId,sequence,state.storyTimeSeconds,None,None,None,"推理评审已保存；完整解答尚未公开。",Set.empty,Set.empty,Some(InvestigationSystemAction.EvaluateReasoning))
       ActionPlan(next,record,CommandResult(sequence,Vector(Text(reply)),Set.empty))
 
   private[games] def reveal(content: CaseContent,state: GameSessionRecord,request: RequestId,abandon: Boolean): Either[GameError,ActionPlan] = for
     spec <- content.conclusion.filter(_.evaluation.nonEmpty).toRight(denied)
     _ <- Either.cond(state.reasoning.ending.isEmpty,(),GameError(ErrorCode.ConditionFailed,"本案收尾已经保存。"))
     _ <- Either.cond(abandon || state.reasoning.attempts.lastOption.exists(_.status == ReasoningStatus.Established),(),GameError(ErrorCode.ConditionFailed,"推理尚未成立，请继续调查并重新提交评审。"))
-    point <- content.police.flatMap(id => content.witnesses.find(_.id == id)).map(_.point).toRight(denied)
   yield
     val sequence=Sequence(state.sequence.value+1)
     val mode=if abandon then ReasoningEndingMode.Revealed else ReasoningEndingMode.Solved
@@ -135,5 +133,5 @@ private[games] object ReasoningRules:
     val ending=ReasoningEnding(sequence,mode,spec.review,sections)
     val next=state.copy(sequence=sequence,reasoning=state.reasoning.copy(ending=Some(ending)))
     val text=if abandon then "已记录主动查看作者解答；本次未作为推理破案。" else "已记录推理成立后的结案，可以查看作者复盘。"
-    val record=SessionRecord(RecordId(s"${request.value}:reasoning-ending"),state.id,request,sequence,state.storyTimeSeconds,point,Some(RouteId("reveal_reasoning")),None,text,Set.empty,Set.empty)
+    val record=SessionRecord(RecordId(s"${request.value}:reasoning-ending"),state.id,request,sequence,state.storyTimeSeconds,None,None,None,text,Set.empty,Set.empty,Some(InvestigationSystemAction.RevealReasoning))
     ActionPlan(next,record,CommandResult(sequence,Vector(Text(text)),Set.empty))

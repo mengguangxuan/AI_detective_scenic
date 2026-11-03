@@ -8,7 +8,7 @@ import java.util.UUID
 import munit.FunSuite
 import services.cases.api.ImportCaseMessage
 import services.cases.objects.*
-import services.cases.tables.CaseRevisionTable.CaseRevisionTable
+import services.cases.tables.CaseTable.CaseTable
 import services.games.api.*
 import services.games.objects.*
 import services.games.utils.{ReasoningRules,InterviewRules}
@@ -26,7 +26,7 @@ class ReasoningSuite extends FunSuite:
     DatabaseSession.connection(url).use(c => DatabaseSession.transaction(c)(f(c)))
   private def setup(url: String,id: SessionId): IO[Unit]=DatabaseSession.connection(url).use(c =>
     DatabaseSchema.initialize(c) *> DatabaseSession.transaction(c)(
-      ImportCaseMessage(Paths.get("../docs/fixtures/browser_investigation_v21.json")).plan(c) *> OpenStudyMessage(owner,id).plan(c)).void)
+      ImportCaseMessage(Paths.get("../docs/fixtures/investigation_base.json")).plan(c) *> services.TestCases.open(owner,id,CaseId("vicarage_study"))(c)).void)
   private def view(url: String,id: SessionId)=tx(url)(GetInvestigationSnapshotMessage(owner,id).plan)
   private def read(url: String,id: SessionId,point: String,route: String): IO[Unit]=for
     s <- view(url,id)
@@ -73,7 +73,6 @@ class ReasoningSuite extends FunSuite:
     (for
       _ <- setup(url,id)
       first <- view(url,id)
-      _ = assertEquals(first.caseRevision,Revision(21))
       _ = assert(first.reasoning.nonEmpty && first.reasoning.get.attempts.isEmpty)
       _ = assert(!first.asJson.noSpaces.contains("预藏枪"))
       _ = assert(!first.asJson.noSpaces.contains("authorTruth"))
@@ -94,7 +93,7 @@ class ReasoningSuite extends FunSuite:
     yield ()).unsafeRunSync()
   }
 
-  test("judge knows truth, guide is blind; revisions are append-only, exact retries make no further model calls, and successful assessment does not reveal review") {
+  test("judge knows truth, guide is blind; assessments are append-only, exact retries make no further model calls, and successful assessment does not reveal review") {
     val url=database;val id=SessionId(UUID.randomUUID().toString)
     (for
       calls <- Ref.of[IO,Int](0)
@@ -147,7 +146,7 @@ class ReasoningSuite extends FunSuite:
     yield ()).unsafeRunSync()
   }
 
-  test("established revision 19 uses one judge call and a stable ending invitation, without a second model blocking or adding tasks") {
+  test("an established assessment uses one judge call and a stable ending invitation, without a second model blocking or adding tasks") {
     val url=database;val id=SessionId(UUID.randomUUID().toString)
     (for
       calls <- Ref.of[IO,Int](0)
@@ -285,36 +284,9 @@ class ReasoningSuite extends FunSuite:
       denied <- command(id,after.sequence).run(url,model(true)).attempt
       _ = assertEquals(code(denied),Some(ErrorCode.ConditionFailed))
       state <- tx(url)(SessionTable.find(_,id)).map(_.get)
-      revision <- tx(url)(CaseRevisionTable.find(_,state.caseId,state.caseRevision)).map(_.get)
-      npc=InterviewRules.context(revision.content,state,WitnessId("mary"),"你知道什么？",Set.empty,Vector.empty,Vector.empty).toOption.get
+      caseRecord <- tx(url)(CaseTable.find(_,state.caseId)).map(_.get)
+      npc=InterviewRules.context(caseRecord.content,state,WitnessId("mary"),"你知道什么？",Set.empty,Vector.empty,Vector.empty).toOption.get
       _ = assert(!npc.asJson.noSpaces.contains("authorTruth"))
       _ = assert(!npc.asJson.noSpaces.contains("预藏枪"))
-    yield ()).unsafeRunSync()
-  }
-
-  test("revision 16 keeps its original public review and receipt when a pre-reasoning-column database is reopened") {
-    val url=database;val id=SessionId(UUID.randomUUID().toString)
-    (for
-      _ <- DatabaseSession.connection(url).use(DatabaseSchema.initialize)
-      _ <- tx(url) { c => for
-        latest <- ImportCaseMessage(Paths.get("../docs/fixtures/browser_investigation_v21.json")).plan(c)
-        old=latest.copy(revision=Revision(16),content=LegacyFixture.withoutEvaluation(latest.content))
-        _ <- CaseRevisionTable.insert(c,old)
-        _ <- StartGameMessage(owner,id,old.caseId,old.revision).plan(c)
-      yield () }
-      _ <- read(url,id,"point_clement","route_call")
-      first <- view(url,id)
-      original=SubmitConclusionMessage(owner,id,RequestId("legacy-submit"),first.sequence,both,evidence,explanation)
-      accepted <- tx(url)(original.plan)
-      before <- view(url,id)
-      _ <- DatabaseSession.connection(url).use(c => IO.blocking {
-        val s=c.createStatement()
-        try s.execute("ALTER TABLE game_sessions DROP COLUMN reasoning_json") finally s.close()
-      } *> DatabaseSchema.initialize(c))
-      reopened <- tx(url)(OpenStudyMessage(owner,id).plan)
-      repeated <- tx(url)(original.plan)
-      _ = assertEquals(reopened,before)
-      _ = assertEquals(repeated,accepted)
-      _ = assert(reopened.reasoning.isEmpty && reopened.conclusion.nonEmpty)
     yield ()).unsafeRunSync()
   }

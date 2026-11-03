@@ -7,7 +7,7 @@ import java.util.UUID
 import munit.FunSuite
 import services.cases.api.ImportCaseMessage
 import services.cases.objects.*
-import services.cases.tables.CaseRevisionTable.CaseRevisionTable
+import services.cases.tables.CaseTable.CaseTable
 import services.games.api.*
 import services.games.objects.*
 import services.models.api.ChatCompletionClient
@@ -19,7 +19,7 @@ class FollowUpSuite extends FunSuite:
   private val owner=UserId("followup-owner")
   private def database=s"jdbc:h2:mem:${UUID.randomUUID()};DB_CLOSE_DELAY=-1;LOCK_TIMEOUT=3000"
   private def tx[A](url: String)(run: java.sql.Connection => IO[A]): IO[A]=DatabaseSession.connection(url).use(c => DatabaseSession.transaction(c)(run(c)))
-  private def setup(url: String,id: SessionId)=DatabaseSession.connection(url).use(c => DatabaseSchema.initialize(c) *> DatabaseSession.transaction(c)(ImportCaseMessage(Paths.get("../docs/fixtures/browser_investigation_v21.json")).plan(c) *> OpenStudyMessage(owner,id).plan(c)).void)
+  private def setup(url: String,id: SessionId)=DatabaseSession.connection(url).use(c => DatabaseSchema.initialize(c) *> DatabaseSession.transaction(c)(ImportCaseMessage(Paths.get("../docs/fixtures/investigation_base.json")).plan(c) *> services.TestCases.open(owner,id,CaseId("vicarage_study"))(c)).void)
   private def view(url: String,id: SessionId)=tx(url)(GetInvestigationSnapshotMessage(owner,id).plan)
   private def read(url: String,id: SessionId,who: String,route: String): IO[Unit]=for
     before <- view(url,id)
@@ -202,26 +202,5 @@ class FollowUpSuite extends FunSuite:
       _ <- DatabaseSession.connection(url).use(DatabaseSchema.initialize)
       restored <- view(url,id)
       _ = assertEquals(restored,saved)
-    yield ()).unsafeRunSync()
-  }
-
-  test("revision 8 keeps its original content and time rules when revision 9 is available") {
-    val url=database;val id=SessionId(UUID.randomUUID().toString)
-    (for
-      _ <- DatabaseSession.connection(url).use(DatabaseSchema.initialize)
-      _ <- tx(url) { c => for
-        latest <- ImportCaseMessage(Paths.get("../docs/fixtures/browser_investigation_v21.json")).plan(c)
-        old=latest.copy(revision=Revision(8),content=LegacyFixture.withoutFollowUps(latest.content))
-        _ <- CaseRevisionTable.insert(c,old)
-        _ <- StartGameMessage(owner,id,old.caseId,old.revision).plan(c)
-      yield () }
-      _ <- read(url,id,"redding","route_redding_account")
-      saved <- tx(url)(OpenStudyMessage(owner,id).plan)
-      _ = assertEquals(saved.caseRevision,Revision(8))
-      _ = assertEquals(saved.followUps,Vector.empty)
-      _ = assertEquals(saved.statementComparisons,Vector.empty)
-      _ = assertEquals(saved.clock.get.elapsedSeconds,120L)
-      before <- view(url,id)
-      _ = assertEquals(before,saved)
     yield ()).unsafeRunSync()
   }

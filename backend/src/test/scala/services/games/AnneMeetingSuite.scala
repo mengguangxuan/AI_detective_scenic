@@ -23,7 +23,7 @@ class AnneMeetingSuite extends FunSuite:
     DatabaseSession.connection(url).use(c => DatabaseSession.transaction(c)(run(c)))
   private def setup(url: String,id: SessionId): IO[Unit] = DatabaseSession.connection(url).use { c =>
     DatabaseSchema.initialize(c) *> DatabaseSession.transaction(c)(
-      ImportCaseMessage(Paths.get("../docs/fixtures/browser_investigation_v21.json")).plan(c) *> OpenStudyMessage(owner,id).plan(c)).void
+      ImportCaseMessage(Paths.get("../docs/fixtures/investigation_base.json")).plan(c) *> services.TestCases.open(owner,id,CaseId("vicarage_study"))(c)).void
   }
   private def view(url: String,id: SessionId)=tx(url)(GetInvestigationSnapshotMessage(owner,id).plan)
   private def readAccount(id: SessionId)=InvestigateMessage(owner,id,RequestId("account"),Sequence(0),PointId("point_redding"),RouteId("route_redding_account"))

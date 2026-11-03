@@ -1,7 +1,7 @@
 import { writeFileSync } from 'node:fs';
 import { test, expect, type Page } from './support/investigation-test';
 async function snapshot(page: Page) {
-  const saved = await page.evaluate(() => JSON.parse(localStorage.getItem('detective-scenic:server-session:v6')!));
+  const saved = await page.evaluate(() => JSON.parse(localStorage.getItem('detective-scenic:investigation-session')!));
   const response = await page.request.post('/api/getinvestigationsnapshot', { data: { sessionId: saved.sessionId }, headers: { 'X-Detective-Client': 'web' } });
   expect(response.status()).toBe(200); return response.json();
 }
@@ -59,7 +59,7 @@ test('a pending assessment cannot announce success; established and solved state
   await expect(page.getByLabel('调查状态', { exact: true })).toContainText('推理已成立，待结案');
   const established = await snapshot(page);
   expect(established.reasoning.ending).toBeNull(); expect(JSON.stringify(established)).not.toContain('作者复盘');
-  await expect(page.getByRole('heading', { name: '当前阶段 · 书房初查', exact: true })).toHaveCount(0);
+  await expect(page.getByRole('heading', { name: '当前阶段', exact: true })).toHaveCount(0);
   await page.reload();
   await page.getByRole('link', { name: '前往结案选择', exact: true }).click();
   await expect(page.getByRole('region', { name: '结案选择', exact: true })).toBeVisible();
@@ -72,8 +72,8 @@ test('a pending assessment cannot announce success; established and solved state
     await go(page, label);
     await expect(page.getByLabel('调查状态', { exact: true })).toContainText('推理已结案');
     await expect(page.getByRole('heading', { name: '本次推理已结案', exact: true })).toBeVisible();
-    await expect(page.getByRole('heading', { name: '当前阶段 · 书房初查', exact: true })).toHaveCount(0);
-    await expect(page.getByRole('heading', { name: '阶段完成 · 书房初查', exact: true })).toHaveCount(0);
+    await expect(page.getByRole('heading', { name: '当前阶段', exact: true })).toHaveCount(0);
+    await expect(page.getByRole('heading', { name: '阶段完成', exact: true })).toHaveCount(0);
   }
   expect(await snapshot(page)).toEqual(closed);
   await fixed(page, '询问：座钟平时准吗？');
@@ -102,19 +102,5 @@ test.describe('explicit reveal', () => {
     await page.getByRole('link', { name: '回看作者解答', exact: true }).click();
     await expect(page.getByRole('region', { name: '本案收尾与复盘', exact: true })).toContainText('本次未计为破案');
     await page.reload(); expect(await snapshot(page)).toEqual(before);
-  });
-});
-
-test.describe('historical one-shot submission', () => {
-  test.use({ storageState: '.build-cache/conclusion-state.json' });
-  test('legacy scores never become a semantic verdict or an automatic solved state', async ({ page }) => {
-    await page.goto('/people');
-    await expect(page.getByLabel('调查状态', { exact: true })).toContainText('历史推理已提交');
-    const before = await snapshot(page);
-    expect(before.caseRevision.value).toBe(16); expect(before.reasoning).toBeNull();
-    await expect(page.getByRole('region', { name: '调查进度', exact: true })).toContainText('不表示文字推理已获评审通过');
-    await page.getByRole('link', { name: '回看历史提交与复盘', exact: true }).click();
-    await expect(page.getByRole('region', { name: '已保存的推理与复盘', exact: true })).toBeVisible();
-    expect(await snapshot(page)).toEqual(before);
   });
 });

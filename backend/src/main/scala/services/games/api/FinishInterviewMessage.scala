@@ -4,7 +4,7 @@ import cats.effect.IO
 import io.circe.{Decoder,Encoder}
 import io.circe.generic.semiauto.*
 import java.sql.Connection
-import services.cases.tables.CaseRevisionTable.CaseRevisionTable
+import services.cases.tables.CaseTable.CaseTable
 import services.games.objects.*
 import services.games.objects.apiTypes.CommandResult
 import services.games.tables.SessionTable.SessionTable
@@ -32,20 +32,20 @@ final case class FinishInterviewMessage(userId: UserId,sessionId: SessionId,requ
         case None if request.leaseToken != leaseToken =>
           IO.pure(Left(GameError(ErrorCode.RequestPending,"这次问询已由另一请求接续，请稍后用原请求重试。")))
         case None if request.status != InterviewRequestStatus.Pending || session.sequence != request.expectedSequence ||
-            session.caseId != request.context.caseId || session.caseRevision != request.context.revision || request.leaseUntilMillis <= now =>
+            session.caseId != request.context.caseId || request.leaseUntilMillis <= now =>
           InterviewRequestTable.replace(connection,request.copy(status=InterviewRequestStatus.Cancelled),leaseToken)
             .as(Left(GameError(ErrorCode.StaleState,"调查已有变化，请重新提出问题。")))
         case None =>
           for
-            revision <- CaseRevisionTable.find(connection,session.caseId,session.caseRevision).flatMap(value => IO.fromOption(value)(GameError(ErrorCode.InvalidValue,"案件修订不存在。")))
+            caseRecord <- CaseTable.find(connection,session.caseId).flatMap(value => IO.fromOption(value)(GameError(ErrorCode.InvalidValue,"案件不存在。")))
             // Recheck authoring capabilities and references even for an internal caller.
             validDecision = decision.filter(d => InterviewRules.validDecision(d,request.context))
             safeFailure = failure.filter(m => m == InterviewReplyMode.Unavailable || m == InterviewReplyMode.Rejected)
               .orElse(if validDecision.isEmpty then Some(InterviewReplyMode.Rejected) else None)
-            planned <- IO.fromEither(InterviewRules.plan(revision.content,session,request,validDecision,safeFailure))
+            planned <- IO.fromEither(InterviewRules.plan(caseRecord.content,session,request,validDecision,safeFailure))
             (action,turn) = planned
             _ <- InterviewTurnTable.insert(connection,turn)
-            _ <- if revision.content.police.contains(request.context.profile.id) && turn.mode == InterviewReplyMode.Answered && turn.shownClues.nonEmpty then
+            _ <- if caseRecord.content.police.contains(request.context.profile.id) && turn.mode == InterviewReplyMode.Answered && turn.shownClues.nonEmpty then
               PoliceExchangeTable.insert(connection,PoliceExchangeRecord(sessionId,requestId,turn.sequence,turn.shownClues,turn.reply)) else IO.unit
             _ <- InterviewRequestTable.replace(connection,request.copy(status=InterviewRequestStatus.Finished),leaseToken)
             response <- MutationSupport.commit(connection,session,requestId,request.digest,action,pendingInterview=true)

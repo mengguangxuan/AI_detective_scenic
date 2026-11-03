@@ -4,9 +4,9 @@ const headers = { 'X-Detective-Client': 'web' };
 async function start(page: Page) {
   const identity = await page.request.post('/api/openlocalidentity', { headers, data: {} }); expect(identity.status()).toBe(200);
   const sessionId = randomUUID();
-  const opened = await page.request.post('/api/openinvestigation', { headers, data: { sessionId, caseId: 'vicarage_study', revision: { value: 24 } } });
+  const opened = await page.request.post('/api/openinvestigation', { headers, data: { sessionId, caseId: 'vicarage_study' } });
   expect(opened.status()).toBe(200);
-  await page.addInitScript(sessionId => { localStorage.setItem('detective-scenic:server-session:v6', JSON.stringify({ version: 1, sessionId, creationPending: false, pending: null })); }, sessionId);
+  await page.addInitScript(sessionId => { localStorage.setItem('detective-scenic:investigation-session', JSON.stringify({ version: 1, sessionId, creationPending: false, pending: null })); }, sessionId);
   await page.goto('/scene');
   return async () => {
     const result = await page.request.post('/api/getinvestigationsnapshot', { headers, data: { sessionId } }); expect(result.status()).toBe(200); return result.json();

@@ -8,7 +8,7 @@ import java.util.UUID
 import munit.FunSuite
 import services.cases.api.ImportCaseMessage
 import services.cases.objects.*
-import services.cases.tables.CaseRevisionTable.CaseRevisionTable
+import services.cases.tables.CaseTable.CaseTable
 import services.games.api.*
 import services.system.api.*
 import services.system.objects.*
@@ -20,8 +20,8 @@ class PoliceExchangeSuite extends FunSuite:
     DatabaseSession.connection(url).use(c => DatabaseSession.transaction(c)(run(c)))
   private def setup(url: String,id: SessionId): IO[Unit] = DatabaseSession.connection(url).use { c =>
     DatabaseSchema.initialize(c) *> DatabaseSession.transaction(c)(
-      ImportCaseMessage(Paths.get("../docs/fixtures/browser_investigation_v21.json")).plan(c) *>
-      OpenStudyMessage(owner,id).plan(c)).void
+      ImportCaseMessage(Paths.get("../docs/fixtures/investigation_base.json")).plan(c) *>
+      services.TestCases.open(owner,id,CaseId("vicarage_study"))(c)).void
   }
   private def read(id: SessionId,point: String,route: String,seq: Long) =
     InvestigateMessage(owner,id,RequestId(s"read-$route"),Sequence(seq),PointId(point),RouteId(route))
@@ -30,33 +30,6 @@ class PoliceExchangeSuite extends FunSuite:
   private def view(url: String,id: SessionId) = tx(url)(GetInvestigationSnapshotMessage(owner,id).plan)
   private def code(result: Either[Throwable,?]): Option[ErrorCode] = result.left.toOption.collect { case e: GameError => e.code }
 
-  test("publishing police content does not break existing study/4 sessions or their original receipts") {
-    val url=database; val id=SessionId(UUID.randomUUID().toString)
-    (for
-      _ <- DatabaseSession.connection(url).use(c => DatabaseSchema.initialize(c))
-      _ <- tx(url) { c => for
-        current <- ImportCaseMessage(Paths.get("../docs/fixtures/browser_investigation_v21.json")).plan(c)
-        previous = current.copy(revision=Revision(3),content=LegacyFixture.withoutFollowUps(current.content).copy(police=None,witnesses=LegacyFixture.withoutFollowUps(current.content).witnesses.filterNot(w => current.content.police.contains(w.id)),publicPersons=Vector.empty,clock=None,externalChecks=Vector.empty,areaMap=None))
-        _ <- CaseRevisionTable.insert(c,previous)
-        _ <- StartGameMessage(owner,id,previous.caseId,previous.revision).plan(c)
-      yield () }
-      result <- tx(url)(read(id,"point_clock","route_clock",0).plan)
-      saved <- tx(url)(OpenStudyMessage(owner,id).plan)
-      _ = assertEquals(saved.caseRevision,Revision(3))
-      _ = assertEquals(saved.sequence,Sequence(1))
-      _ = assertEquals(saved.police,None)
-      _ = assertEquals(saved.clues.map(_.id),Vector(ClueId("clue_clock")))
-      _ = assertEquals(saved.scene.revision,"4")
-      retry <- tx(url)(read(id,"point_clock","route_clock",0).plan)
-      _ = assertEquals(retry,result)
-      restored <- view(url,id)
-      _ = assertEquals(restored,saved)
-      newId = SessionId(UUID.randomUUID().toString)
-      current <- tx(url)(OpenStudyMessage(owner,newId).plan)
-      _ = assertEquals(current.caseRevision,Revision(21))
-      _ = assert(current.police.nonEmpty)
-    yield ()).unsafeRunSync()
-  }
 
   test("medical opinions are obtained from police, preserve approximate timing, and are not future inquest results") {
     val url=database; val id=SessionId(UUID.randomUUID().toString)

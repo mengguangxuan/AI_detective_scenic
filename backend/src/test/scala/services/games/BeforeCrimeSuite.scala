@@ -8,7 +8,7 @@ import java.util.UUID
 import munit.FunSuite
 import services.cases.api.ImportCaseMessage
 import services.cases.objects.*
-import services.cases.tables.CaseRevisionTable.CaseRevisionTable
+import services.cases.tables.CaseTable.CaseTable
 import services.games.api.*
 import services.games.objects.InterviewReplyMode
 import services.models.api.ChatCompletionClient
@@ -23,7 +23,7 @@ class BeforeCrimeSuite extends FunSuite:
     DatabaseSession.connection(url).use(c => DatabaseSession.transaction(c)(f(c)))
   private def setup(url: String,id: SessionId)=DatabaseSession.connection(url).use(c =>
     DatabaseSchema.initialize(c) *> DatabaseSession.transaction(c)(
-      ImportCaseMessage(Paths.get("../docs/fixtures/browser_investigation_v21.json")).plan(c) *> OpenStudyMessage(owner,id).plan(c)))
+      ImportCaseMessage(Paths.get("../docs/fixtures/investigation_base.json")).plan(c) *> services.TestCases.open(owner,id,CaseId("vicarage_study"))(c)))
   private def view(url: String,id: SessionId)=tx(url)(GetInvestigationSnapshotMessage(owner,id).plan)
   private def read(id: SessionId,sequence: Sequence,key: String)=
     InvestigateMessage(owner,id,RequestId(UUID.randomUUID().toString),sequence,PointId("point_clement"),RouteId("route_clement_"+key))
@@ -32,7 +32,6 @@ class BeforeCrimeSuite extends FunSuite:
     val url=database;val id=SessionId(UUID.randomUUID().toString)
     (for
       first <- setup(url,id)
-      _ = assertEquals(first.caseRevision,Revision(21))
       _ = assert(first.clues.isEmpty)
       _ = assert(!first.asJson.noSpaces.contains("周三傍晚"))
       command=read(id,first.sequence,"early_visit")
@@ -47,7 +46,7 @@ class BeforeCrimeSuite extends FunSuite:
       _ = assertEquals(b.clues.size,2)
       _ = assert(b.clues.exists(_.text.contains("不是他目击了杀人计划")))
       _ = assert(b.police.get.sharedClues.isEmpty)
-      restored <- tx(url)(OpenStudyMessage(owner,id).plan)
+      restored <- tx(url)(OpenInvestigationMessage(owner,id,CaseId("vicarage_study")).plan)
       _ = assertEquals(restored,b)
     yield ()).unsafeRunSync()
   }
@@ -72,25 +71,5 @@ class BeforeCrimeSuite extends FunSuite:
       acquired <- view(url,id)
       _ = assertEquals(acquired.interviews.last.mode,InterviewReplyMode.Answered)
       _ = assertEquals(acquired.clues.map(_.id),Vector(ClueId("clue_clement_relationship")))
-    yield ()).unsafeRunSync()
-  }
-
-  test("revision 18 preserves planter discovery without importing new recollections or changing its scene") {
-    val url=database;val id=SessionId(UUID.randomUUID().toString)
-    (for
-      _ <- DatabaseSession.connection(url).use(c => DatabaseSchema.initialize(c) *> DatabaseSession.transaction(c)(for
-        latest <- ImportCaseMessage(Paths.get("../docs/fixtures/browser_investigation_v21.json")).plan(c)
-        old=latest.copy(revision=Revision(18),content=LegacyFixture.withoutBeforeCrime(latest.content))
-        _ <- CaseRevisionTable.insert(c,old)
-        _ <- StartGameMessage(owner,id,old.caseId,old.revision).plan(c)
-      yield ()))
-      before <- view(url,id)
-      _ = assertEquals(before.scene.revision,"5")
-      _ = assert(before.scene.objects.exists(_.node == SceneNodeId("node_planter")))
-      _ = assert(!before.points.flatMap(_.routes).exists(_.id == RouteId("route_clement_early_visit")))
-      denied <- tx(url)(read(id,before.sequence,"early_visit").plan).attempt
-      _ = assert(denied.isLeft)
-      restored <- tx(url)(OpenStudyMessage(owner,id).plan)
-      _ = assertEquals(restored,before)
     yield ()).unsafeRunSync()
   }

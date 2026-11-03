@@ -8,9 +8,22 @@ import services.system.objects.*
 // Finite authored checks advance on story time; reading a view never changes the case.
 private[games] object ExternalCheckRules:
   private[games] def timeLabel(content: CaseContent, seconds: Long): String =
-    val minutes=content.clock.map(_.startMinutesOfDay.toLong).getOrElse(0L)+(seconds-content.initialStoryTimeSeconds)/60
-    val days=Vector("周五","周六","周日","周一","周二","周三","周四")
-    s"${days(((minutes/1440)%7).toInt)} ${f"${(minutes%1440)/60}%02d"}:${f"${minutes%60}%02d"}"
+    content.calendarOrigin match
+      case Some(origin) => origin.plusSeconds(seconds).format(java.time.format.DateTimeFormatter.ofPattern("uuuu-MM-dd HH:mm"))
+      case None => content.clock match
+        case None => s"${content.timeOriginLabel} +${seconds-content.initialStoryTimeSeconds}秒"
+        case Some(clock) =>
+          val minutes=clock.startMinutesOfDay.toLong+Math.floorDiv(seconds-content.initialStoryTimeSeconds,60L)
+          val days=Math.floorDiv(minutes,1440L)
+          val minute=Math.floorMod(minutes,1440L)
+          val time=f"${minute/60}%02d:${minute%60}%02d"
+          clock.startWeekday match
+            case Some(day) =>
+              val labels=Vector("周一","周二","周三","周四","周五","周六","周日")
+              s"${labels(Math.floorMod(day-1L+days,7L).toInt)} $time"
+            case None =>
+              val origin=if days == 0 then content.timeOriginLabel else s"${content.timeOriginLabel}起 +${days}天"
+              s"$origin $time"
 
   private[games] def request(content: CaseContent,state: GameSessionRecord,id: RequestId,checkId: ExternalCheckId): Either[GameError,ActionPlan] =
     for
@@ -22,23 +35,22 @@ private[games] object ExternalCheckRules:
       val progress=ExternalCheckProgress(checkId,state.storyTimeSeconds,state.storyTimeSeconds+spec.delaySeconds,None)
       val next=state.copy(sequence=Sequence(state.sequence.value+1),externalChecks=state.externalChecks:+progress)
       val text=s"${spec.title}已受理，预计${timeLabel(content,progress.readyAtSeconds)}完成。"
-      val record=SessionRecord(RecordId(s"${id.value}:check"),state.id,id,next.sequence,next.storyTimeSeconds,spec.point,Some(RouteId(s"external_check_${checkId.value}")),None,text,Set.empty,Set.empty)
+      val record=SessionRecord(RecordId(s"${id.value}:check"),state.id,id,next.sequence,next.storyTimeSeconds,Some(spec.point),Some(RouteId(s"external_check_${checkId.value}")),None,text,Set.empty,Set.empty)
       ActionPlan(next,record,CommandResult(next.sequence,Vector(Text(text)),Set.empty))
 
   private[games] def waitFor(content: CaseContent,state: GameSessionRecord,id: RequestId,minutes: Int): Either[GameError,ActionPlan] =
     for
-      _ <- Either.cond(content.clock.nonEmpty,(),GameError(ErrorCode.ConflictingContent,"这份旧调查尚未启用案件时钟，请保留原存档。"))
+      _ <- Either.cond(content.clock.nonEmpty,(),GameError(ErrorCode.ConflictingContent,"这份案件尚未启用时钟。"))
       _ <- Either.cond(minutes >= 1 && minutes <= 30,(),GameError(ErrorCode.InvalidValue,"每次可推进1至30分钟。"))
-      point <- content.police.flatMap(id => content.witnesses.find(_.id == id)).map(_.point).toRight(GameError(ErrorCode.AccessDenied,"当前无法整理核查进度。"))
     yield
       val next=state.copy(sequence=Sequence(state.sequence.value+1),storyTimeSeconds=state.storyTimeSeconds+minutes.toLong*60)
       val text=s"整理材料并等待$minutes 分钟，当前${timeLabel(content,next.storyTimeSeconds)}。"
-      val record=SessionRecord(RecordId(s"${id.value}:wait"),state.id,id,next.sequence,next.storyTimeSeconds,point,Some(RouteId("advance_time")),None,text,Set.empty,Set.empty)
+      val record=SessionRecord(RecordId(s"${id.value}:wait"),state.id,id,next.sequence,next.storyTimeSeconds,None,None,None,text,Set.empty,Set.empty,Some(InvestigationSystemAction.Wait))
       ActionPlan(next,record,CommandResult(next.sequence,Vector(Text(text)),Set.empty))
 
   private[games] def afterAction(content: CaseContent,previous: GameSessionRecord,plan: ActionPlan): ActionPlan =
     content.clock.fold(plan) { clock =>
-      val now=if plan.session.storyTimeSeconds == previous.storyTimeSeconds then previous.storyTimeSeconds+clock.actionSeconds else plan.session.storyTimeSeconds
+      val now=if plan.session.storyTimeSeconds == previous.storyTimeSeconds then previous.storyTimeSeconds+plan.record.operation.flatMap(id => clock.operationDurations.find(_.operation == id).map(_.seconds)).getOrElse(clock.actionSeconds) else plan.session.storyTimeSeconds
       val due=plan.session.externalChecks.filter(p => p.completedAtSeconds.isEmpty && p.readyAtSeconds <= now)
       val completed=due.map(_.id).toSet
       val results=content.externalChecks.filter(c => completed(c.id)).flatMap(_.resultClues).toSet
@@ -60,3 +72,6 @@ private[games] object ExternalCheckRules:
         progress.isEmpty && c.requiredClues.subsetOf(state.clues) && content.points.exists(p => p.id == c.point && SceneAccessRules.accessible(content,state,p)),
         progress.map(p => CheckProgressView(timeLabel(content,p.requestedAtSeconds),timeLabel(content,p.readyAtSeconds),p.completedAtSeconds.map(timeLabel(content,_)))))
     }
+
+  private[games] def ensureTime(content: CaseContent, seconds: Long): Either[GameError,Unit] =
+    Either.cond(content.clock.flatMap(_.playableUntilSeconds).forall(seconds <= _),(),GameError(ErrorCode.ConditionFailed,"本次行动超出当前开放的调查时段。可查看已取得的材料；后续阶段暂未开放。"))

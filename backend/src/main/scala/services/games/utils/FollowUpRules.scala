@@ -6,12 +6,12 @@ import services.games.objects.apiTypes.*
 private[games] object FollowUpRules:
   private def evidence(content: CaseContent,witness: WitnessId,records: Vector[SessionRecord],turns: Vector[InterviewTurnRecord]): Set[ClueId] =
     val point=content.witnesses.find(_.id == witness).map(_.point)
-    val fixed=records.filter(r => point.contains(r.point)).flatMap(_.route).flatMap(id => content.routes.find(_.id == id).toVector.flatMap(_.presentedClues))
+    val fixed=records.filter(r => r.point.exists(point.contains)).flatMap(_.route).flatMap(id => content.routes.find(_.id == id).toVector.flatMap(_.presentedClues))
     fixed.toSet ++ turns.filter(t => t.witness == witness && (t.mode == InterviewReplyMode.Answered || t.mode == InterviewReplyMode.Unknown)).flatMap(_.shownClues)
 
   private def responses(content: CaseContent,witness: WitnessId,records: Vector[SessionRecord],turns: Vector[InterviewTurnRecord]): Set[RouteId] =
     val person=content.witnesses.find(_.id == witness)
-    val fixed=records.filter(r => person.exists(_.point == r.point)).flatMap(_.route)
+    val fixed=records.filter(r => person.exists(p => r.point.contains(p.point))).flatMap(_.route)
     val model=turns.filter(t => t.witness == witness && t.mode == InterviewReplyMode.Answered).flatMap(_.answerIds)
       .flatMap(id => person.toVector.flatMap(_.answers.find(_.id == id).toVector.flatMap(_.routes)))
     fixed.toSet ++ model

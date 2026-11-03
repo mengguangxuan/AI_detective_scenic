@@ -2,7 +2,7 @@ import { writeFileSync } from 'node:fs';
 import { test, expect, type Page } from './support/investigation-test';
 test.skip(process.env.DETECTIVE_TEST_MODEL !== '1', 'Uses the local two-stage model protocol fixture.');
 async function snapshot(page: Page) {
-  const saved = await page.evaluate(() => JSON.parse(localStorage.getItem('detective-scenic:server-session:v6')!));
+  const saved = await page.evaluate(() => JSON.parse(localStorage.getItem('detective-scenic:investigation-session')!));
   const response = await page.request.post('/api/getinvestigationsnapshot', { data: { sessionId: saved.sessionId }, headers: { 'X-Detective-Client': 'web' } });
   expect(response.status()).toBe(200); return response.json();
 }
@@ -10,8 +10,7 @@ async function go(page: Page, name: string) { await page.getByRole('navigation',
 async function setup(page: Page) {
   await page.goto('/conclusion');
   await expect(page.getByRole('heading', { name: '推理与复盘', exact: true })).toBeVisible();
-  const first = await snapshot(page);
-  expect(first.caseRevision.value).toBe(21); expect(first.reasoning.ending).toBeNull();
+  const first = await snapshot(page); expect(first.reasoning.ending).toBeNull();
   expect(JSON.stringify(first)).not.toContain('authorTruth'); expect(JSON.stringify(first)).not.toContain('预藏枪');
   await go(page, '人物问询');
   await page.getByRole('button', { name: '与克莱门特牧师交谈', exact: true }).click();

@@ -5,7 +5,7 @@ import io.circe.{Decoder,Encoder}
 import io.circe.generic.semiauto.*
 import java.sql.Connection
 import services.cases.objects.*
-import services.cases.tables.CaseRevisionTable.CaseRevisionTable
+import services.cases.tables.CaseTable.CaseTable
 import services.games.objects.PoliceExchangeRecord
 import services.games.objects.apiTypes.CommandResult
 import services.games.tables.SessionTable.SessionTable
@@ -29,17 +29,17 @@ final case class InvestigateMessage(userId: UserId,sessionId: SessionId,requestI
         case None =>
           for
             _ <- MutationSupport.checkSequence(session,expectedSequence)
-            revision <- CaseRevisionTable.find(connection,session.caseId,session.caseRevision).flatMap(value => IO.fromOption(value)(GameError(ErrorCode.InvalidValue,"案件修订不存在。")))
+            caseRecord <- CaseTable.find(connection,session.caseId).flatMap(value => IO.fromOption(value)(GameError(ErrorCode.InvalidValue,"案件不存在。")))
             records <- SessionRecordTable.list(connection,sessionId)
             turns <- InterviewTurnTable.list(connection,sessionId)
-            content=RecordedInterviewRules.content(revision.content,turns)
+            content=RecordedInterviewRules.content(caseRecord.content,turns)
             continuous=content.witnesses.exists(w => w.point == point && (content.interviewPromptVersion >= 3 || content.continuousInterviews.exists(_.witness == w.id)))
             planned <- if continuous then IO.fromEither(ContinuousInterviewRules.fixed(content,session,requestId,point,route,records,turns)).map((action,turn) => (action,Some(turn)))
               else IO.fromEither(FixtureRules.investigate(content,session,requestId,point,route,records,turns)).map(action => (action,None))
             (plan,turn)=planned
             _ <- turn.fold(IO.unit)(InterviewTurnTable.insert(connection,_))
-            presented = turn.map(_.shownClues).getOrElse(revision.content.routes.find(_.id == route).map(_.presentedClues).getOrElse(Set.empty))
-            _ <- if revision.content.police.flatMap(id => revision.content.witnesses.find(_.id == id)).exists(_.point == point) && presented.nonEmpty then
+            presented = turn.map(_.shownClues).getOrElse(caseRecord.content.routes.find(_.id == route).map(_.presentedClues).getOrElse(Set.empty))
+            _ <- if caseRecord.content.police.flatMap(id => caseRecord.content.witnesses.find(_.id == id)).exists(_.point == point) && presented.nonEmpty then
               PoliceExchangeTable.insert(connection,PoliceExchangeRecord(sessionId,requestId,plan.session.sequence,presented,plan.record.text)) else IO.unit
             result <- MutationSupport.commit(connection,session,requestId,digest,plan)
           yield result

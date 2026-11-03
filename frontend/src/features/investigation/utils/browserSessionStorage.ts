@@ -1,13 +1,17 @@
 import { browserSessionSchema, type BrowserSession } from '../objects/BrowserSession';
-export const browserSessionKey = 'detective-scenic:server-session:v6';
+export const browserSessionKey = 'detective-scenic:investigation-session';
 const key = browserSessionKey;
+// Explicit one-time removal authorized for the discarded case-history model.
+function clearObsoleteLocators(): void {
+  for (let number = 1; number <= 6; number++) localStorage.removeItem(`detective-scenic:server-session:v${number}`);
+}
 export function parseBrowserSessionSnapshot(raw: string) {
   if (!raw) return null;
   try { return browserSessionSchema.safeParse(JSON.parse(raw)); }
   catch { return browserSessionSchema.safeParse(null); }
 }
 export function browserSessionSnapshot(): string {
-  try { return localStorage.getItem(key) ?? localStorage.getItem('detective-scenic:server-session:v5') ?? ''; }
+  try { clearObsoleteLocators(); return localStorage.getItem(key) ?? ''; }
   catch { return '!unreadable'; }
 }
 export function subscribeBrowserSession(notify: () => void) {
@@ -16,14 +20,9 @@ export function subscribeBrowserSession(notify: () => void) {
   return () => { window.removeEventListener('investigation-session-changed', notify); window.removeEventListener('storage', notify); };
 }
 export function loadBrowserSession(): BrowserSession | null {
+  clearObsoleteLocators();
   const raw = localStorage.getItem(key);
-  if (raw) return browserSessionSchema.parse(JSON.parse(raw));
-  // Copy the previous locator, including an unresolved payload; retain the source as backup.
-  const previous = localStorage.getItem('detective-scenic:server-session:v5');
-  if (!previous) return null;
-  const saved = browserSessionSchema.parse(JSON.parse(previous));
-  saveBrowserSession(saved);
-  return saved;
+  return raw ? browserSessionSchema.parse(JSON.parse(raw)) : null;
 }
 export function saveBrowserSession(session: BrowserSession): void {
   localStorage.setItem(key, JSON.stringify(browserSessionSchema.parse(session)));

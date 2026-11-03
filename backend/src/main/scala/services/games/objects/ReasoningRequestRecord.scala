@@ -14,7 +14,7 @@ object ReasoningRequestStatus:
   given Encoder[ReasoningRequestStatus] = Encoder.encodeString.contramap(_.toString)
   given Decoder[ReasoningRequestStatus] = Decoder.decodeString.emap(s => ReasoningRequestStatus.values.find(_.toString == s).toRight("Unknown reasoning request status"))
 
-final case class ReasoningContext(caseId: CaseId, revision: Revision, evaluator: ReasoningEvaluationSpec,
+final case class ReasoningContext(caseId: CaseId, evaluator: ReasoningEvaluationSpec,
   culprits: Set[PersonId], people: Vector[CasePersonBrief], evidence: Vector[FixtureClue], history: Vector[ReasoningAttempt], obtainableEvidence: Vector[FixtureClue])
 object ReasoningContext:
   given Encoder[ReasoningContext] = deriveEncoder[ReasoningContext]

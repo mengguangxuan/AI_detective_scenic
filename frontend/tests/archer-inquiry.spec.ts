@@ -1,7 +1,7 @@
 import { writeFileSync } from 'node:fs';
 import { test, expect, type Page } from './support/investigation-test';
 async function snapshot(page: Page) {
-  const saved = await page.evaluate(() => JSON.parse(localStorage.getItem('detective-scenic:server-session:v6')!));
+  const saved = await page.evaluate(() => JSON.parse(localStorage.getItem('detective-scenic:investigation-session')!));
   const response = await page.request.post('/api/getinvestigationsnapshot', { data: { sessionId: saved.sessionId }, headers: { 'X-Detective-Client': 'web' } });
   expect(response.status()).toBe(200); return response.json();
 }
@@ -15,7 +15,6 @@ const operation = (page: Page, name: string) => command(page, 'executeoperation'
 async function prepare(page: Page) {
   await page.goto('/police');
   await expect(page.getByRole('heading', { name: '警方交流', exact: true })).toBeVisible();
-  expect((await snapshot(page)).caseRevision.value).toBe(21);
   await expect(page.getByRole('button', { name: '联系阿彻太太，核实雷丁住处的情况', exact: true })).toHaveCount(0);
   await read(page, 'redding', 'redding_account'); await read(page, 'redding', 'redding_gun');
   await read(page, 'police', 'police_medical');
@@ -48,10 +47,10 @@ test('Archer contact, actual testimony and police presentation persist through a
   await page.reload(); await page.getByRole('button', { name: '用原请求重试', exact: true }).click();
   await expect(page.getByRole('button', { name: '用原请求重试', exact: true })).toHaveCount(0);
   expect(payloads).toHaveLength(2); expect(payloads[0]).toBe(payloads[1]);
-  await expect(page.getByRole('region', { name: '已联系的核查对象', exact: true })).toContainText('阿彻太太');
+  await expect(page.getByRole('region', { name: '当前可问询的人物', exact: true })).toContainText('阿彻太太');
   let state = await snapshot(page);
   expect(state.clues.some((c: { id: string }) => c.id.startsWith('clue_archer_'))).toBe(false);
-  await page.getByRole('link', { name: '前往人物问询，核查证言', exact: true }).click();
+  await page.getByRole('link', { name: '前往人物问询', exact: true }).click();
   await page.getByRole('button', { name: '与阿彻太太交谈', exact: true }).click();
   const form = page.getByRole('region', { name: '自由问询', exact: true });
   await form.getByLabel('你的问题', { exact: true }).fill('最后一次看见枪是什么时候？');

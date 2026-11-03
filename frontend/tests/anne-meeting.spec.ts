@@ -11,7 +11,7 @@ async function send(page: Page, question: string) {
   return page.getByRole('log', { name: '自由问询记录', exact: true });
 }
 async function snapshot(page: Page) {
-  const saved = await page.evaluate(() => JSON.parse(localStorage.getItem('detective-scenic:server-session:v6')!));
+  const saved = await page.evaluate(() => JSON.parse(localStorage.getItem('detective-scenic:investigation-session')!));
   const response = await page.request.post('/api/getinvestigationsnapshot', { data: { sessionId: saved.sessionId }, headers: { 'X-Detective-Client': 'web' } });
   expect(response.status()).toBe(200);
   return response.json();
@@ -47,7 +47,7 @@ test('explicit police meeting unlocks Anne without automatically creating her st
   expect(state.sequence.value).toBe(2);
   expect(state.witnesses.some((w: { id: string }) => w.id === 'anne')).toBe(true);
   expect(state.clues.some((c: { id: string }) => c.id === 'clue_anne_statement')).toBe(false);
-  await page.getByRole('link', { name: '前往人物问询，与安妮交谈', exact: true }).click();
+  await page.getByRole('link', { name: '前往人物问询', exact: true }).click();
   await page.getByRole('button', { name: '与安妮·普罗瑟罗交谈', exact: true }).click();
   await expect(await send(page, '你想向警方说明什么？')).toContainText('是我杀了丈夫');
   const saved = await snapshot(page);
@@ -67,7 +67,7 @@ test('police discuss two actual statements only after both are shown', async ({ 
   await send(page, '你来寓所的经过是什么？');
   await go(page, '警方交流');
   await page.getByRole('button', { name: '安排与安妮正式会面', exact: true }).click();
-  await expect(page.getByRole('link', { name: '前往人物问询，与安妮交谈', exact: true })).toBeVisible();
+  await expect(page.getByRole('link', { name: '前往人物问询', exact: true })).toBeVisible();
   await go(page, '人物问询');
   await page.getByRole('button', { name: '与安妮·普罗瑟罗交谈', exact: true }).click();
   await send(page, '你想向警方说明什么？');

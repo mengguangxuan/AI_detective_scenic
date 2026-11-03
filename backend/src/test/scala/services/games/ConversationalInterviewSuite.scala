@@ -24,9 +24,8 @@ class ConversationalInterviewSuite extends FunSuite:
   private def database=s"jdbc:h2:mem:${UUID.randomUUID()};DB_CLOSE_DELAY=-1"
   private def tx[A](url: String)(f: java.sql.Connection => IO[A]): IO[A]=DatabaseSession.connection(url).use(c => DatabaseSession.transaction(c)(f(c)))
   private def setup(url: String,id: SessionId)=DatabaseSession.connection(url).use(c => DatabaseSchema.initialize(c) *>
-    DatabaseSession.transaction(c)(ImportCaseMessage(Paths.get("../docs/fixtures/browser_investigation_v22.json")).plan(c) *>
-      ImportCaseMessage(Paths.get("../docs/fixtures/browser_investigation_v23.json")).plan(c) *>
-      StartGameMessage(owner,id,CaseId("vicarage_study"),Revision(23)).plan(c)))
+    DatabaseSession.transaction(c)(      ImportCaseMessage(Paths.get("../docs/fixtures/conversational_investigation.json")).plan(c) *>
+      StartGameMessage(owner,id,CaseId("vicarage_study")).plan(c)))
   private def view(url: String,id: SessionId)=tx(url)(GetInvestigationSnapshotMessage(owner,id).plan)
   private def read(url: String,id: SessionId,route: String)=for
     before <- view(url,id)
@@ -155,24 +154,6 @@ class ConversationalInterviewSuite extends FunSuite:
     yield ()).unsafeRunSync()
   }
 
-  test("legacy frozen contexts keep their JSON shape and their original prompt version") {
-    val url=database;val id=SessionId(UUID.randomUUID().toString);val old=SessionId(UUID.randomUUID().toString)
-    (for
-      _ <- setup(url,id)
-      _ <- tx(url)(StartGameMessage(owner,old,CaseId("vicarage_study"),Revision(22)).plan)
-      prepared <- tx(url)(AskWitnessMessage(owner,old,RequestId("old"),Sequence(0),WitnessId("redding"),"你承认什么？",Set.empty).plan)
-      context=(prepared match
-        case InterviewPreparation.Reserved(row) => row.context
-        case _ => throw new IllegalStateException("Expected reservation"))
-      json=context.asJson
-      _ = assert(!json.hcursor.downField("promptVersion").succeeded)
-      _ = assertEquals(json.as[InterviewContext].toOption.get,context)
-      _ = assertEquals(context.promptVersion,1)
-      summary=InterviewRules.rejectionSummary("""{"reply":"PRIVATE_SENTINEL","disclosureIds":["PRIVATE_SENTINEL"],"statementUpdates":[]}""",context)
-      _ = assert(!summary.contains("PRIVATE_SENTINEL"))
-      _ = assert(summary.contains("\"idsAllowed\":false"))
-    yield ()).unsafeRunSync()
-  }
 
   test("clarification focus is saved with its source, survives a new connection and is consumed after the player clarifies") {
     val url=database;val id=SessionId(UUID.randomUUID().toString)
@@ -349,7 +330,7 @@ class ConversationalInterviewSuite extends FunSuite:
       _ <- AskWitnessMessage(owner,id,RequestId("read-materials"),before.sequence,WitnessId("redding"),"安妮说了什么，医生意见与你的供述相符吗？",selected).run(url,firstModel)
       saved <- tx(url)(InterviewRequestTable.find(_,id,RequestId("read-materials")))
       _ = assertEquals(saved.get.context.promptVersion,6)
-      _ = assertEquals(saved.get.context.revision,Revision(23))
+      _ = assertEquals(saved.get.context.caseId,CaseId("vicarage_study"))
       old=saved.get.copy(context=saved.get.context.copy(promptVersion=2,responseVersion=3,activeFocus=None))
       _ = assert(!parser.parse(InterviewRules.prompt(old).user).toOption.get.hcursor.downField("presentedThisTurn").succeeded)
       _ = assert(!InterviewRules.prompt(old).system.contains("实际材料的阅读规则"))

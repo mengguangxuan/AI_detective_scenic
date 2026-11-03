@@ -9,7 +9,7 @@ import java.util.UUID
 import munit.FunSuite
 import services.cases.api.ImportCaseMessage
 import services.cases.objects.*
-import services.cases.tables.CaseRevisionTable.CaseRevisionTable
+import services.cases.tables.CaseTable.CaseTable
 import services.games.api.*
 import services.games.objects.*
 import services.models.api.ChatCompletionClient
@@ -24,7 +24,7 @@ class NewWitnessSuite extends FunSuite:
     DatabaseSession.connection(url).use(c => DatabaseSession.transaction(c)(run(c)))
   private def setup(url: String,id: SessionId): IO[Unit] = DatabaseSession.connection(url).use { c =>
     DatabaseSchema.initialize(c) *> DatabaseSession.transaction(c)(
-      ImportCaseMessage(Paths.get("../docs/fixtures/browser_investigation_v21.json")).plan(c) *> OpenStudyMessage(owner,id).plan(c)).void
+      ImportCaseMessage(Paths.get("../docs/fixtures/investigation_base.json")).plan(c) *> services.TestCases.open(owner,id,CaseId("vicarage_study"))(c)).void
   }
   private def client(raw: String)=new ChatCompletionClient:
     override def complete(input: ChatCompletionInput): IO[String]=IO.pure(raw)
@@ -36,47 +36,12 @@ class NewWitnessSuite extends FunSuite:
   private val account="""{"reply":"我六点三刻来找牧师，和上校争执后开了枪。","disclosureIds":["redding_account"]}"""
   private val clock="""{"reply":"哦，你说那座钟。我动过它。","disclosureIds":["redding_clock"]}"""
 
-  test("revision 4 games still restore their original cast and receipts after revision 5 is published") {
-    val url=database; val id=SessionId(UUID.randomUUID().toString)
-    (for
-      _ <- DatabaseSession.connection(url).use(c => DatabaseSchema.initialize(c))
-      _ <- tx(url) { c => for
-        latest <- ImportCaseMessage(Paths.get("../docs/fixtures/browser_investigation_v21.json")).plan(c)
-        base = LegacyFixture.withoutFollowUps(latest.content)
-        newPoints = Set(PointId("point_redding"),PointId("point_marple"),PointId("point_anne"),PointId("point_valet"),PointId("point_stone"),PointId("point_hartnell"),PointId("point_archer"))
-        primaryClues = base.routes.filter(r => newPoints(r.point)).flatMap(_.clues).toSet
-        newRoutes = base.routes.filter(r => newPoints(r.point) || r.requiredClues.intersect(primaryClues).nonEmpty)
-        newClues = newRoutes.flatMap(_.clues).toSet
-        oldContent = base.copy(publicPersons=Vector.empty,clock=None,externalChecks=Vector.empty,areaMap=None,
-          witnesses=base.witnesses.filterNot(w => newPoints(w.point)).map(w => w.copy(answers=w.answers.filterNot(a => a.routes.exists(id => newRoutes.exists(_.id == id))))),
-          points=base.points.filterNot(p => newPoints(p.id)),
-          routes=base.routes.filterNot(r => newRoutes.exists(_.id == r.id)),
-          operations=base.operations.filterNot(o => o.requiredClues.intersect(newClues).nonEmpty),
-          clues=base.clues.filterNot(clue => newClues(clue.id)),
-          stage=base.stage.map(_.copy(nextObjective=None)))
-        previous = latest.copy(revision=Revision(4),content=oldContent)
-        _ <- CaseRevisionTable.insert(c,previous)
-        _ <- StartGameMessage(owner,id,previous.caseId,previous.revision).plan(c)
-      yield () }
-      result <- tx(url)(read(id,"point_clock","route_clock",0).plan)
-      saved <- tx(url)(OpenStudyMessage(owner,id).plan)
-      _ = assertEquals(saved.caseRevision,Revision(4))
-      _ = assertEquals(saved.sequence,Sequence(1))
-      _ = assertEquals(saved.witnesses.map(_.id).toSet,Set("clement","mary","melchett").map(WitnessId.apply))
-      _ = assertEquals(saved.people.size,0)
-      retry <- tx(url)(read(id,"point_clock","route_clock",0).plan)
-      _ = assertEquals(retry,result)
-      restored <- view(url,id)
-      _ = assertEquals(restored,saved)
-    yield ()).unsafeRunSync()
-  }
 
   test("opening cast contains relationships without secret context or unearned testimony") {
     val url=database; val id=SessionId(UUID.randomUUID().toString)
     (for
       _ <- setup(url,id)
       initial <- view(url,id)
-      _ = assertEquals(initial.caseRevision,Revision(21))
       _ = assertEquals(initial.people.size,14)
       _ = assertEquals(initial.witnesses.map(_.id).toSet,Set("clement","mary","redding","marple","melchett").map(WitnessId.apply))
       _ = assert(initial.people.find(_.id == PersonId("anne")).get.victimRelation.contains("妻子"))

@@ -8,7 +8,7 @@ import type { SessionId } from '../../../../objects/SessionId';
 type Position = { x: number; y: number; z: number };
 const mouseButtons = { LEFT: MOUSE.PAN, MIDDLE: MOUSE.DOLLY, RIGHT: MOUSE.ROTATE };
 const touches = { ONE: TOUCH.PAN, TWO: TOUCH.DOLLY_ROTATE };
-export default function WoodlandCamera({ position, resetVersion, memory, sessionId }: { position: Position; resetVersion: number; memory: RefObject<SceneCameraMemory | null>; sessionId: SessionId }) {
+export default function WoodlandCamera({ position, resetVersion, memory, sessionId, sceneKey }: { position: Position; resetVersion: number; memory: RefObject<SceneCameraMemory | null>; sessionId: SessionId; sceneKey: string }) {
   const controls = useRef<ComponentRef<typeof OrbitControls>>(null);
   const camera = useThree(state => state.camera);
   const invalidate = useThree(state => state.invalidate);
@@ -24,7 +24,7 @@ export default function WoodlandCamera({ position, resetVersion, memory, session
   const stopKey = `${x}:${z}`;
   useEffect(() => {
     if (!controls.current) return;
-    const saved = resetVersion === 0 && memory.current?.sessionId === sessionId && memory.current.sceneKey === 'woodland' && memory.current.stopKey === stopKey ? memory.current : null;
+    const saved = resetVersion === 0 && memory.current?.sessionId === sessionId && memory.current.sceneKey === sceneKey && memory.current.stopKey === stopKey ? memory.current : null;
     const nearLog = x > 2;
     desiredCamera.current.set(x + (nearLog ? 2.3 : 4.5), nearLog ? 2.5 : 3.2, z + (nearLog ? 4.3 : 5.8));
     desiredTarget.current.set(x, nearLog ? 0.18 : 0.8, z - (nearLog ? 0 : 3.3));
@@ -33,7 +33,7 @@ export default function WoodlandCamera({ position, resetVersion, memory, session
     if (instant) { camera.position.copy(desiredCamera.current); controls.current.target.copy(desiredTarget.current); controls.current.update(); }
     startingCamera.current.copy(camera.position); startingTarget.current.copy(controls.current.target); startedAt.current = performance.now();
     initialized.current = true; moving.current = !instant; invalidate();
-  }, [camera, x, z, stopKey, resetVersion, sessionId, memory, invalidate]);
+  }, [camera, x, z, stopKey, resetVersion, sessionId, memory, invalidate, sceneKey]);
   useFrame(({ gl }) => {
     if (initialized.current) gl.domElement.dataset.sceneReady = 'woodland';
     if (!moving.current || !controls.current) return;
@@ -53,7 +53,7 @@ export default function WoodlandCamera({ position, resetVersion, memory, session
       orbit.target.z = Math.max(z - 5, Math.min(z + 1.5, orbit.target.z));
       camera.position.add(previousTarget.current.sub(orbit.target).negate());
     }
-    memory.current = { sessionId, sceneKey: 'woodland', stopKey, position: [camera.position.x, camera.position.y, camera.position.z], target: [orbit.target.x, orbit.target.y, orbit.target.z] };
+    memory.current = { sessionId, sceneKey, stopKey, position: [camera.position.x, camera.position.y, camera.position.z], target: [orbit.target.x, orbit.target.y, orbit.target.z] };
   }
   return <OrbitControls ref={controls} makeDefault enablePan screenSpacePanning enableDamping={false} mouseButtons={mouseButtons} touches={touches}
     minDistance={1.4} maxDistance={12} minPolarAngle={0.3} maxPolarAngle={1.48}

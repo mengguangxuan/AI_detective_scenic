@@ -29,8 +29,8 @@ class InterviewSuite extends FunSuite:
     DatabaseSession.connection(url).use(c => DatabaseSession.transaction(c)(run(c)))
   private def setup(url: String,id: SessionId): IO[Unit] = DatabaseSession.connection(url).use { c =>
     DatabaseSchema.initialize(c) *> LocalIdentityTableInitializer.initialize(c) *>
-      DatabaseSession.transaction(c)(ImportCaseMessage(Paths.get("../docs/fixtures/browser_investigation_v21.json")).plan(c) *>
-        OpenStudyMessage(owner,id).plan(c)).void
+      DatabaseSession.transaction(c)(ImportCaseMessage(Paths.get("../docs/fixtures/investigation_base.json")).plan(c) *>
+        services.TestCases.open(owner,id,CaseId("vicarage_study"))(c)).void
   }
   private def client(answer: String,calls: AtomicInteger = new AtomicInteger()): ChatCompletionClient = new ChatCompletionClient:
     override def complete(input: ChatCompletionInput): IO[String] = IO {
@@ -123,27 +123,6 @@ class InterviewSuite extends FunSuite:
     yield ()).unsafeRunSync()
   }
 
-  test("a reserved legacy matching request keeps its response protocol when resumed after upgrade") {
-    val url=database; val id=SessionId(UUID.randomUUID().toString)
-    val legacy=new ChatCompletionClient:
-      override def complete(input: ChatCompletionInput): IO[String] = IO {
-        assert(input.system.contains("语义问询匹配器"))
-        habit
-      }
-    (for
-      _ <- setup(url,id)
-      prepared <- tx(url)(ask(id).plan)
-      row = prepared match
-        case InterviewPreparation.Reserved(value) => value
-        case _ => fail("Expected reserved request")
-      old = row.copy(context=row.context.copy(responseVersion=1,profile=row.context.profile.copy(dossier=row.context.profile.dossier.copy(knowledge=Vector.empty))),leaseUntilMillis=0)
-      _ <- tx(url)(InterviewRequestTable.replace(_,old,row.leaseToken))
-      _ <- ask(id).run(url,legacy)
-      saved <- tx(url)(GetInvestigationSnapshotMessage(owner,id).plan)
-      _ = assertEquals(saved.interviews.head.mode,InterviewReplyMode.Answered)
-      _ = assert(saved.clues.exists(_.id == ClueId("clue_habit")))
-    yield ()).unsafeRunSync()
-  }
 
   test("free questions disclose only approved answers; exact retry does not call the model again") {
     val url=database; val id=SessionId(UUID.randomUUID().toString); val calls=new AtomicInteger()

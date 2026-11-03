@@ -12,7 +12,7 @@ import munit.FunSuite
 import services.accounts.tables.LocalIdentityTable.LocalIdentityTableInitializer
 import services.cases.api.{GetCaseCatalogMessage, ImportCaseMessage}
 import services.cases.objects.*
-import services.cases.tables.CaseRevisionTable.CaseRevisionTable
+import services.cases.tables.CaseTable.CaseTable
 import services.games.api.*
 import services.system.api.*
 import services.system.objects.*
@@ -21,15 +21,14 @@ class CaseHubSuite extends FunSuite:
   private val client=HttpClient.newHttpClient()
   private val first=CaseId("vicarage_study")
   private val second=CaseId("second_study")
-  private val revision=Revision(21)
+
   private def database=s"jdbc:h2:mem:${UUID.randomUUID()};DB_CLOSE_DELAY=-1;LOCK_TIMEOUT=10000"
   private def tx[A](url: String)(f: java.sql.Connection => IO[A]): IO[A]=DatabaseSession.connection(url).use(c => DatabaseSession.transaction(c)(f(c)))
-  private def release(id: CaseId)=CaseReleaseRecord(id,revision,"公开介绍，仅供选案。",Vector("推理"),"study","5")
+  private def release(id: CaseId)=CaseReleaseRecord(id,"公开介绍，仅供选案。",Vector("推理"),"study")
   private def setup(url: String)=DatabaseSession.connection(url).use { c =>
     DatabaseSchema.initialize(c) *> LocalIdentityTableInitializer.initialize(c) *> DatabaseSession.transaction(c)(for
-      current <- ImportCaseMessage(Paths.get("../docs/fixtures/browser_investigation_v21.json")).plan(c)
-      _ <- ImportCaseMessage(Paths.get("../docs/fixtures/browser_investigation_v20.json")).plan(c)
-      _ <- CaseRevisionTable.insert(c,current.copy(caseId=second,title="第二个书房模板样例"))
+      current <- ImportCaseMessage(Paths.get("../docs/fixtures/investigation_base.json")).plan(c)
+      _ <- CaseTable.insert(c,current.copy(caseId=second,title="第二个书房模板样例"))
       _ <- RegisterPlayableCaseMessage(release(first)).plan(c)
     yield ())
   }
@@ -41,7 +40,7 @@ class CaseHubSuite extends FunSuite:
     val token=reply.headers.firstValue("Set-Cookie")
     (reply.statusCode,parser.parse(reply.body).toOption.get,if token.isPresent then Some(token.get.split(';').head) else None)
   }
-  private def open(id: String,caseId: CaseId=first)=Json.obj("sessionId" -> id.asJson,"caseId" -> caseId.asJson,"revision" -> revision.asJson)
+  private def open(id: String,caseId: CaseId=first)=Json.obj("sessionId" -> id.asJson,"caseId" -> caseId.asJson)
   private def session(id: String)=Json.obj("sessionId" -> id.asJson)
 
   test("catalogue is public, only lists published metadata, and browsing never creates a game") {
@@ -124,7 +123,7 @@ class CaseHubSuite extends FunSuite:
     }).unsafeRunSync()
   }
 
-  test("publication refuses unsupported scenes and cannot overwrite a released revision") {
+  test("publication refuses unsupported scenes and cannot overwrite a released caseRecord") {
     val url=database
     (for
       _ <- setup(url)
@@ -134,23 +133,5 @@ class CaseHubSuite extends FunSuite:
       _ = assert(overwrite.isLeft)
       catalog <- tx(url)(GetCaseCatalogMessage().plan)
       _ = assertEquals(catalog.map(_.caseId),Vector(first))
-    yield ()).unsafeRunSync()
-  }
-
-  test("a pre-activity-column investigation survives schema upgrade without a fabricated activity time") {
-    val url=database;val owner=UserId("old-owner");val id=SessionId(UUID.randomUUID().toString)
-    (for
-      _ <- setup(url)
-      before <- tx(url)(OpenStudyMessage(owner,id).plan)
-      _ <- DatabaseSession.connection(url).use(c => IO.blocking {
-        val statement=c.createStatement()
-        try statement.execute("ALTER TABLE game_sessions DROP COLUMN updated_at_ms") finally statement.close()
-      })
-      _ <- DatabaseSession.connection(url).use(DatabaseSchema.initialize)
-      listing <- tx(url)(ListInvestigationsMessage(owner).plan)
-      after <- tx(url)(GetInvestigationSnapshotMessage(owner,id).plan)
-      _ = assertEquals(listing.size,1)
-      _ = assertEquals(listing.head.updatedAtMillis,None)
-      _ = assertEquals(after,before)
     yield ()).unsafeRunSync()
   }

@@ -8,7 +8,7 @@ import java.util.UUID
 import scala.concurrent.duration.*
 import services.cases.objects.*
 import services.cases.api.GetDialogueKnowledgeMessage
-import services.cases.tables.CaseRevisionTable.CaseRevisionTable
+import services.cases.tables.CaseTable.CaseTable
 import services.games.objects.*
 import services.games.objects.apiTypes.CommandResult
 import services.games.tables.SessionTable.SessionTable
@@ -57,12 +57,13 @@ final case class AskWitnessMessage(userId: UserId,sessionId: SessionId,requestId
                   active <- InterviewRequestTable.hasActive(connection,sessionId,now)
                   evaluating <- ReasoningRequestTable.hasActive(connection,sessionId,now)
                   _ <- IO.raiseWhen(active || evaluating)(GameError(ErrorCode.RequestPending,"这场调查还有问询正在处理中，请稍后重试。"))
-                  revision <- CaseRevisionTable.find(connection,session.caseId,session.caseRevision).flatMap(value => IO.fromOption(value)(GameError(ErrorCode.InvalidValue,"案件修订不存在。")))
+                  caseRecord <- CaseTable.find(connection,session.caseId).flatMap(value => IO.fromOption(value)(GameError(ErrorCode.InvalidValue,"案件不存在。")))
+                  _ <- IO.fromEither(services.games.utils.ExternalCheckRules.ensureTime(caseRecord.content,session.storyTimeSeconds+caseRecord.content.clock.map(_.actionSeconds.toLong).getOrElse(0L)))
                   turns <- InterviewTurnTable.list(connection,sessionId)
                   records <- SessionRecordTable.list(connection,sessionId)
                   exchanges <- PoliceExchangeTable.list(connection,sessionId)
-                  dossier <- GetDialogueKnowledgeMessage(session.caseId,session.caseRevision,witness).plan(connection)
-                  context <- IO.fromEither(InterviewRules.context(RecordedInterviewRules.content(revision.content,turns),session,witness,question,evidence,turns,records,dossier.knowledge,exchanges,dossier.privateContext,dossier.policy))
+                  dossier <- GetDialogueKnowledgeMessage(session.caseId,witness).plan(connection)
+                  context <- IO.fromEither(InterviewRules.context(RecordedInterviewRules.content(caseRecord.content,turns),session,witness,question,evidence,turns,records,dossier.knowledge,exchanges,dossier.privateContext,dossier.policy))
                   token <- IO(UUID.randomUUID().toString)
                   row = InterviewRequestRecord(sessionId,requestId,digest,expectedSequence,witness,question,evidence,context,token,now+90000,InterviewRequestStatus.Pending)
                   _ <- InterviewRequestTable.insert(connection,row)

@@ -1,3 +1,4 @@
+import { sceneRenderSchema } from './SceneRenderView';
 import { reasoningProgressSchema } from './ReasoningProgress';
 import { caseConclusionSchema } from './CaseConclusionRecord';
 import { personIdSchema } from '../../../objects/PersonId';
@@ -19,12 +20,13 @@ import { clueViewSchema } from './ClueView';
 import { investigationLogSchema } from './InvestigationLogEntry';
 import { sceneObjectBindingSchema } from './SceneObjectBinding';
 import { travelChoiceSchema } from './TravelChoiceView';
-const sceneFields = { placeName: z.string(), drawerOpened: z.boolean(), windowOpened: z.boolean(), objects: z.array(sceneObjectBindingSchema),
+const sceneFields = { placeId: z.string().min(1).nullable().optional(), render: sceneRenderSchema.nullable().optional(), placeName: z.string(), openedEntities: z.array(z.string().min(1)), objects: z.array(sceneObjectBindingSchema),
   playerPosition: z.object({ x: z.number().finite(), y: z.number().finite(), z: z.number().finite() }).strict().nullable().optional(),
   travel: z.array(travelChoiceSchema).optional() };
 const sceneSchema = z.discriminatedUnion('bundleId', [
-  z.object({ ...sceneFields, bundleId: z.literal('study'), revision: z.enum(['4', '5', '6']) }).strict(),
-  z.object({ ...sceneFields, bundleId: z.literal('woodland'), revision: z.literal('1') }).strict(),
+  z.object({ ...sceneFields, bundleId: z.literal('study') }).strict(),
+  z.object({ ...sceneFields, bundleId: z.literal('woodland') }).strict(),
+  z.object({ ...sceneFields, bundleId: z.literal('authored') }).strict(),
 ]);
 export const investigationSnapshotSchema = z.object({
   continuousWitnesses: z.array(witnessIdSchema).default([]),
@@ -34,9 +36,9 @@ export const investigationSnapshotSchema = z.object({
   followUps: z.array(witnessFollowUpSchema).default([]),
   statementComparisons: z.array(statementComparisonSchema).default([]),
   areaMap: areaMapSchema.nullable().default(null),
-  clock: z.object({ label: z.string(), elapsedSeconds: z.number().int().nonnegative().safe(), actionMinutes: z.number().int().positive() }).strict().nullable().default(null),
+  clock: z.object({ label: z.string(), elapsedSeconds: z.number().int().nonnegative().safe(), actionMinutes: z.number().int().positive(), maximumWaitMinutes: z.number().int().min(0).max(30).default(30), phaseEnd: z.string().nullable().default(null), targets: z.array(z.object({ label: z.string(), time: z.string() }).strict()).default([]) }).strict().nullable().default(null),
   externalChecks: z.array(externalCheckViewSchema).default([]),
-  sessionId: sessionIdSchema, caseId: z.string().min(1), caseRevision: z.object({ value: z.number().int().positive().safe() }).strict().transform(v => v.value),
+  sessionId: sessionIdSchema, caseId: z.string().min(1),
   sequence: sequenceSchema, title: z.string(),
   scene: sceneSchema,
   points: z.array(inquiryPointSchema), clues: z.array(clueViewSchema), journal: z.array(investigationLogSchema), observations: z.array(sceneObservationSchema),
@@ -45,6 +47,12 @@ export const investigationSnapshotSchema = z.object({
   people: z.array(casePersonBriefSchema),
   stage: z.object({ introduction: z.string(), objective: z.string(), completed: z.boolean(), nextObjective: z.string().nullable(), hasTimeComparison: z.boolean().default(true) }).strict().nullable(),
 }).strict().superRefine((snapshot, context) => {
+  if (new Set(snapshot.scene.openedEntities).size !== snapshot.scene.openedEntities.length ||
+    snapshot.scene.openedEntities.some(id => !snapshot.scene.objects.some(object => object.entity === id)))
+    context.addIssue({ code: 'custom', message: '开合状态超出当前可见场景实体或编号重复' });
+  if ((snapshot.scene.bundleId === 'authored') !== (snapshot.scene.render != null) || (snapshot.scene.render &&
+    (snapshot.scene.render.room.place !== snapshot.scene.placeId || new Set(snapshot.scene.render.instances.map(i => i.node)).size !== snapshot.scene.render.instances.length || snapshot.scene.render.instances.some(i => !snapshot.scene.objects.some(o => o.node === i.node)))))
+    context.addIssue({ code: 'custom', message: '场景蓝图超出当前授权实例或地点不一致' });
   if (snapshot.scene.travel?.some(choice => !snapshot.points.some(p => p.id === choice.point && p.operations.some(o => o.id === choice.operation))))
     context.addIssue({ code: 'custom', message: '行走入口不在当前可用位置' });
   if (snapshot.continuousWitnesses.some(id => !snapshot.witnesses.some(witness => witness.id === id)))
@@ -70,7 +78,7 @@ export const investigationSnapshotSchema = z.object({
   if (snapshot.conclusionCandidates.some(id => !snapshot.people.some(p => p.id === id))) context.addIssue({ code: 'custom', message: '推理人物不在公开资料中' });
   const result = snapshot.conclusion;
   if (result && (result.sequence > snapshot.sequence || result.suspects.some(id => !snapshot.conclusionCandidates.includes(id)) ||
-    result.evidence.some(id => !snapshot.clues.some(c => c.id === id)) || result.evidenceScore !== result.coverage.filter(g => g.covered).length * 10 ||
+    result.evidence.some(id => !snapshot.clues.some(c => c.id === id)) || result.evidenceScore !== (result.coverage.length ? Math.floor(50 * result.coverage.filter(g => g.covered).length / result.coverage.length) : 0) ||
     result.coverage.some(g => g.covered !== g.requiredClues.every(id => result.evidence.includes(id)))))
     context.addIssue({ code: 'custom', message: '推理复盘与提交记录不一致' });
   for (const values of [snapshot.followUps.map(v => v.operation), snapshot.statementComparisons.map(v => v.witness), snapshot.externalChecks.map(v => v.id), snapshot.people.map(v => v.id), snapshot.points.map(v => v.id), snapshot.clues.map(v => v.id), snapshot.journal.map(v => v.id), snapshot.observations.map(v => v.node), snapshot.scene.objects.map(v => v.node), snapshot.scene.objects.map(v => v.entity), snapshot.witnesses.map(v => v.id), snapshot.interviews.map(v => v.requestId)])

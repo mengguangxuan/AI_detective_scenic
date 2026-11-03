@@ -81,7 +81,7 @@ if (process.argv.includes('--restore')) {
       checkStep(steps[nextStep]); nextStep++; save();
     }
   } else {
-    await post('openlocalidentity'); state = await post('openinvestigation', { sessionId, caseId: 'vicarage_study', revision: { value: 26 } }); save();
+    await post('openlocalidentity'); state = await post('openinvestigation', { sessionId, caseId: 'vicarage_study' }); save();
   }
   while (nextStep < steps.length) {
     const step = steps[nextStep];

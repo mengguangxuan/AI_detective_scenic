@@ -2,11 +2,11 @@ import { test, expect, type Page } from '@playwright/test';
 import { randomUUID } from 'node:crypto';
 import { mkdirSync, writeFileSync } from 'node:fs';
 const headers = { 'X-Detective-Client': 'web' };
-const key = 'detective-scenic:server-session:v6';
+const key = 'detective-scenic:investigation-session';
 async function start(page: Page) {
   const identity = await page.request.post('/api/openlocalidentity', { headers, data: {} }); expect(identity.status()).toBe(200);
   const sessionId = randomUUID();
-  const opened = await page.request.post('/api/openinvestigation', { headers, data: { sessionId, caseId: 'vicarage_study', revision: { value: 24 } } });
+  const opened = await page.request.post('/api/openinvestigation', { headers, data: { sessionId, caseId: 'vicarage_study' } });
   expect(opened.status()).toBe(200);
   await page.addInitScript(({ key, sessionId }) => { if (!localStorage.getItem(key)) localStorage.setItem(key, JSON.stringify({ version: 1, sessionId, creationPending: false, pending: null })); }, { key, sessionId });
   async function snapshot() { const response = await page.request.post('/api/getinvestigationsnapshot', { headers, data: { sessionId } }); expect(response.status()).toBe(200); return response.json(); }

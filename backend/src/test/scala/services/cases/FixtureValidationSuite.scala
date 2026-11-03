@@ -8,10 +8,10 @@ import services.cases.utils.FixtureLoader
 import services.system.objects.ErrorCode
 
 class FixtureValidationSuite extends FunSuite:
-  private val source = parser.parse(Files.readString(Paths.get("../docs/fixtures/browser_investigation_v21.json"))).toOption.get
+  private val source = parser.parse(Files.readString(Paths.get("../docs/fixtures/investigation_base.json"))).toOption.get
   private val original = FixtureLoader.decode(source.noSpaces).toOption.get
 
-  private def rejected(record: CaseRevisionRecord, path: String): String =
+  private def rejected(record: CaseRecord, path: String): String =
     val result = FixtureLoader.validation(record)
     assert(result.isLeft)
     assert(!FixtureLoader.valid(record))
@@ -44,7 +44,7 @@ class FixtureValidationSuite extends FunSuite:
     val record=FixtureLoader.decode(Files.readString(Paths.get("../docs/fixtures/browser_investigation.json"))).toOption.get
     val content=record.content
     assertEquals(content.sceneLocations.size,2)
-    val unsupported=content.sceneLocations.map(l => if l.place == PlaceId("woods") then l.copy(revision="999") else l)
+    val unsupported=content.sceneLocations.map(l => if l.place == PlaceId("woods") then l.copy(bundleId="unregistered-scene") else l)
     rejected(record.copy(content=content.copy(sceneLocations=unsupported)),"scene.locations")
     val moves=content.operations.map(o => if o.id == OperationId("enter_woodland") then o.copy(effects=Vector(
       services.cases.objects.investigation.FixtureEffect.Relocate(PlaceId("woods"),services.system.objects.Vec3(999,0,0)))) else o)
@@ -115,4 +115,41 @@ class FixtureValidationSuite extends FunSuite:
     val updated=original.copy(content=original.content.copy(interviewPromptVersion=2))
     assertEquals(FixtureLoader.validation(updated),Right(()))
     rejected(original.copy(content=original.content.copy(interviewPromptVersion=99)),"investigation.interviewPromptVersion")
+  }
+
+  test("semantic assessment does not require five placeholder coverage groups") {
+    val content=original.content.copy(conclusion=original.content.conclusion.map(_.copy(evidenceGroups=Vector.empty)))
+    assert(FixtureLoader.valid(original.copy(content=content)))
+    val coverageOnly=content.copy(conclusion=content.conclusion.map(_.copy(evaluation=None)))
+    assert(!FixtureLoader.valid(original.copy(content=coverageOnly)))
+  }
+
+  test("clock weekdays and calendar origins are explicit, preserved and checked against the opening story time") {
+    val clock=original.content.clock.get
+    for day <- Vector(0,8) do
+      rejected(original.copy(content=original.content.copy(clock=Some(clock.copy(startWeekday=Some(day))))),"investigation.clock.startWeekday")
+    val dated=source.mapObject(_.add("calendarOrigin",Json.fromString("1930-11-03T09:00:00+01:00")))
+    val decoded=FixtureLoader.decode(dated.noSpaces).toOption.get
+    assertEquals(decoded.content.calendarOrigin.map(_.toString),Some("1930-11-03T09:00+01:00"))
+    val json=summon[io.circe.Encoder[CaseContent]].apply(decoded.content)
+    assertEquals(json.as[CaseContent].toOption.get,decoded.content)
+    rejected(decoded.copy(content=decoded.content.copy(clock=Some(clock.copy(startMinutesOfDay=480)))),"calendarOrigin")
+    val mismatchedWeekday=decoded.content.copy(clock=Some(clock.copy(startWeekday=Some(2))))
+    rejected(decoded.copy(content=mismatchedWeekday),"calendarOrigin")
+    assert(FixtureLoader.decode(source.mapObject(_.add("calendarOrigin",Json.fromString("not-a-date"))).noSpaces).isLeft)
+  }
+
+  test("authored scenes reject unknown primitives, unregistered instances and invalid room references before publication") {
+    val raw=parser.parse(Files.readString(Paths.get("../docs/fixtures/speckled_band_daytime.json"))).toOption.get
+    val record=FixtureLoader.decode(raw.noSpaces).toOption.get
+    val blueprint=record.content.sceneBlueprint.get
+    rejected(record.copy(content=record.content.copy(sceneBlueprint=Some(blueprint.copy(rooms=blueprint.rooms.tail)))),"scene.blueprint.rooms")
+    val changed=blueprint.visuals.head.copy(node=SceneNodeId("unknown"))
+    rejected(record.copy(content=record.content.copy(sceneBlueprint=Some(blueprint.copy(visuals=changed+:blueprint.visuals.tail)))),"scene.blueprint.visuals")
+    val visual=blueprint.visuals.head
+    val invalid=visual.copy(parts=visual.parts.head.copy(color="url(untrusted)")+:visual.parts.tail)
+    rejected(record.copy(content=record.content.copy(sceneBlueprint=Some(blueprint.copy(visuals=invalid+:blueprint.visuals.tail)))),"scene.blueprint.visuals")
+    val shape=raw.hcursor.downField("scene").downField("blueprint").downField("visuals").downArray.downField("parts").downArray.downField("shape").withFocus(_ => Json.fromString("ExecuteScript")).top.get
+    assert(FixtureLoader.decode(shape.noSpaces).isLeft)
+    rejected(record.copy(content=record.content.copy(clock=record.content.clock.map(_.copy(operationDurations=Vector(services.cases.objects.investigation.OperationDuration(OperationId("missing"),60)))))),"investigation.clock.operationDurations")
   }

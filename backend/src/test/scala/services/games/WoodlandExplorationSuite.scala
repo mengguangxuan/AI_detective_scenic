@@ -17,10 +17,9 @@ class WoodlandExplorationSuite extends FunSuite:
   private val owner=UserId("woodland-exploration-owner")
   private def database=s"jdbc:h2:mem:${UUID.randomUUID()};DB_CLOSE_DELAY=-1"
   private def tx[A](url: String)(f: java.sql.Connection => IO[A]): IO[A]=DatabaseSession.connection(url).use(c => DatabaseSession.transaction(c)(f(c)))
-  private def setup(url: String,id: SessionId,revision: Int=24)=DatabaseSession.connection(url).use(c => DatabaseSchema.initialize(c) *>
-    DatabaseSession.transaction(c)(ImportCaseMessage(Paths.get("../docs/fixtures/browser_investigation_v23.json")).plan(c) *>
-      ImportCaseMessage(Paths.get("../docs/fixtures/browser_investigation_v24.json")).plan(c) *>
-      StartGameMessage(owner,id,CaseId("vicarage_study"),Revision(revision)).plan(c)))
+  private def setup(url: String,id: SessionId,unused: Unit=())=DatabaseSession.connection(url).use(c => DatabaseSchema.initialize(c) *>
+    DatabaseSession.transaction(c)(      ImportCaseMessage(Paths.get("../docs/fixtures/woodland_investigation.json")).plan(c) *>
+      StartGameMessage(owner,id,CaseId("vicarage_study")).plan(c)))
   private def view(url: String,id: SessionId)=tx(url)(GetInvestigationSnapshotMessage(owner,id).plan)
   private def move(url: String,id: SessionId,op: String)=for
     before <- view(url,id)
@@ -95,21 +94,5 @@ class WoodlandExplorationSuite extends FunSuite:
       duplicate <- tx(url)(InvestigateMessage(owner,id,RequestId("collect-again"),returned.sequence,PointId("point_woodland_fragment"),RouteId("route_collect_woodland_sample")).plan).attempt
       _ = assert(duplicate.isLeft)
       _ = assertEquals(returned.clues.count(_.id == ClueId("clue_woodland_sample")),1)
-    yield ()).unsafeRunSync()
-  }
-
-  test("revision23 retains the police search and has no newly invented movement or scene fields") {
-    val url=database;val id=SessionId(UUID.randomUUID().toString)
-    (for
-      _ <- setup(url,id,23)
-      before <- view(url,id)
-      _ = assert(before.scene.travel.isEmpty)
-      _ = assert(before.scene.playerPosition.isEmpty)
-      _ = assert(!before.scene.asJson.hcursor.downField("travel").succeeded)
-      _ = assert(before.externalChecks.exists(_.id == ExternalCheckId("woodland_search")))
-      denied <- move(url,id,"enter_woodland").attempt
-      _ = assert(denied.isLeft)
-      after <- view(url,id)
-      _ = assertEquals(before,after)
     yield ()).unsafeRunSync()
   }

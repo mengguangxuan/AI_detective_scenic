@@ -7,7 +7,7 @@ import java.sql.Connection
 import java.util.UUID
 import scala.concurrent.duration.*
 import services.cases.objects.*
-import services.cases.tables.CaseRevisionTable.CaseRevisionTable
+import services.cases.tables.CaseTable.CaseTable
 import services.games.objects.*
 import services.games.objects.apiTypes.CommandResult
 import services.games.tables.InterviewTurnTable.InterviewTurnTable
@@ -54,9 +54,10 @@ final case class EvaluateReasoningMessage(userId: UserId,sessionId: SessionId,re
                   active <- ReasoningRequestTable.hasActive(connection,sessionId,now)
                   evaluating <- InterviewRequestTable.hasActive(connection,sessionId,now)
                   _ <- IO.raiseWhen(active || evaluating)(GameError(ErrorCode.RequestPending,"这场调查还有模型请求正在处理中，请稍后重试。"))
-                  revision <- CaseRevisionTable.find(connection,session.caseId,session.caseRevision).flatMap(value => IO.fromOption(value)(GameError(ErrorCode.InvalidValue,"案件修订不存在。")))
+                  caseRecord <- CaseTable.find(connection,session.caseId).flatMap(value => IO.fromOption(value)(GameError(ErrorCode.InvalidValue,"案件不存在。")))
+                  _ <- IO.fromEither(services.games.utils.ExternalCheckRules.ensureTime(caseRecord.content,session.storyTimeSeconds+caseRecord.content.clock.map(_.actionSeconds.toLong).getOrElse(0L)))
                   turns <- InterviewTurnTable.list(connection,sessionId)
-                  context <- IO.fromEither(ReasoningRules.context(RecordedInterviewRules.content(revision.content,turns),session,suspects,evidence,explanation))
+                  context <- IO.fromEither(ReasoningRules.context(RecordedInterviewRules.content(caseRecord.content,turns),session,suspects,evidence,explanation))
                   token <- IO(UUID.randomUUID().toString)
                   row = ReasoningRequestRecord(sessionId,requestId,digest,expectedSequence,suspects,evidence,explanation,context,token,now+90000,ReasoningRequestStatus.Pending)
                   _ <- ReasoningRequestTable.insert(connection,row)
@@ -76,7 +77,7 @@ final case class EvaluateReasoningMessage(userId: UserId,sessionId: SessionId,re
             assessed = ReasoningRules.judge(raw,row)
             _ <- IO.whenA(assessed.isEmpty)(IO.println(s"[reasoning] Judge output rejected: ${ReasoningRules.judgeValidationSummary(raw,row)}"))
             decision <- IO.fromOption(assessed)(GameError(ErrorCode.InvalidValue,"Invalid reasoning assessment"))
-            feedback <- if row.context.revision.value >= 19 && decision.checks.forall(_.satisfied) then
+            feedback <- if decision.checks.forall(_.satisfied) then
               IO.pure(ReasoningRules.establishedFeedback)
             else
               client.complete(ReasoningRules.guidancePrompt(row,decision)).flatMap { raw =>

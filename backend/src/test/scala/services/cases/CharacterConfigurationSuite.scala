@@ -9,7 +9,7 @@ import java.util.UUID
 import munit.FunSuite
 import services.cases.api.{GetDialogueKnowledgeMessage,ImportCaseMessage}
 import services.cases.objects.*
-import services.cases.tables.CaseRevisionTable.CaseRevisionTable
+import services.cases.tables.CaseTable.CaseTable
 import services.cases.utils.FixtureLoader
 import services.games.api.{AskWitnessMessage,StartGameMessage}
 import services.games.objects.{InterviewContext,InterviewReplyMode}
@@ -21,7 +21,7 @@ import services.system.objects.*
 import services.cases.objects.dialogue.{DialogueDossier, WitnessProfile}
 
 class CharacterConfigurationSuite extends FunSuite:
-  private val source = parser.parse(Files.readString(Paths.get("../docs/fixtures/browser_investigation_v21.json"))).toOption.get
+  private val source = parser.parse(Files.readString(Paths.get("../docs/fixtures/investigation_base.json"))).toOption.get
   private def changeCharacter(source: Json, id: String)(change: Json => Json): Json =
     source.mapObject(fields => fields.add("characters",Json.fromValues(fields("characters").get.asArray.get.map(p =>
       if p.hcursor.get[String]("id").contains(id) then change(p) else p))))
@@ -62,54 +62,8 @@ class CharacterConfigurationSuite extends FunSuite:
     error(duplicate,"investigation.interviews.person")
   }
 
-  test("old flat profiles and frozen contexts decode and retain their original JSON shape") {
-    val flat = parser.parse("""{"id":"old_actor","point":"point_old","name":"旧证人","background":"旧背景","voice":"简短","answers":[],"knowledge":["旧记忆"],"privateContext":["旧内情"],"policy":["旧策略"]}""").toOption.get
-    val profile = flat.as[WitnessProfile].toOption.get
-    assertEquals(profile.asJson,flat)
-    assertEquals(profile.dossier.privateContext,Vector("旧内情"))
-    val minimal = flat.mapObject(_.remove("knowledge").remove("privateContext").remove("policy"))
-    assertEquals(minimal.as[WitnessProfile].toOption.get.dossier,DialogueDossier(Vector.empty,Vector.empty,Vector.empty))
-    val context = Json.obj("profile" -> flat,"evidence" -> Json.arr(),"history" -> Json.arr(),
-      "caseId" -> Json.fromString("old_case"),"revision" -> Json.obj("value" -> Json.fromInt(3)))
-    val frozen = context.as[InterviewContext].toOption.get
-    assertEquals(frozen.responseVersion,1)
-    assertEquals(frozen.profile.asJson,flat)
 
-  }
-
-  test("embedded legacy police data normalizes to the same unified content without a version change") {
-    val record = FixtureLoader.decode(source.noSpaces).toOption.get
-    val content = record.content
-    val police = content.witnesses.find(w => content.police.contains(w.id)).get
-    val embedded = Json.obj("point" -> police.point.asJson,"name" -> police.name.asJson,
-      "background" -> police.background.asJson,"id" -> police.id.asJson,"voice" -> police.voice.asJson,
-      "dossier" -> police.dossier.asJson,"answers" -> police.answers.asJson)
-    val oldBody = content.asJson.mapObject(_.add("police",embedded)
-      .add("witnesses",content.witnesses.filterNot(w => content.police.contains(w.id)).asJson))
-    val normalized = oldBody.as[CaseContent].toOption.get
-    assertEquals(normalized,content)
-    assertEquals(normalized.asJson.hcursor.get[WitnessId]("police"),Right(police.id))
-    assertEquals(normalized.witnesses.count(_.id == police.id),1)
-    assertEquals(normalized.witnesses.last.id,police.id)
-    assert(FixtureLoader.valid(record.copy(content=normalized)))
-  }
-
-  test("old minimal police objects compile their disclosures only at the compatibility boundary") {
-    val content = FixtureLoader.decode(source.noSpaces).toOption.get.content
-    val legacy = content.asJson.mapObject(_.add("police",Json.obj("point" -> Json.fromString("point_police"),
-      "name" -> Json.fromString("旧警方"),"background" -> Json.fromString("旧说明")))
-      .add("witnesses",content.witnesses.filterNot(w => content.police.contains(w.id)).asJson))
-    val decoded = legacy.as[CaseContent].toOption.get
-    val officer = decoded.witnesses.find(w => decoded.police.contains(w.id)).get
-    assertEquals(officer.id,WitnessId("melchett"))
-    assert(officer.dossier.knowledge.isEmpty)
-    assertEquals(officer.answers.map(_.routes.head).toSet,content.routes.filter(_.point == officer.point).map(_.id).toSet)
-    val duplicate = content.asJson.mapObject(_.add("police",legacy.hcursor.get[Json]("police").toOption.get))
-    assert(duplicate.as[CaseContent].isLeft)
-    assert(!FixtureLoader.valid(FixtureLoader.decode(source.noSpaces).toOption.get.copy(content=content.copy(police=Some(WitnessId("missing"))))))
-  }
-
-  test("another case and another police identity work from configuration with revision-frozen dossiers") {
+  test("another case and another police identity work from configuration with caseRecord-frozen dossiers") {
     val url = s"jdbc:h2:mem:${UUID.randomUUID()};DB_CLOSE_DELAY=-1"
     val path = Files.createTempFile("character-case-",".json")
     val actorPrivate = "OTHER_CASE_ACTOR_PRIVATE"
@@ -118,7 +72,7 @@ class CharacterConfigurationSuite extends FunSuite:
       "privateContext" -> Json.arr(Json.fromString(secret)),"policy" -> Json.arr(Json.fromString("只说明本人知道的事")))
     val newPeople = changeCharacter(changeCharacter(source,"clement")(_.mapObject(_.add("name",Json.fromString("新案证人")).add("dossier",dossier(actorPrivate)))),"melchett")(
       _.mapObject(_.add("name",Json.fromString("周督察")).add("dossier",dossier(policePrivate))))
-    val changed = newPeople.mapObject(_.add("id",Json.fromString("another_case")).add("revision",Json.obj("value" -> Json.fromInt(1))))
+    val changed = newPeople.mapObject(_.add("id",Json.fromString("another_case")))
       .hcursor.downField("investigation").downField("interviews").withFocus(x => Json.fromValues(x.asArray.get.map(p =>
         if p.hcursor.get[String]("id").contains("melchett") then p.mapObject(_.add("id",Json.fromString("inspector_zhou"))) else p))).top.get
       .hcursor.downField("investigation").downField("police").downField("witness").withFocus(_ => Json.fromString("inspector_zhou")).top.get
@@ -136,18 +90,18 @@ class CharacterConfigurationSuite extends FunSuite:
       imported <- tx(url)(ImportCaseMessage(path).plan)
       repeated <- tx(url)(ImportCaseMessage(path).plan)
       _ = assertEquals(repeated,imported)
-      _ <- tx(url)(StartGameMessage(owner,id,CaseId("another_case"),Revision(1)).plan)
-      first <- tx(url)(GetDialogueKnowledgeMessage(CaseId("another_case"),Revision(1),WitnessId("clement")).plan)
+      _ <- tx(url)(StartGameMessage(owner,id,CaseId("another_case")).plan)
+      first <- tx(url)(GetDialogueKnowledgeMessage(CaseId("another_case"),WitnessId("clement")).plan)
       _ = assertEquals(first.privateContext,Vector(actorPrivate))
       _ <- IO.blocking(Files.writeString(path,changeCharacter(changed,"clement")(_.mapObject(_.add("dossier",dossier("CHANGED_SOURCE")))).noSpaces))
-      stillFrozen <- tx(url)(GetDialogueKnowledgeMessage(CaseId("another_case"),Revision(1),WitnessId("clement")).plan)
+      stillFrozen <- tx(url)(GetDialogueKnowledgeMessage(CaseId("another_case"),WitnessId("clement")).plan)
       _ = assertEquals(stillFrozen,first)
       conflicting <- tx(url)(ImportCaseMessage(path).plan).attempt
       _ = assertEquals(conflicting.left.toOption.collect { case e: GameError => e.code },Some(ErrorCode.ConflictingContent))
       _ <- AskWitnessMessage(owner,id,RequestId("police-question"),Sequence(0),WitnessId("inspector_zhou"),"你知道什么？",Set.empty).run(url,model)
       turns <- tx(url)(InterviewTurnTable.list(_,id))
       _ = assertEquals(turns.last.mode,InterviewReplyMode.Answered)
-      stored <- tx(url)(CaseRevisionTable.find(_,CaseId("another_case"),Revision(1)))
+      stored <- tx(url)(CaseTable.find(_,CaseId("another_case")))
       _ = assertEquals(stored.get,imported)
     yield ()).guarantee(IO.blocking(Files.deleteIfExists(path)).void).unsafeRunSync()
   }

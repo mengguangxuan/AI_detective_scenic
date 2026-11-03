@@ -7,8 +7,8 @@ import services.cases.objects.*
 
 
 final case class SessionRecord(id: RecordId, sessionId: SessionId, requestId: RequestId, sequence: Sequence,
-  storyTimeSeconds: Long, point: PointId, route: Option[RouteId], operation: Option[OperationId],
-  text: String, disclosedClues: Set[ClueId], disclosedFacts: Set[FactId])
+  storyTimeSeconds: Long, point: Option[PointId], route: Option[RouteId], operation: Option[OperationId],
+  text: String, disclosedClues: Set[ClueId], disclosedFacts: Set[FactId], systemAction: Option[InvestigationSystemAction] = None)
 
 object SessionRecord:
   given Encoder[SessionRecord] = deriveEncoder[SessionRecord]

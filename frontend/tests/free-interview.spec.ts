@@ -1,5 +1,5 @@
 import { test, expect, type Page } from './support/investigation-test';
-const sessionKey = 'detective-scenic:server-session:v6';
+const sessionKey = 'detective-scenic:investigation-session';
 async function selectWitness(page: Page, name: string) {
   await page.getByRole('navigation', { name: '调查导航' }).getByRole('link', { name: '人物问询', exact: true }).click();
   await page.getByRole('button', { name: `与${name}交谈`, exact: true }).click();

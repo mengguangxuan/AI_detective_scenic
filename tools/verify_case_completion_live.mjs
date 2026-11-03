@@ -4,15 +4,10 @@ import assert from 'node:assert/strict';
 import { randomUUID } from 'node:crypto';
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
-const semantic = process.argv.includes('--semantic');
-const woodland = process.argv.includes('--woodland') || semantic;
-const dialogue = process.argv.includes('--dialogue') || woodland;
-const continuous = process.argv.includes('--continuous') || dialogue;
-const playableRevision = semantic ? 26 : woodland ? 24 : dialogue ? 23 : 22;
-const cache = fileURLToPath(new URL(semantic ? '../frontend/.build-cache/semantic-completion/' : woodland ? '../frontend/.build-cache/woodland-completion/' : dialogue ? '../frontend/.build-cache/dialogue-completion/' : continuous ? '../frontend/.build-cache/continuous-completion/' : '../frontend/.build-cache/', import.meta.url));
+const cache = fileURLToPath(new URL('../frontend/.build-cache/semantic-completion/', import.meta.url));
 mkdirSync(cache, { recursive: true });
 const origin = 'http://127.0.0.1:5175';
-const key = 'detective-scenic:server-session:v6';
+const key = 'detective-scenic:investigation-session';
 const base = 'http://127.0.0.1:8080/api/';
 class Investigation {
   cookie = ''; sessionId = randomUUID(); state = null;
@@ -23,9 +18,10 @@ class Investigation {
     return r.json();
   }
   async refresh() { this.state = await this.post('getinvestigationsnapshot', { sessionId: this.sessionId }); return this.state; }
-  async start() { await this.post('openlocalidentity'); this.state = continuous
-    ? await this.post('openinvestigation', { sessionId: this.sessionId, caseId: 'vicarage_study', revision: { value: playableRevision } })
-    : await this.post('openstudy', { sessionId: this.sessionId }); assert.equal(this.state.caseRevision.value, continuous ? playableRevision : 21); }
+  async start() {
+    await this.post('openlocalidentity');
+    this.state = await this.post('openinvestigation', { sessionId: this.sessionId, caseId: 'vicarage_study' });
+  }
   async change(name, payload) {
     const request = { sessionId: this.sessionId, requestId: randomUUID(), expectedSequence: this.state.sequence, ...payload };
     const receipt = await this.post(name, request); await this.refresh(); return { request, receipt };
@@ -72,15 +68,14 @@ async function collect(game, natural = false) {
   for (const route of ['route_stone_walk', 'route_stone_inn', 'route_marple_visitors', 'route_marple_anne_reply', 'route_marple_sound', 'route_hartnell_visit', 'route_mary_sound', 'route_mary_fish_time']) await game.read(route);
   await game.check('paper_handwriting');
   for (const route of ['route_redding_time_challenge', 'route_redding_anne_reply']) await game.read(route);
-  if (!continuous) await game.operate('begin_redding_followup');
   for (const route of ['route_redding_revised', 'route_redding_gun_revised', 'route_redding_scene_revised', 'route_anne_gun_challenge', 'route_anne_redding_challenge']) await game.read(route);
-  if (!continuous) await game.operate('begin_anne_followup'); await game.read('route_anne_revised'); await game.read('route_anne_visit_revised');
+  await game.read('route_anne_revised'); await game.read('route_anne_visit_revised');
   await game.read('route_call_basis'); await game.check('call_origin');
   await game.read('route_police_sound_check');
-  if (woodland) {
+  {
     for (const operation of ['enter_woodland', 'woodland_to_clearing', 'woodland_to_log', 'brush_woodland_leaves']) await game.operate(operation);
     await game.read('route_collect_woodland_sample'); await game.operate('return_study_log');
-  } else await game.check('woodland_search');
+  }
   await game.operate('lift_planter'); await game.read('route_planter_interior'); await game.operate('replace_planter');
   await game.wait(15); await game.check('crystal_opinion'); await game.check('call_lodge_inspection');
   await game.wait(15);
@@ -107,7 +102,7 @@ async function assess(game, label, explanation, expected) {
   await game.refresh(); assert.equal(game.state.reasoning.attempts.length, before + 1);
 }
 async function restore() {
-  for (const name of (continuous ? ['completion-live-solved'] : ['completion-live-solved', 'completion-live-paraphrase'])) {
+  for (const name of ['completion-live-solved']) {
     const storage = JSON.parse(readFileSync(cache + name + '-state.json', 'utf8'));
     const game = new Investigation(); game.cookie = storage.cookies.map(c => c.name + '=' + c.value).join('; ');
     game.sessionId = JSON.parse(storage.origins[0].localStorage[0].value).sessionId;
@@ -122,7 +117,7 @@ else if (process.argv.includes('--positive')) {
     const storage = JSON.parse(readFileSync(cache + 'completion-live-open-state.json', 'utf8'));
     game.cookie = storage.cookies.map(c => c.name + '=' + c.value).join('; ');
     game.sessionId = JSON.parse(storage.origins[0].localStorage[0].value).sessionId; await game.refresh();
-    assert.equal(game.state.caseRevision.value, continuous ? playableRevision : 20); assert.equal(game.state.reasoning.ending, null);
+    assert.equal(game.state.reasoning.ending, null);
   } else await collect(game);
   await assess(game, 'supported_reconstruction', correct, 'Established');
   await game.change('revealreasoning', { abandon: false });
@@ -149,7 +144,7 @@ else {
     const storage = JSON.parse(readFileSync(cache + 'completion-live-open-state.json', 'utf8'));
     first.cookie = storage.cookies.map(c => c.name + '=' + c.value).join('; ');
     first.sessionId = JSON.parse(storage.origins[0].localStorage[0].value).sessionId; await first.refresh();
-    assert.equal(first.state.caseRevision.value, 20); assert.equal(first.state.reasoning.ending, null);
+    assert.equal(first.state.reasoning.ending, null);
   } else await collect(first, true);
   await assess(first, 'names_and_motive_only', '我选择安妮和雷丁，因为他们相爱、想摆脱上校。其他手法、时刻和材料间的联系我暂时解释不出来，先凭这个就算破案吧。', 'Revise');
   await assess(first, 'wrong_shooter_and_time', '两人相爱想摆脱上校，所以一定是雷丁在18:45独自开枪，安妮只在之后帮他逃走。树林的响声就是这一枪，座钟和纸上时间都完全准确。因为两人都认罪，所以没有必要解释任何矛盾，也不必考虑更早的作案机会。', 'Revise');

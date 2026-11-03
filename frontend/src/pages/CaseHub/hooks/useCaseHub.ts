@@ -35,7 +35,7 @@ export function useCaseHub() {
   }, [refresh]);
   function start(entry: CaseCatalogEntry) {
     if (busy) return;
-    try { newBrowserSession(entry.caseId, entry.revision); navigate('/case'); }
+    try { newBrowserSession(entry.caseId); navigate('/case'); }
     catch (error) { setNotice(message(error)); }
   }
   async function resume(id: SessionId) {

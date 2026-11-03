@@ -1,8 +1,5 @@
 {
   "id": "vicarage_study",
-  "revision": {
-    "value": 26
-  },
   "schemaVersion": {
     "value": 2
   },
@@ -4152,7 +4149,6 @@
         "place": "study",
         "name": "牧师寓所 · 书房",
         "bundleId": "study",
-        "revision": "5",
         "stops": [
           {
             "x": 0,
@@ -4165,7 +4161,6 @@
         "place": "woods",
         "name": "寓所附近 · 林间小径",
         "bundleId": "woodland",
-        "revision": "1",
         "stops": [
           {
             "x": 0,
@@ -4184,7 +4179,8 @@
           }
         ]
       }
-    ]
+    ],
+    "bundleId": "study"
   },
   "investigation": {
     "clues": [

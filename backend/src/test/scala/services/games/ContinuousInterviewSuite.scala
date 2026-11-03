@@ -22,9 +22,8 @@ class ContinuousInterviewSuite extends FunSuite:
   private def database=s"jdbc:h2:mem:${UUID.randomUUID()};DB_CLOSE_DELAY=-1"
   private def tx[A](url: String)(f: java.sql.Connection => IO[A]): IO[A]=DatabaseSession.connection(url).use(c => DatabaseSession.transaction(c)(f(c)))
   private def setup(url: String,id: SessionId)=DatabaseSession.connection(url).use(c => DatabaseSchema.initialize(c) *> DatabaseSession.transaction(c)(for
-    _ <- ImportCaseMessage(Paths.get("../docs/fixtures/browser_investigation_v21.json")).plan(c)
-    _ <- ImportCaseMessage(Paths.get("../docs/fixtures/browser_investigation_v22.json")).plan(c)
-    _ <- StartGameMessage(owner,id,CaseId("vicarage_study"),Revision(22)).plan(c)
+    _ <- ImportCaseMessage(Paths.get("../docs/fixtures/continuous_investigation.json")).plan(c)
+    _ <- StartGameMessage(owner,id,CaseId("vicarage_study")).plan(c)
   yield ()))
   private def view(url: String,id: SessionId)=tx(url)(GetInvestigationSnapshotMessage(owner,id).plan)
   private def read(url: String,id: SessionId,route: String)=for

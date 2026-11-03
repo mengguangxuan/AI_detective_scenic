@@ -3,7 +3,6 @@ import { sessionIdSchema } from '../../../objects/SessionId';
 import { sequenceSchema } from '../../../objects/Sequence';
 export const savedInvestigationSchema = z.object({
   sessionId: sessionIdSchema, caseId: z.string().min(1), title: z.string(),
-  revision: z.object({ value: z.number().int().positive() }).strict().transform(value => value.value),
   sequence: sequenceSchema, updatedAtMillis: z.number().int().positive().safe().nullable(),
   status: z.enum(['Investigating', 'Established', 'Solved', 'Revealed', 'LegacySubmitted']),
 }).strict();

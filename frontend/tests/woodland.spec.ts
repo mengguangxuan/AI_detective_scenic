@@ -1,7 +1,7 @@
 import { writeFileSync } from 'node:fs';
 import { test, expect, type Page } from './support/investigation-test';
 async function snapshot(page: Page) {
-  const saved = await page.evaluate(() => JSON.parse(localStorage.getItem('detective-scenic:server-session:v6')!));
+  const saved = await page.evaluate(() => JSON.parse(localStorage.getItem('detective-scenic:investigation-session')!));
   const response = await page.request.post('/api/getinvestigationsnapshot', { data: { sessionId: saved.sessionId }, headers: { 'X-Detective-Client': 'web' } });
   expect(response.status()).toBe(200); return response.json();
 }
@@ -33,7 +33,6 @@ test('independent woodland route collects a sample, obtains a tentative opinion 
   const errors: string[] = []; page.on('pageerror', error => errors.push(error.message));
   await page.goto('/police');
   await expect(page.getByRole('heading', { name: '警方交流', exact: true })).toBeVisible();
-  expect((await snapshot(page)).caseRevision.value).toBe(21);
   await expect(page.getByRole('button', { name: '申请查访树林声响附近现场', exact: true })).toBeDisabled();
   await expect(page.getByRole('region', { name: '核查进展', exact: true })).not.toContainText('苦味酸');
   await fixedPerson(page, '玛丽', '询问：树林方向那声响是什么时候？');
@@ -72,18 +71,4 @@ test('independent woodland route collects a sample, obtains a tentative opinion 
   expect(errors).toEqual([]);
   await page.context().storageState({ path: '.build-cache/woodland-state.json' });
   writeFileSync('.build-cache/woodland-snapshot.json', JSON.stringify(state));
-});
-
-test.describe('actual previous revision compatibility', () => {
-  test.use({ storageState: '.build-cache/pre-woodland-v14-state.json' });
-  test('revision 14 retains completed calls without new woodland checks', async ({ page }) => {
-    await page.goto('/police');
-    await expect(page.getByText(/修订14 · 材料/)).toBeVisible();
-    const state = await snapshot(page);
-    expect(state.caseRevision.value).toBe(14);
-    expect(state.externalChecks).toHaveLength(7);
-    expect(state.clues.some((c: { id: string }) => c.id === 'clue_police_call_review')).toBe(true);
-    await expect(page.getByRole('button', { name: '申请查访树林声响附近现场', exact: true })).toHaveCount(0);
-    await page.reload(); expect(await snapshot(page)).toEqual(state);
-  });
 });

@@ -29,7 +29,7 @@ if (process.argv.includes('--restore')) {
   console.log('Original interview replies, snapshot and receipts restored exactly.');
 } else {
   await post('openlocalidentity');
-  state = await post('openinvestigation', { sessionId, caseId: 'vicarage_study', revision: { value: 24 } });
+  state = await post('openinvestigation', { sessionId, caseId: 'vicarage_study' });
   for (const question of ['为什么上校会出现在你的寓所？', '你刚才说的来访，原本准备谈什么？']) {
     const request = { sessionId, requestId: randomUUID(), expectedSequence: state.sequence, witness: 'clement', question, evidence: [] };
     const receipt = await post('askwitness', request);

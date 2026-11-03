@@ -1,5 +1,7 @@
 # 手动测试指南
 
+> 2026-11-03：案件修订机制与旧调查已移除；本文历史版本验收记录仅作历史说明。当前开局只传sessionId与caseId，运行／重启验证见[交接第13节](../handoff/handoff_1103.md#13-2026-11-03续接去除修订清理旧档与首批解耦)。
+
 更新日期：2026-11-02。当前案件修订：`vicarage_study/26`，场景包：`study/6`（书房`study/5`、树林`woodland/1`）。本次重点：**独立语义登记、不同入口材料接收一致及失败原请求恢复**。
 
 本文件只维护当前可执行步骤。完整取证和结案路线见[整案跑通流程](full_case_walkthrough.md)；启动与模型配置见[验收准备](acceptance_preparation.md)。[修订23指南](manual_test_guide_v23.md)、[修订22指南](manual_test_guide_v22.md)与[更早测试参考](manual_test_guide_legacy_v21.md)单独归档，不用照旧版的补问启动流程测试新调查。下文包含取证提示，不提供完整结案答案。

@@ -9,27 +9,27 @@ const mouseButtons = { LEFT: MOUSE.PAN, MIDDLE: MOUSE.DOLLY, RIGHT: MOUSE.ROTATE
 const touches = { ONE: TOUCH.PAN, TWO: TOUCH.DOLLY_ROTATE };
 const minimum = new Vector3(-2.6, 0.3, -1.7);
 const maximum = new Vector3(2.6, 2.6, 1.5);
-export default function ObservationCamera({ resetVersion, memory, sessionId }: { resetVersion: number; memory: RefObject<SceneCameraMemory | null>; sessionId: SessionId }) {
+export default function ObservationCamera({ resetVersion, memory, sessionId, sceneKey }: { resetVersion: number; memory: RefObject<SceneCameraMemory | null>; sessionId: SessionId; sceneKey: string }) {
   const controls = useRef<ComponentRef<typeof OrbitControls>>(null);
   const camera = useThree(state => state.camera);
   const beforeClamp = useRef(new Vector3());
   const initialized = useRef(false);
   useEffect(() => {
     if (!controls.current) return;
-    const saved = resetVersion === 0 && memory.current?.sessionId === sessionId && memory.current.sceneKey !== 'woodland' ? memory.current : null;
+    const saved = resetVersion === 0 && memory.current?.sessionId === sessionId && memory.current.sceneKey === sceneKey ? memory.current : null;
     camera.position.fromArray(saved?.position ?? [4, 3.5, 5]);
     controls.current.target.fromArray(saved?.target ?? [0, 0.95, 0]);
     initialized.current = true;
     controls.current.update();
     return () => { initialized.current = false; };
-  }, [camera, resetVersion, memory, sessionId]);
+  }, [camera, resetVersion, memory, sessionId, sceneKey]);
   function constrain() {
     const orbit = controls.current;
     if (!orbit || !initialized.current) return;
     beforeClamp.current.copy(orbit.target);
     orbit.target.clamp(minimum, maximum);
     camera.position.add(beforeClamp.current.sub(orbit.target).negate());
-    memory.current = { sessionId, sceneKey: 'study', position: [camera.position.x, camera.position.y, camera.position.z], target: [orbit.target.x, orbit.target.y, orbit.target.z] };
+    memory.current = { sessionId, sceneKey, position: [camera.position.x, camera.position.y, camera.position.z], target: [orbit.target.x, orbit.target.y, orbit.target.z] };
   }
   return <OrbitControls ref={controls} makeDefault enablePan screenSpacePanning enableDamping={false}
     mouseButtons={mouseButtons} touches={touches} minDistance={2.2} maxDistance={8}

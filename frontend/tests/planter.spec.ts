@@ -2,7 +2,7 @@ import { writeFileSync } from 'node:fs';
 import { test, expect, type Page } from './support/investigation-test';
 import { PerspectiveCamera, Vector3 } from 'three';
 async function snapshot(page: Page) {
-  const saved = await page.evaluate(() => JSON.parse(localStorage.getItem('detective-scenic:server-session:v6')!));
+  const saved = await page.evaluate(() => JSON.parse(localStorage.getItem('detective-scenic:investigation-session')!));
   const response = await page.request.post('/api/getinvestigationsnapshot', { data: { sessionId: saved.sessionId }, headers: { 'X-Detective-Client': 'web' } });
   expect(response.status()).toBe(200); return response.json();
 }
@@ -33,7 +33,6 @@ test('player lifts the real planter model, inspects the exposed cavity and retai
   await page.goto('/scene');
   await expect(page.getByRole('heading', { name: '调查目标', exact: true })).toBeVisible();
   const first = await snapshot(page);
-  expect(first.caseRevision.value).toBe(21); expect(first.scene.revision).toBe('5');
   expect(first.scene.objects.some((o: { node: string }) => o.node === 'node_planter_interior')).toBe(false);
   await model(page, [2.35, 1.15, -1.08], '窗边盆栽');
   await page.getByRole('button', { name: '提起内盆查看', exact: true }).click();
@@ -84,17 +83,4 @@ test('fallback inspection retries a lost successful response without granting a 
   expect(attempts).toBe(2); expect(state.sequence.value).toBe(2);
   expect(state.clues.map((c: { id: string }) => c.id)).toEqual(['clue_planter']);
   await page.reload(); expect(await snapshot(page)).toEqual(state);
-});
-
-test.describe('actual previous revision compatibility', () => {
-  test.use({ storageState: '.build-cache/pre-planter-v17-state.json' });
-  test('revision 17 keeps its assessment history and original study without new planter bindings', async ({ page }) => {
-    await page.goto('/scene');
-    await expect(page.getByText(/修订17 · 材料/)).toBeVisible();
-    const state = await snapshot(page);
-    expect(state.caseRevision.value).toBe(17); expect(state.scene.revision).toBe('4');
-    expect(state.reasoning.attempts.length).toBeGreaterThan(0);
-    expect(state.scene.objects.some((o: { node: string }) => o.node === 'node_planter')).toBe(false);
-    await page.reload(); expect(await snapshot(page)).toEqual(state);
-  });
 });

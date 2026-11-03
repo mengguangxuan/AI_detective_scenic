@@ -8,7 +8,7 @@ import java.util.UUID
 import munit.FunSuite
 import services.cases.api.ImportCaseMessage
 import services.cases.objects.*
-import services.cases.tables.CaseRevisionTable.CaseRevisionTable
+import services.cases.tables.CaseTable.CaseTable
 import services.games.api.*
 import services.games.objects.*
 import services.models.api.ChatCompletionClient
@@ -21,7 +21,7 @@ class ReviewComparisonSuite extends FunSuite:
   private def database=s"jdbc:h2:mem:${UUID.randomUUID()};DB_CLOSE_DELAY=-1"
   private def tx[A](url: String)(f: java.sql.Connection => IO[A]): IO[A]=DatabaseSession.connection(url).use(c => DatabaseSession.transaction(c)(f(c)))
   private def setup(url: String,id: SessionId)=DatabaseSession.connection(url).use(c => DatabaseSchema.initialize(c) *> DatabaseSession.transaction(c)(
-    ImportCaseMessage(Paths.get("../docs/fixtures/browser_investigation_v21.json")).plan(c) *> OpenStudyMessage(owner,id).plan(c)))
+    ImportCaseMessage(Paths.get("../docs/fixtures/investigation_base.json")).plan(c) *> services.TestCases.open(owner,id,CaseId("vicarage_study"))(c)))
   private def view(url: String,id: SessionId)=tx(url)(GetInvestigationSnapshotMessage(owner,id).plan)
   private def read(url: String,id: SessionId,route: String): IO[Unit]=for
     before <- view(url,id)
@@ -32,7 +32,6 @@ class ReviewComparisonSuite extends FunSuite:
     val url=database;val id=SessionId(UUID.randomUUID().toString)
     (for
       first <- setup(url,id)
-      _ = assertEquals(first.caseRevision,Revision(21))
       _ = assert(!first.asJson.noSpaces.contains("人物关系与共同动机"))
       _ <- read(url,id,"route_call")
       before <- view(url,id)
@@ -54,7 +53,7 @@ class ReviewComparisonSuite extends FunSuite:
       later <- view(url,id)
       _ = assertEquals(later.clues.size,2)
       _ = assertEquals(later.reasoning.get.ending.get,frozen)
-      restored <- tx(url)(OpenStudyMessage(owner,id).plan)
+      restored <- tx(url)(OpenInvestigationMessage(owner,id,CaseId("vicarage_study")).plan)
       _ = assertEquals(restored,later)
     yield ()).unsafeRunSync()
   }
@@ -84,30 +83,5 @@ class ReviewComparisonSuite extends FunSuite:
       _ = assert(!materials.find(_.id == ClueId("clue_clement_relationship")).get.cited)
       _ = assertEquals(ended.reasoning.get.attempts,assessed.reasoning.get.attempts)
       _ = assertEquals(ended.reasoning.get.ending.get.mode,ReasoningEndingMode.Solved)
-    yield ()).unsafeRunSync()
-  }
-
-  test("legacy endings keep their exact wire shape; published revision 19 retains its original frozen review") {
-    val raw="""{"sequence":{"value":3},"mode":"Revealed","review":"original review"}"""
-    val ending=io.circe.parser.decode[ReasoningEnding](raw).toOption.get
-    assert(ending.sections.isEmpty)
-    assertEquals(ending.asJson,io.circe.parser.parse(raw).toOption.get)
-    val url=database;val id=SessionId(UUID.randomUUID().toString)
-    (for
-      _ <- DatabaseSession.connection(url).use(c => DatabaseSchema.initialize(c) *> DatabaseSession.transaction(c)(for
-        latest <- ImportCaseMessage(Paths.get("../docs/fixtures/browser_investigation_v21.json")).plan(c)
-        old=latest.copy(revision=Revision(19),content=LegacyFixture.withoutReview(latest.content))
-        _ <- CaseRevisionTable.insert(c,old)
-        _ <- StartGameMessage(owner,id,old.caseId,old.revision).plan(c)
-      yield ()))
-      before <- view(url,id)
-      _ <- tx(url)(RevealReasoningMessage(owner,id,RequestId("old-end"),before.sequence,true).plan)
-      ended <- view(url,id)
-      old=ended.reasoning.get.ending.get
-      _ = assert(old.sections.isEmpty)
-      _ = assert(old.review.contains("引用和分数保持不变"))
-      restored <- tx(url)(OpenStudyMessage(owner,id).plan)
-      _ = assertEquals(restored,ended)
-      _ = assert(!old.asJson.hcursor.downField("sections").succeeded)
     yield ()).unsafeRunSync()
   }

@@ -8,7 +8,7 @@ import java.util.UUID
 import munit.FunSuite
 import services.cases.api.ImportCaseMessage
 import services.cases.objects.*
-import services.cases.tables.CaseRevisionTable.CaseRevisionTable
+import services.cases.tables.CaseTable.CaseTable
 import services.games.api.*
 import services.games.objects.*
 import services.models.api.ChatCompletionClient
@@ -23,7 +23,7 @@ class WoodlandChecksSuite extends FunSuite:
     DatabaseSession.connection(url).use(c => DatabaseSession.transaction(c)(f(c)))
   private def setup(url: String,id: SessionId): IO[Unit]=DatabaseSession.connection(url).use(c =>
     DatabaseSchema.initialize(c) *> DatabaseSession.transaction(c)(
-      ImportCaseMessage(Paths.get("../docs/fixtures/browser_investigation_v21.json")).plan(c) *> OpenStudyMessage(owner,id).plan(c)).void)
+      ImportCaseMessage(Paths.get("../docs/fixtures/investigation_base.json")).plan(c) *> services.TestCases.open(owner,id,CaseId("vicarage_study"))(c)).void)
   private def view(url: String,id: SessionId)=tx(url)(GetInvestigationSnapshotMessage(owner,id).plan)
   private def read(url: String,id: SessionId,point: String,route: String): IO[Unit]=for
     s <- view(url,id)
@@ -62,7 +62,6 @@ class WoodlandChecksSuite extends FunSuite:
     (for
       _ <- setup(url,id)
       initial <- view(url,id)
-      _ = assertEquals(initial.caseRevision,Revision(21))
       early <- request(url,id,"woodland_search").attempt
       _ = assertEquals(code(early),Some(ErrorCode.ConditionFailed))
       _ <- read(url,id,"point_mary","route_mary_sound")
@@ -148,26 +147,5 @@ class WoodlandChecksSuite extends FunSuite:
       _ <- ask(url,id,"mary",mary)
       saved <- view(url,id)
       _ = assert(saved.interviews.takeRight(2).forall(_.mode == InterviewReplyMode.Answered))
-    yield ()).unsafeRunSync()
-  }
-
-  test("revision 14 keeps its seven checks and original receipt when reopened on the latest server") {
-    val url=database;val id=SessionId(UUID.randomUUID().toString)
-    (for
-      _ <- DatabaseSession.connection(url).use(DatabaseSchema.initialize)
-      _ <- tx(url) { c => for
-        latest <- ImportCaseMessage(Paths.get("../docs/fixtures/browser_investigation_v21.json")).plan(c)
-        old=latest.copy(revision=Revision(14),content=LegacyFixture.withoutWoodland(latest.content))
-        _ <- CaseRevisionTable.insert(c,old)
-        _ <- StartGameMessage(owner,id,old.caseId,old.revision).plan(c)
-      yield () }
-      _ <- read(url,id,"point_mary","route_mary_sound")
-      saved <- tx(url)(OpenStudyMessage(owner,id).plan)
-      _ = assertEquals(saved.caseRevision,Revision(14))
-      _ = assertEquals(saved.externalChecks.size,7)
-      denied <- request(url,id,"woodland_search").attempt
-      _ = assertEquals(code(denied),Some(ErrorCode.AccessDenied))
-      restored <- view(url,id)
-      _ = assertEquals(restored,saved)
     yield ()).unsafeRunSync()
   }

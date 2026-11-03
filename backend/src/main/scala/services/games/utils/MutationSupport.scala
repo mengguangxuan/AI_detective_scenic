@@ -7,7 +7,7 @@ import java.nio.charset.StandardCharsets
 import java.security.MessageDigest
 import java.sql.Connection
 import services.cases.objects.*
-import services.cases.tables.CaseRevisionTable.CaseRevisionTable
+import services.cases.tables.CaseTable.CaseTable
 import services.games.objects.*
 import services.games.objects.apiTypes.*
 import services.games.tables.SessionTable.SessionTable
@@ -82,8 +82,9 @@ private[games] object MutationSupport:
       _ <- IO.raiseWhen(reserved.nonEmpty && !pendingInterview)(GameError(ErrorCode.RequestConflict,"该请求编号已用于人物问询。"))
       reasoning <- ReasoningRequestTable.find(connection,previous.id,request)
       _ <- IO.raiseWhen(reasoning.nonEmpty && !pendingReasoning)(GameError(ErrorCode.RequestConflict,"该请求编号已用于推理评审。"))
-      revision <- CaseRevisionTable.find(connection,previous.caseId,previous.caseRevision).flatMap(v => IO.fromOption(v)(GameError(ErrorCode.InvalidValue,"案件修订不存在。")))
-      timed = ExternalCheckRules.afterAction(revision.content,previous,plan)
+      caseRecord <- CaseTable.find(connection,previous.caseId).flatMap(v => IO.fromOption(v)(GameError(ErrorCode.InvalidValue,"案件不存在。")))
+      timed = ExternalCheckRules.afterAction(caseRecord.content,previous,plan)
+      _ <- IO.fromEither(ExternalCheckRules.ensureTime(caseRecord.content,timed.session.storyTimeSeconds))
       _ <- SessionTable.update(connection,previous,timed.session)
       _ <- SessionRecordTable.insert(connection,timed.record)
       _ <- ReceiptTable.insert(connection,RequestReceiptRecord(previous.id,request,digest,1,timed.result))

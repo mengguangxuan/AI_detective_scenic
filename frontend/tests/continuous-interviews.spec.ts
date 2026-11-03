@@ -1,14 +1,14 @@
 import { test, expect, type Page } from '@playwright/test';
 import { randomUUID } from 'node:crypto';
 const headers = { 'X-Detective-Client': 'web' };
-const key = 'detective-scenic:server-session:v6';
+const key = 'detective-scenic:investigation-session';
 async function post(page: Page, name: string, data: object = {}) {
   const response = await page.request.post('/api/' + name, { headers, data });
   expect(response.status()).toBe(200); return response.json();
 }
 async function start(page: Page) {
   await post(page, 'openlocalidentity'); const sessionId = randomUUID();
-  let state = await post(page, 'openinvestigation', { sessionId, caseId: 'vicarage_study', revision: { value: 22 } });
+  let state = await post(page, 'openinvestigation', { sessionId, caseId: 'vicarage_study' });
   async function change(name: string, payload: object) {
     await post(page, name, { sessionId, requestId: randomUUID(), expectedSequence: state.sequence, ...payload });
     state = await post(page, 'getinvestigationsnapshot', { sessionId });

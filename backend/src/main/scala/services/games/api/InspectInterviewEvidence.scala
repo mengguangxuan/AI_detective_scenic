@@ -27,8 +27,7 @@ object InspectInterviewEvidence extends IOApp.Simple:
             input=parse(InterviewRules.prompt(request).user).toOption.get
             sent=input.hcursor.get[Vector[Json]]("shownEvidence").getOrElse(Vector.empty)
             selected=sent.filter(j => j.hcursor.get[String]("id").exists(id => request.shownClues.exists(_.value == id)))
-            report=Json.obj("sessionId" -> request.sessionId.asJson,"requestId" -> request.requestId.asJson,
-              "revision" -> request.context.revision.asJson,"sequence" -> request.expectedSequence.asJson,
+            report=Json.obj("sessionId" -> request.sessionId.asJson,"requestId" -> request.requestId.asJson,"sequence" -> request.expectedSequence.asJson,
               "promptVersion" -> request.context.promptVersion.asJson,"witness" -> request.witness.asJson,
               "activeFocus" -> request.context.activeFocus.asJson,"savedFocus" -> turn.flatMap(_.focus).asJson,
               "question" -> request.question.asJson,"selectedIds" -> request.shownClues.asJson,

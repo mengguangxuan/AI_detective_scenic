@@ -1,0 +1,2833 @@
+{
+  "id": "speckled_band",
+  "schemaVersion": {
+    "value": 2
+  },
+  "reducerVersion": {
+    "value": "fixture-v1"
+  },
+  "title": "斑点带子案 · 白天调查试玩",
+  "initialStoryTime": {
+    "seconds": 0
+  },
+  "timeOriginLabel": "第1日",
+  "calendarOrigin": null,
+  "assets": [
+    {
+      "id": "parametric_model",
+      "kind": "Model",
+      "uri": "fixture:registered-primitives"
+    }
+  ],
+  "world": {
+    "places": [
+      {
+        "id": "grounds",
+        "name": "庄园草坪与窗外",
+        "parent": null,
+        "geography": null,
+        "background": "海伦与华生在此等候。可听取经历、查阅已有文件，并从走廊检查卧室。",
+        "walkable": [
+          {
+            "min": {
+              "x": -5,
+              "y": -1,
+              "z": -5
+            },
+            "max": {
+              "x": 5,
+              "y": 5,
+              "z": 5
+            }
+          }
+        ]
+      },
+      {
+        "id": "corridor",
+        "name": "卧室走廊",
+        "parent": null,
+        "geography": null,
+        "background": "走廊连接可调查的两间卧室。具体尺寸为场景制作示意，不作为案件距离证据。",
+        "walkable": [
+          {
+            "min": {
+              "x": -5,
+              "y": -1,
+              "z": -5
+            },
+            "max": {
+              "x": 5,
+              "y": 5,
+              "z": 5
+            }
+          }
+        ]
+      },
+      {
+        "id": "middle_room",
+        "name": "中间卧室",
+        "parent": null,
+        "geography": null,
+        "background": "朱莉娅原来的卧室，海伦近期在此居住。检查床、拉绳、通气孔和窗户的实际关系。",
+        "walkable": [
+          {
+            "min": {
+              "x": -5,
+              "y": -1,
+              "z": -5
+            },
+            "max": {
+              "x": 5,
+              "y": 5,
+              "z": 5
+            }
+          }
+        ]
+      },
+      {
+        "id": "roylott_room",
+        "name": "罗伊洛特卧室",
+        "parent": null,
+        "geography": null,
+        "background": "罗伊洛特尚在外。只检查已登记的柜体周围和短鞭；未打开柜门，不能确认当前内部。",
+        "walkable": [
+          {
+            "min": {
+              "x": -5,
+              "y": -1,
+              "z": -5
+            },
+            "max": {
+              "x": 5,
+              "y": 5,
+              "z": 5
+            }
+          }
+        ]
+      }
+    ],
+    "connections": [],
+    "environments": [],
+    "entities": [
+      {
+        "id": "helen",
+        "name": "海伦·斯托纳",
+        "initialPlace": "grounds",
+        "owner": null,
+        "background": "委托人在草坪等候，可以询问她亲历和转述的情况。"
+      },
+      {
+        "id": "watson",
+        "name": "约翰·华生",
+        "initialPlace": "grounds",
+        "owner": null,
+        "background": "同行的医生。只知道晨间会面和途中交流；未随玩家检查的现场不能自动成为他的经历。"
+      },
+      {
+        "id": "sb_case_file",
+        "name": "已有文件与调查笔记",
+        "initialPlace": "grounds",
+        "owner": null,
+        "background": "可查阅遗嘱核查摘要，整理实际已取得的材料。"
+      },
+      {
+        "id": "bed",
+        "name": "固定床",
+        "initialPlace": "middle_room",
+        "owner": null,
+        "background": "床靠近拉绳和墙面通气孔；具体几何尺寸为制作示意。"
+      },
+      {
+        "id": "bell_pull",
+        "name": "床边拉绳",
+        "initialPlace": "middle_room",
+        "owner": null,
+        "background": "细绳垂在床边，须实际检查连接关系，名称不说明用途。"
+      },
+      {
+        "id": "vent",
+        "name": "墙面通气孔",
+        "initialPlace": "middle_room",
+        "owner": null,
+        "background": "墙上有一小孔，其通向何处需要实际检查。"
+      },
+      {
+        "id": "window_shutters",
+        "name": "窗户与百叶窗",
+        "initialPlace": "middle_room",
+        "owner": null,
+        "background": "可在本次白天检查中核实关闭、插牢及从外侧尝试的结果。"
+      },
+      {
+        "id": "safe",
+        "name": "铁柜外部",
+        "initialPlace": "roylott_room",
+        "owner": null,
+        "background": "柜门关闭，本阶段没有打开柜门或读取内部的执行入口。"
+      },
+      {
+        "id": "milk_saucer",
+        "name": "牛奶碟",
+        "initialPlace": "roylott_room",
+        "owner": null,
+        "background": "铁柜上放着小碟。只记录当前可见状态，不说明用途。"
+      },
+      {
+        "id": "loop_lash",
+        "name": "套圈短鞭",
+        "initialPlace": "roylott_room",
+        "owner": null,
+        "background": "短鞭垂在一旁，鞭梢的形状需要近看。"
+      },
+      {
+        "id": "door_grounds_corridor",
+        "name": "前往卧室走廊",
+        "initialPlace": "grounds",
+        "owner": null,
+        "background": "通往已登记相邻地点的路线。"
+      },
+      {
+        "id": "door_corridor_grounds",
+        "name": "前往庄园草坪与窗外",
+        "initialPlace": "corridor",
+        "owner": null,
+        "background": "通往已登记相邻地点的路线。"
+      },
+      {
+        "id": "door_corridor_middle_room",
+        "name": "前往中间卧室",
+        "initialPlace": "corridor",
+        "owner": null,
+        "background": "通往已登记相邻地点的路线。"
+      },
+      {
+        "id": "door_middle_room_corridor",
+        "name": "前往卧室走廊",
+        "initialPlace": "middle_room",
+        "owner": null,
+        "background": "通往已登记相邻地点的路线。"
+      },
+      {
+        "id": "door_corridor_roylott_room",
+        "name": "前往罗伊洛特卧室",
+        "initialPlace": "corridor",
+        "owner": null,
+        "background": "通往已登记相邻地点的路线。"
+      },
+      {
+        "id": "door_roylott_room_corridor",
+        "name": "前往卧室走廊",
+        "initialPlace": "roylott_room",
+        "owner": null,
+        "background": "通往已登记相邻地点的路线。"
+      }
+    ],
+    "relationships": [],
+    "scenes": []
+  },
+  "truth": {
+    "background": "参见speckled_band_author_draft.json。当前为白天取证切片，不发放未来现场或完整解答。",
+    "persons": [],
+    "privateContexts": [],
+    "motives": [],
+    "events": [],
+    "incidents": [],
+    "topics": [
+      {
+        "id": "topic_f_helen_report",
+        "subject": {
+          "kind": "Entity",
+          "id": "sb_case_file"
+        },
+        "question": "这份记录明确支持什么？",
+        "when": {
+          "earliest": {
+            "seconds": 0
+          },
+          "latest": {
+            "seconds": 0
+          }
+        },
+        "boundary": "本局记录该陈述的语义范围；0不是旧案发生时刻，历史时间精度仍以完整作者稿为准。"
+      },
+      {
+        "id": "topic_f_financial_motive",
+        "subject": {
+          "kind": "Entity",
+          "id": "sb_case_file"
+        },
+        "question": "这份记录明确支持什么？",
+        "when": {
+          "earliest": {
+            "seconds": 0
+          },
+          "latest": {
+            "seconds": 0
+          }
+        },
+        "boundary": "本局记录该陈述的语义范围；0不是旧案发生时刻，历史时间精度仍以完整作者稿为准。"
+      },
+      {
+        "id": "topic_f_pull_dummy",
+        "subject": {
+          "kind": "Entity",
+          "id": "sb_case_file"
+        },
+        "question": "这份记录明确支持什么？",
+        "when": {
+          "earliest": {
+            "seconds": 0
+          },
+          "latest": {
+            "seconds": 0
+          }
+        },
+        "boundary": "本局记录该陈述的语义范围；0不是旧案发生时刻，历史时间精度仍以完整作者稿为准。"
+      },
+      {
+        "id": "topic_f_vent_internal",
+        "subject": {
+          "kind": "Entity",
+          "id": "sb_case_file"
+        },
+        "question": "这份记录明确支持什么？",
+        "when": {
+          "earliest": {
+            "seconds": 0
+          },
+          "latest": {
+            "seconds": 0
+          }
+        },
+        "boundary": "本局记录该陈述的语义范围；0不是旧案发生时刻，历史时间精度仍以完整作者稿为准。"
+      },
+      {
+        "id": "topic_f_bed_fixed",
+        "subject": {
+          "kind": "Entity",
+          "id": "sb_case_file"
+        },
+        "question": "这份记录明确支持什么？",
+        "when": {
+          "earliest": {
+            "seconds": 0
+          },
+          "latest": {
+            "seconds": 0
+          }
+        },
+        "boundary": "本局记录该陈述的语义范围；0不是旧案发生时刻，历史时间精度仍以完整作者稿为准。"
+      },
+      {
+        "id": "topic_f_shutters_secure",
+        "subject": {
+          "kind": "Entity",
+          "id": "sb_case_file"
+        },
+        "question": "这份记录明确支持什么？",
+        "when": {
+          "earliest": {
+            "seconds": 0
+          },
+          "latest": {
+            "seconds": 0
+          }
+        },
+        "boundary": "本局记录该陈述的语义范围；0不是旧案发生时刻，历史时间精度仍以完整作者稿为准。"
+      },
+      {
+        "id": "topic_f_safe_saucer",
+        "subject": {
+          "kind": "Entity",
+          "id": "sb_case_file"
+        },
+        "question": "这份记录明确支持什么？",
+        "when": {
+          "earliest": {
+            "seconds": 0
+          },
+          "latest": {
+            "seconds": 0
+          }
+        },
+        "boundary": "本局记录该陈述的语义范围；0不是旧案发生时刻，历史时间精度仍以完整作者稿为准。"
+      },
+      {
+        "id": "topic_f_lash_loop",
+        "subject": {
+          "kind": "Entity",
+          "id": "sb_case_file"
+        },
+        "question": "这份记录明确支持什么？",
+        "when": {
+          "earliest": {
+            "seconds": 0
+          },
+          "latest": {
+            "seconds": 0
+          }
+        },
+        "boundary": "本局记录该陈述的语义范围；0不是旧案发生时刻，历史时间精度仍以完整作者稿为准。"
+      },
+      {
+        "id": "topic_f_safe_memory_report",
+        "subject": {
+          "kind": "Entity",
+          "id": "sb_case_file"
+        },
+        "question": "这份记录明确支持什么？",
+        "when": {
+          "earliest": {
+            "seconds": 0
+          },
+          "latest": {
+            "seconds": 0
+          }
+        },
+        "boundary": "本局记录该陈述的语义范围；0不是旧案发生时刻，历史时间精度仍以完整作者稿为准。"
+      },
+      {
+        "id": "topic_f_watson_report",
+        "subject": {
+          "kind": "Entity",
+          "id": "sb_case_file"
+        },
+        "question": "这份记录明确支持什么？",
+        "when": {
+          "earliest": {
+            "seconds": 0
+          },
+          "latest": {
+            "seconds": 0
+          }
+        },
+        "boundary": "本局记录该陈述的语义范围；0不是旧案发生时刻，历史时间精度仍以完整作者稿为准。"
+      },
+      {
+        "id": "topic_f_day_notes",
+        "subject": {
+          "kind": "Entity",
+          "id": "sb_case_file"
+        },
+        "question": "这份记录明确支持什么？",
+        "when": {
+          "earliest": {
+            "seconds": 0
+          },
+          "latest": {
+            "seconds": 0
+          }
+        },
+        "boundary": "本局记录该陈述的语义范围；0不是旧案发生时刻，历史时间精度仍以完整作者稿为准。"
+      },
+      {
+        "id": "topic_f_julia_dead",
+        "subject": {
+          "kind": "Entity",
+          "id": "sb_case_file"
+        },
+        "question": "这份记录明确支持什么？",
+        "when": {
+          "earliest": {
+            "seconds": 0
+          },
+          "latest": {
+            "seconds": 0
+          }
+        },
+        "boundary": "本局记录该陈述的语义范围；0不是旧案发生时刻，历史时间精度仍以完整作者稿为准。"
+      },
+      {
+        "id": "topic_f_helen_moved",
+        "subject": {
+          "kind": "Entity",
+          "id": "sb_case_file"
+        },
+        "question": "这份记录明确支持什么？",
+        "when": {
+          "earliest": {
+            "seconds": 0
+          },
+          "latest": {
+            "seconds": 0
+          }
+        },
+        "boundary": "本局记录该陈述的语义范围；0不是旧案发生时刻，历史时间精度仍以完整作者稿为准。"
+      }
+    ],
+    "facts": [
+      {
+        "id": "f_helen_report",
+        "topic": "topic_f_helen_report",
+        "value": {
+          "kind": "AuthoredDetail",
+          "detail": "海伦说，朱莉娅约两年前去世，临终提到“带斑点的带子”。她回忆那夜在风雨中似乎听见口哨和金属声，但不能完全确定。近期维修使她搬入姐姐原来的卧室，前一夜又听见相似口哨。她害怕重演旧事，未看见声音的来源；惊吓致死是她曾有的猜测。"
+        },
+        "requiresOccurred": [],
+        "explanation": "固定作者资料；陈述事实与所述内容真伪分开。",
+        "sources": [
+          "src_day"
+        ]
+      },
+      {
+        "id": "f_financial_motive",
+        "topic": "topic_f_financial_motive",
+        "value": {
+          "kind": "AuthoredDetail",
+          "detail": "继女结婚将分走收入，罗伊洛特有阻止婚事的经济动机。"
+        },
+        "requiresOccurred": [],
+        "explanation": "固定作者资料；陈述事实与所述内容真伪分开。",
+        "sources": [
+          "src_day"
+        ]
+      },
+      {
+        "id": "f_pull_dummy",
+        "topic": "topic_f_pull_dummy",
+        "value": {
+          "kind": "AuthoredDetail",
+          "detail": "床边拉绳没有接通铃的拉线。"
+        },
+        "requiresOccurred": [],
+        "explanation": "固定作者资料；陈述事实与所述内容真伪分开。",
+        "sources": [
+          "src_day"
+        ]
+      },
+      {
+        "id": "f_vent_internal",
+        "topic": "topic_f_vent_internal",
+        "value": {
+          "kind": "AuthoredDetail",
+          "detail": "通气孔连接中间卧室与罗伊洛特房间。"
+        },
+        "requiresOccurred": [],
+        "explanation": "固定作者资料；陈述事实与所述内容真伪分开。",
+        "sources": [
+          "src_day"
+        ]
+      },
+      {
+        "id": "f_bed_fixed",
+        "topic": "topic_f_bed_fixed",
+        "value": {
+          "kind": "AuthoredDetail",
+          "detail": "床固定在地板上，不能随意改变与通气孔及拉绳的相对位置。"
+        },
+        "requiresOccurred": [],
+        "explanation": "固定作者资料；陈述事实与所述内容真伪分开。",
+        "sources": [
+          "src_day"
+        ]
+      },
+      {
+        "id": "f_shutters_secure",
+        "topic": "topic_f_shutters_secure",
+        "value": {
+          "kind": "AuthoredDetail",
+          "detail": "本次白天检查确认关闭并插牢后的百叶窗不能从外侧按所试方法打开。"
+        },
+        "requiresOccurred": [],
+        "explanation": "固定作者资料；陈述事实与所述内容真伪分开。",
+        "sources": [
+          "src_day"
+        ]
+      },
+      {
+        "id": "f_safe_saucer",
+        "topic": "topic_f_safe_saucer",
+        "value": {
+          "kind": "AuthoredDetail",
+          "detail": "罗伊洛特房内铁柜上有一小碟牛奶；该物本身不证明用途。"
+        },
+        "requiresOccurred": [],
+        "explanation": "固定作者资料；陈述事实与所述内容真伪分开。",
+        "sources": [
+          "src_day"
+        ]
+      },
+      {
+        "id": "f_lash_loop",
+        "topic": "topic_f_lash_loop",
+        "value": {
+          "kind": "AuthoredDetail",
+          "detail": "房内短鞭的鞭梢结成套圈。"
+        },
+        "requiresOccurred": [],
+        "explanation": "固定作者资料；陈述事实与所述内容真伪分开。",
+        "sources": [
+          "src_day"
+        ]
+      },
+      {
+        "id": "f_safe_memory_report",
+        "topic": "topic_f_safe_memory_report",
+        "value": {
+          "kind": "AuthoredDetail",
+          "detail": "海伦回忆，多年前曾见柜里放着文件。她没有检查当前内部；这段过去记忆不能确认现在柜中只有文件。"
+        },
+        "requiresOccurred": [],
+        "explanation": "固定作者资料；陈述事实与所述内容真伪分开。",
+        "sources": [
+          "src_day"
+        ]
+      },
+      {
+        "id": "f_watson_report",
+        "topic": "topic_f_watson_report",
+        "value": {
+          "kind": "AuthoredDetail",
+          "detail": "华生参与晨间会面，听到海伦叙述，并在途中听到遗嘱核查的说明。他没有因此知道未检查房间的状态，也没有见到尚未发生的夜间情况。"
+        },
+        "requiresOccurred": [],
+        "explanation": "固定作者资料；陈述事实与所述内容真伪分开。",
+        "sources": [
+          "src_day"
+        ]
+      },
+      {
+        "id": "f_day_notes",
+        "topic": "topic_f_day_notes",
+        "value": {
+          "kind": "AuthoredDetail",
+          "detail": "已将本局实际取得的经历记录、财产摘要和两室检查记录整理为白天笔记。现有材料仍须由玩家解释；没有生成凶手结论，也没有执行夜间守候或安全安排。"
+        },
+        "requiresOccurred": [],
+        "explanation": "固定作者资料；陈述事实与所述内容真伪分开。",
+        "sources": [
+          "src_day"
+        ]
+      },
+      {
+        "id": "f_julia_dead",
+        "topic": "topic_f_julia_dead",
+        "value": {
+          "kind": "AuthoredDetail",
+          "detail": "朱莉娅在开局前约两年前死亡。"
+        },
+        "requiresOccurred": [],
+        "explanation": "固定作者资料；陈述事实与所述内容真伪分开。",
+        "sources": [
+          "src_day"
+        ]
+      },
+      {
+        "id": "f_helen_moved",
+        "topic": "topic_f_helen_moved",
+        "value": {
+          "kind": "AuthoredDetail",
+          "detail": "海伦近期因维修搬到朱莉娅原来的房间。"
+        },
+        "requiresOccurred": [],
+        "explanation": "固定作者资料；陈述事实与所述内容真伪分开。",
+        "sources": [
+          "src_day"
+        ]
+      }
+    ],
+    "claims": [],
+    "sources": [
+      {
+        "id": "src_day",
+        "kind": "Original",
+        "reference": "docs/cases/speckled_band.md及其原文来源；几何和行动分钟为制作安排"
+      }
+    ]
+  },
+  "publicInfo": {
+    "background": {
+      "introduction": "英国维多利亚时代的乡间庄园。海伦的姐姐约两年前离世，近期维修使海伦搬进姐姐原来的卧室。 晨间会面与遗嘱核查已发生，已有材料可在草坪查阅。白天本阶段不执行返庄、信号或夜间袭击。",
+      "commonKnowledge": [
+        "f_julia_dead",
+        "f_helen_moved"
+      ],
+      "persons": [],
+      "openingReports": [],
+      "openingMaterials": [],
+      "areaMap": {
+        "note": "地点连接为本阶段导航示意；所示步行距离是制作估算，不作为原作时距证据。",
+        "locations": [
+          {
+            "id": "grounds",
+            "name": "庄园草坪与窗外",
+            "description": "海伦与华生在此等候。可听取经历、查阅已有文件，并从走廊检查卧室。",
+            "x": 180,
+            "y": 320
+          },
+          {
+            "id": "corridor",
+            "name": "卧室走廊",
+            "description": "走廊连接可调查的两间卧室。具体尺寸为场景制作示意，不作为案件距离证据。",
+            "x": 470,
+            "y": 320
+          },
+          {
+            "id": "middle_room",
+            "name": "中间卧室",
+            "description": "朱莉娅原来的卧室，海伦近期在此居住。检查床、拉绳、通气孔和窗户的实际关系。",
+            "x": 800,
+            "y": 180
+          },
+          {
+            "id": "roylott_room",
+            "name": "罗伊洛特卧室",
+            "description": "罗伊洛特尚在外。只检查已登记的柜体周围和短鞭；未打开柜门，不能确认当前内部。",
+            "x": 800,
+            "y": 480
+          }
+        ],
+        "roads": [
+          {
+            "id": "sb_path",
+            "from": "grounds",
+            "to": "corridor",
+            "meters": 50,
+            "label": "庄园入口"
+          },
+          {
+            "id": "sb_middle_door",
+            "from": "corridor",
+            "to": "middle_room",
+            "meters": 10,
+            "label": "中间卧室门"
+          },
+          {
+            "id": "sb_roylott_door",
+            "from": "corridor",
+            "to": "roylott_room",
+            "meters": 10,
+            "label": "相邻卧室门"
+          }
+        ]
+      }
+    },
+    "reports": []
+  },
+  "scene": {
+    "nodes": [
+      {
+        "id": "sb_node_helen",
+        "asset": "parametric_model",
+        "transform": {
+          "position": {
+            "x": -2,
+            "y": 0,
+            "z": -1
+          },
+          "rotation": {
+            "xRad": 0,
+            "yRad": 0,
+            "zRad": 0
+          },
+          "scale": {
+            "x": 1,
+            "y": 1,
+            "z": 1
+          }
+        },
+        "parent": null,
+        "represents": "helen",
+        "place": "grounds",
+        "initiallyVisible": true
+      },
+      {
+        "id": "sb_node_watson",
+        "asset": "parametric_model",
+        "transform": {
+          "position": {
+            "x": 1,
+            "y": 0,
+            "z": -1
+          },
+          "rotation": {
+            "xRad": 0,
+            "yRad": 0,
+            "zRad": 0
+          },
+          "scale": {
+            "x": 1,
+            "y": 1,
+            "z": 1
+          }
+        },
+        "parent": null,
+        "represents": "watson",
+        "place": "grounds",
+        "initiallyVisible": true
+      },
+      {
+        "id": "sb_node_sb_case_file",
+        "asset": "parametric_model",
+        "transform": {
+          "position": {
+            "x": -0.4,
+            "y": 0,
+            "z": 1.2
+          },
+          "rotation": {
+            "xRad": 0,
+            "yRad": 0,
+            "zRad": 0
+          },
+          "scale": {
+            "x": 1,
+            "y": 1,
+            "z": 1
+          }
+        },
+        "parent": null,
+        "represents": "sb_case_file",
+        "place": "grounds",
+        "initiallyVisible": true
+      },
+      {
+        "id": "sb_node_bed",
+        "asset": "parametric_model",
+        "transform": {
+          "position": {
+            "x": -1.3,
+            "y": 0,
+            "z": -0.7
+          },
+          "rotation": {
+            "xRad": 0,
+            "yRad": 0,
+            "zRad": 0
+          },
+          "scale": {
+            "x": 1,
+            "y": 1,
+            "z": 1
+          }
+        },
+        "parent": null,
+        "represents": "bed",
+        "place": "middle_room",
+        "initiallyVisible": true
+      },
+      {
+        "id": "sb_node_bell_pull",
+        "asset": "parametric_model",
+        "transform": {
+          "position": {
+            "x": -0.3,
+            "y": 0,
+            "z": -1.5
+          },
+          "rotation": {
+            "xRad": 0,
+            "yRad": 0,
+            "zRad": 0
+          },
+          "scale": {
+            "x": 1,
+            "y": 1,
+            "z": 1
+          }
+        },
+        "parent": null,
+        "represents": "bell_pull",
+        "place": "middle_room",
+        "initiallyVisible": true
+      },
+      {
+        "id": "sb_node_vent",
+        "asset": "parametric_model",
+        "transform": {
+          "position": {
+            "x": -0.3,
+            "y": 1.8,
+            "z": -2.2
+          },
+          "rotation": {
+            "xRad": 0,
+            "yRad": 0,
+            "zRad": 0
+          },
+          "scale": {
+            "x": 1,
+            "y": 1,
+            "z": 1
+          }
+        },
+        "parent": null,
+        "represents": "vent",
+        "place": "middle_room",
+        "initiallyVisible": true
+      },
+      {
+        "id": "sb_node_window_shutters",
+        "asset": "parametric_model",
+        "transform": {
+          "position": {
+            "x": 2,
+            "y": 0,
+            "z": -1.5
+          },
+          "rotation": {
+            "xRad": 0,
+            "yRad": 0,
+            "zRad": 0
+          },
+          "scale": {
+            "x": 1,
+            "y": 1,
+            "z": 1
+          }
+        },
+        "parent": null,
+        "represents": "window_shutters",
+        "place": "middle_room",
+        "initiallyVisible": true
+      },
+      {
+        "id": "sb_node_safe",
+        "asset": "parametric_model",
+        "transform": {
+          "position": {
+            "x": -1.7,
+            "y": 0,
+            "z": -1
+          },
+          "rotation": {
+            "xRad": 0,
+            "yRad": 0,
+            "zRad": 0
+          },
+          "scale": {
+            "x": 1,
+            "y": 1,
+            "z": 1
+          }
+        },
+        "parent": null,
+        "represents": "safe",
+        "place": "roylott_room",
+        "initiallyVisible": true
+      },
+      {
+        "id": "sb_node_milk_saucer",
+        "asset": "parametric_model",
+        "transform": {
+          "position": {
+            "x": -1.7,
+            "y": 1.34,
+            "z": -1
+          },
+          "rotation": {
+            "xRad": 0,
+            "yRad": 0,
+            "zRad": 0
+          },
+          "scale": {
+            "x": 1,
+            "y": 1,
+            "z": 1
+          }
+        },
+        "parent": null,
+        "represents": "milk_saucer",
+        "place": "roylott_room",
+        "initiallyVisible": true
+      },
+      {
+        "id": "sb_node_loop_lash",
+        "asset": "parametric_model",
+        "transform": {
+          "position": {
+            "x": 1.4,
+            "y": 0,
+            "z": -1
+          },
+          "rotation": {
+            "xRad": 0,
+            "yRad": 0,
+            "zRad": 0
+          },
+          "scale": {
+            "x": 1,
+            "y": 1,
+            "z": 1
+          }
+        },
+        "parent": null,
+        "represents": "loop_lash",
+        "place": "roylott_room",
+        "initiallyVisible": true
+      },
+      {
+        "id": "sb_node_door_grounds_corridor",
+        "asset": "parametric_model",
+        "transform": {
+          "position": {
+            "x": 3,
+            "y": 0,
+            "z": 2
+          },
+          "rotation": {
+            "xRad": 0,
+            "yRad": 0,
+            "zRad": 0
+          },
+          "scale": {
+            "x": 1,
+            "y": 1,
+            "z": 1
+          }
+        },
+        "parent": null,
+        "represents": "door_grounds_corridor",
+        "place": "grounds",
+        "initiallyVisible": true
+      },
+      {
+        "id": "sb_node_door_corridor_grounds",
+        "asset": "parametric_model",
+        "transform": {
+          "position": {
+            "x": 3,
+            "y": 0,
+            "z": 2
+          },
+          "rotation": {
+            "xRad": 0,
+            "yRad": 0,
+            "zRad": 0
+          },
+          "scale": {
+            "x": 1,
+            "y": 1,
+            "z": 1
+          }
+        },
+        "parent": null,
+        "represents": "door_corridor_grounds",
+        "place": "corridor",
+        "initiallyVisible": true
+      },
+      {
+        "id": "sb_node_door_corridor_middle_room",
+        "asset": "parametric_model",
+        "transform": {
+          "position": {
+            "x": 3,
+            "y": 0,
+            "z": 2
+          },
+          "rotation": {
+            "xRad": 0,
+            "yRad": 0,
+            "zRad": 0
+          },
+          "scale": {
+            "x": 1,
+            "y": 1,
+            "z": 1
+          }
+        },
+        "parent": null,
+        "represents": "door_corridor_middle_room",
+        "place": "corridor",
+        "initiallyVisible": true
+      },
+      {
+        "id": "sb_node_door_middle_room_corridor",
+        "asset": "parametric_model",
+        "transform": {
+          "position": {
+            "x": 3,
+            "y": 0,
+            "z": 2
+          },
+          "rotation": {
+            "xRad": 0,
+            "yRad": 0,
+            "zRad": 0
+          },
+          "scale": {
+            "x": 1,
+            "y": 1,
+            "z": 1
+          }
+        },
+        "parent": null,
+        "represents": "door_middle_room_corridor",
+        "place": "middle_room",
+        "initiallyVisible": true
+      },
+      {
+        "id": "sb_node_door_corridor_roylott_room",
+        "asset": "parametric_model",
+        "transform": {
+          "position": {
+            "x": 3,
+            "y": 0,
+            "z": 2
+          },
+          "rotation": {
+            "xRad": 0,
+            "yRad": 0,
+            "zRad": 0
+          },
+          "scale": {
+            "x": 1,
+            "y": 1,
+            "z": 1
+          }
+        },
+        "parent": null,
+        "represents": "door_corridor_roylott_room",
+        "place": "corridor",
+        "initiallyVisible": true
+      },
+      {
+        "id": "sb_node_door_roylott_room_corridor",
+        "asset": "parametric_model",
+        "transform": {
+          "position": {
+            "x": 3,
+            "y": 0,
+            "z": 2
+          },
+          "rotation": {
+            "xRad": 0,
+            "yRad": 0,
+            "zRad": 0
+          },
+          "scale": {
+            "x": 1,
+            "y": 1,
+            "z": 1
+          }
+        },
+        "parent": null,
+        "represents": "door_roylott_room_corridor",
+        "place": "roylott_room",
+        "initiallyVisible": true
+      }
+    ],
+    "cues": [],
+    "points": [
+      {
+        "id": "sb_point_helen",
+        "subject": {
+          "kind": "Entity",
+          "id": "helen"
+        },
+        "label": "海伦·斯托纳",
+        "entry": {
+          "kind": "OnNode",
+          "node": "sb_node_helen",
+          "localPoint": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "radiusMeters": 12
+        },
+        "topics": [],
+        "fallbackFinding": null
+      },
+      {
+        "id": "sb_point_watson",
+        "subject": {
+          "kind": "Entity",
+          "id": "watson"
+        },
+        "label": "约翰·华生",
+        "entry": {
+          "kind": "OnNode",
+          "node": "sb_node_watson",
+          "localPoint": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "radiusMeters": 12
+        },
+        "topics": [],
+        "fallbackFinding": null
+      },
+      {
+        "id": "sb_point_sb_case_file",
+        "subject": {
+          "kind": "Entity",
+          "id": "sb_case_file"
+        },
+        "label": "已有文件与调查笔记",
+        "entry": {
+          "kind": "OnNode",
+          "node": "sb_node_sb_case_file",
+          "localPoint": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "radiusMeters": 12
+        },
+        "topics": [],
+        "fallbackFinding": null
+      },
+      {
+        "id": "sb_point_bed",
+        "subject": {
+          "kind": "Entity",
+          "id": "bed"
+        },
+        "label": "固定床",
+        "entry": {
+          "kind": "OnNode",
+          "node": "sb_node_bed",
+          "localPoint": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "radiusMeters": 12
+        },
+        "topics": [],
+        "fallbackFinding": null
+      },
+      {
+        "id": "sb_point_bell_pull",
+        "subject": {
+          "kind": "Entity",
+          "id": "bell_pull"
+        },
+        "label": "床边拉绳",
+        "entry": {
+          "kind": "OnNode",
+          "node": "sb_node_bell_pull",
+          "localPoint": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "radiusMeters": 12
+        },
+        "topics": [],
+        "fallbackFinding": null
+      },
+      {
+        "id": "sb_point_vent",
+        "subject": {
+          "kind": "Entity",
+          "id": "vent"
+        },
+        "label": "墙面通气孔",
+        "entry": {
+          "kind": "OnNode",
+          "node": "sb_node_vent",
+          "localPoint": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "radiusMeters": 12
+        },
+        "topics": [],
+        "fallbackFinding": null
+      },
+      {
+        "id": "sb_point_window_shutters",
+        "subject": {
+          "kind": "Entity",
+          "id": "window_shutters"
+        },
+        "label": "窗户与百叶窗",
+        "entry": {
+          "kind": "OnNode",
+          "node": "sb_node_window_shutters",
+          "localPoint": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "radiusMeters": 12
+        },
+        "topics": [],
+        "fallbackFinding": null
+      },
+      {
+        "id": "sb_point_safe",
+        "subject": {
+          "kind": "Entity",
+          "id": "safe"
+        },
+        "label": "铁柜外部",
+        "entry": {
+          "kind": "OnNode",
+          "node": "sb_node_safe",
+          "localPoint": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "radiusMeters": 12
+        },
+        "topics": [],
+        "fallbackFinding": null
+      },
+      {
+        "id": "sb_point_milk_saucer",
+        "subject": {
+          "kind": "Entity",
+          "id": "milk_saucer"
+        },
+        "label": "牛奶碟",
+        "entry": {
+          "kind": "OnNode",
+          "node": "sb_node_milk_saucer",
+          "localPoint": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "radiusMeters": 12
+        },
+        "topics": [],
+        "fallbackFinding": null
+      },
+      {
+        "id": "sb_point_loop_lash",
+        "subject": {
+          "kind": "Entity",
+          "id": "loop_lash"
+        },
+        "label": "套圈短鞭",
+        "entry": {
+          "kind": "OnNode",
+          "node": "sb_node_loop_lash",
+          "localPoint": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "radiusMeters": 12
+        },
+        "topics": [],
+        "fallbackFinding": null
+      },
+      {
+        "id": "sb_point_door_grounds_corridor",
+        "subject": {
+          "kind": "Entity",
+          "id": "door_grounds_corridor"
+        },
+        "label": "前往卧室走廊",
+        "entry": {
+          "kind": "OnNode",
+          "node": "sb_node_door_grounds_corridor",
+          "localPoint": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "radiusMeters": 12
+        },
+        "topics": [],
+        "fallbackFinding": null
+      },
+      {
+        "id": "sb_point_door_corridor_grounds",
+        "subject": {
+          "kind": "Entity",
+          "id": "door_corridor_grounds"
+        },
+        "label": "前往庄园草坪与窗外",
+        "entry": {
+          "kind": "OnNode",
+          "node": "sb_node_door_corridor_grounds",
+          "localPoint": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "radiusMeters": 12
+        },
+        "topics": [],
+        "fallbackFinding": null
+      },
+      {
+        "id": "sb_point_door_corridor_middle_room",
+        "subject": {
+          "kind": "Entity",
+          "id": "door_corridor_middle_room"
+        },
+        "label": "前往中间卧室",
+        "entry": {
+          "kind": "OnNode",
+          "node": "sb_node_door_corridor_middle_room",
+          "localPoint": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "radiusMeters": 12
+        },
+        "topics": [],
+        "fallbackFinding": null
+      },
+      {
+        "id": "sb_point_door_middle_room_corridor",
+        "subject": {
+          "kind": "Entity",
+          "id": "door_middle_room_corridor"
+        },
+        "label": "前往卧室走廊",
+        "entry": {
+          "kind": "OnNode",
+          "node": "sb_node_door_middle_room_corridor",
+          "localPoint": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "radiusMeters": 12
+        },
+        "topics": [],
+        "fallbackFinding": null
+      },
+      {
+        "id": "sb_point_door_corridor_roylott_room",
+        "subject": {
+          "kind": "Entity",
+          "id": "door_corridor_roylott_room"
+        },
+        "label": "前往罗伊洛特卧室",
+        "entry": {
+          "kind": "OnNode",
+          "node": "sb_node_door_corridor_roylott_room",
+          "localPoint": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "radiusMeters": 12
+        },
+        "topics": [],
+        "fallbackFinding": null
+      },
+      {
+        "id": "sb_point_door_roylott_room_corridor",
+        "subject": {
+          "kind": "Entity",
+          "id": "door_roylott_room_corridor"
+        },
+        "label": "前往卧室走廊",
+        "entry": {
+          "kind": "OnNode",
+          "node": "sb_node_door_roylott_room_corridor",
+          "localPoint": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "radiusMeters": 12
+        },
+        "topics": [],
+        "fallbackFinding": null
+      }
+    ],
+    "requirementBindings": [],
+    "movement": {
+      "maximumStepMeters": 2
+    },
+    "bundleId": "authored",
+    "objects": [
+      {
+        "node": "sb_node_helen",
+        "entity": "helen",
+        "label": "海伦·斯托纳",
+        "point": "sb_point_helen",
+        "readRoute": null
+      },
+      {
+        "node": "sb_node_watson",
+        "entity": "watson",
+        "label": "约翰·华生",
+        "point": "sb_point_watson",
+        "readRoute": null
+      },
+      {
+        "node": "sb_node_sb_case_file",
+        "entity": "sb_case_file",
+        "label": "已有文件与调查笔记",
+        "point": "sb_point_sb_case_file",
+        "readRoute": null
+      },
+      {
+        "node": "sb_node_bed",
+        "entity": "bed",
+        "label": "固定床",
+        "point": "sb_point_bed",
+        "readRoute": null
+      },
+      {
+        "node": "sb_node_bell_pull",
+        "entity": "bell_pull",
+        "label": "床边拉绳",
+        "point": "sb_point_bell_pull",
+        "readRoute": null
+      },
+      {
+        "node": "sb_node_vent",
+        "entity": "vent",
+        "label": "墙面通气孔",
+        "point": "sb_point_vent",
+        "readRoute": null
+      },
+      {
+        "node": "sb_node_window_shutters",
+        "entity": "window_shutters",
+        "label": "窗户与百叶窗",
+        "point": "sb_point_window_shutters",
+        "readRoute": null
+      },
+      {
+        "node": "sb_node_safe",
+        "entity": "safe",
+        "label": "铁柜外部",
+        "point": "sb_point_safe",
+        "readRoute": null
+      },
+      {
+        "node": "sb_node_milk_saucer",
+        "entity": "milk_saucer",
+        "label": "牛奶碟",
+        "point": "sb_point_milk_saucer",
+        "readRoute": null
+      },
+      {
+        "node": "sb_node_loop_lash",
+        "entity": "loop_lash",
+        "label": "套圈短鞭",
+        "point": "sb_point_loop_lash",
+        "readRoute": null
+      },
+      {
+        "node": "sb_node_door_grounds_corridor",
+        "entity": "door_grounds_corridor",
+        "label": "前往卧室走廊",
+        "point": "sb_point_door_grounds_corridor",
+        "readRoute": null
+      },
+      {
+        "node": "sb_node_door_corridor_grounds",
+        "entity": "door_corridor_grounds",
+        "label": "前往庄园草坪与窗外",
+        "point": "sb_point_door_corridor_grounds",
+        "readRoute": null
+      },
+      {
+        "node": "sb_node_door_corridor_middle_room",
+        "entity": "door_corridor_middle_room",
+        "label": "前往中间卧室",
+        "point": "sb_point_door_corridor_middle_room",
+        "readRoute": null
+      },
+      {
+        "node": "sb_node_door_middle_room_corridor",
+        "entity": "door_middle_room_corridor",
+        "label": "前往卧室走廊",
+        "point": "sb_point_door_middle_room_corridor",
+        "readRoute": null
+      },
+      {
+        "node": "sb_node_door_corridor_roylott_room",
+        "entity": "door_corridor_roylott_room",
+        "label": "前往罗伊洛特卧室",
+        "point": "sb_point_door_corridor_roylott_room",
+        "readRoute": null
+      },
+      {
+        "node": "sb_node_door_roylott_room_corridor",
+        "entity": "door_roylott_room_corridor",
+        "label": "前往卧室走廊",
+        "point": "sb_point_door_roylott_room_corridor",
+        "readRoute": null
+      }
+    ],
+    "observations": [
+      {
+        "node": "sb_node_helen",
+        "label": "海伦·斯托纳",
+        "description": "委托人在草坪等候，可以询问她亲历和转述的情况。"
+      },
+      {
+        "node": "sb_node_watson",
+        "label": "约翰·华生",
+        "description": "同行的医生。只知道晨间会面和途中交流；未随玩家检查的现场不能自动成为他的经历。"
+      },
+      {
+        "node": "sb_node_sb_case_file",
+        "label": "已有文件与调查笔记",
+        "description": "可查阅遗嘱核查摘要，整理实际已取得的材料。"
+      },
+      {
+        "node": "sb_node_bed",
+        "label": "固定床",
+        "description": "床靠近拉绳和墙面通气孔；具体几何尺寸为制作示意。"
+      },
+      {
+        "node": "sb_node_bell_pull",
+        "label": "床边拉绳",
+        "description": "细绳垂在床边，须实际检查连接关系，名称不说明用途。"
+      },
+      {
+        "node": "sb_node_vent",
+        "label": "墙面通气孔",
+        "description": "墙上有一小孔，其通向何处需要实际检查。"
+      },
+      {
+        "node": "sb_node_window_shutters",
+        "label": "窗户与百叶窗",
+        "description": "可在本次白天检查中核实关闭、插牢及从外侧尝试的结果。"
+      },
+      {
+        "node": "sb_node_safe",
+        "label": "铁柜外部",
+        "description": "柜门关闭，本阶段没有打开柜门或读取内部的执行入口。"
+      },
+      {
+        "node": "sb_node_milk_saucer",
+        "label": "牛奶碟",
+        "description": "铁柜上放着小碟。只记录当前可见状态，不说明用途。"
+      },
+      {
+        "node": "sb_node_loop_lash",
+        "label": "套圈短鞭",
+        "description": "短鞭垂在一旁，鞭梢的形状需要近看。"
+      },
+      {
+        "node": "sb_node_door_grounds_corridor",
+        "label": "前往卧室走廊",
+        "description": "通往已登记相邻地点的路线。"
+      },
+      {
+        "node": "sb_node_door_corridor_grounds",
+        "label": "前往庄园草坪与窗外",
+        "description": "通往已登记相邻地点的路线。"
+      },
+      {
+        "node": "sb_node_door_corridor_middle_room",
+        "label": "前往中间卧室",
+        "description": "通往已登记相邻地点的路线。"
+      },
+      {
+        "node": "sb_node_door_middle_room_corridor",
+        "label": "前往卧室走廊",
+        "description": "通往已登记相邻地点的路线。"
+      },
+      {
+        "node": "sb_node_door_corridor_roylott_room",
+        "label": "前往罗伊洛特卧室",
+        "description": "通往已登记相邻地点的路线。"
+      },
+      {
+        "node": "sb_node_door_roylott_room_corridor",
+        "label": "前往卧室走廊",
+        "description": "通往已登记相邻地点的路线。"
+      }
+    ],
+    "locations": [
+      {
+        "place": "grounds",
+        "name": "庄园草坪与窗外",
+        "bundleId": "authored",
+        "stops": [
+          {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          }
+        ]
+      },
+      {
+        "place": "corridor",
+        "name": "卧室走廊",
+        "bundleId": "authored",
+        "stops": [
+          {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          }
+        ]
+      },
+      {
+        "place": "middle_room",
+        "name": "中间卧室",
+        "bundleId": "authored",
+        "stops": [
+          {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          }
+        ]
+      },
+      {
+        "place": "roylott_room",
+        "name": "罗伊洛特卧室",
+        "bundleId": "authored",
+        "stops": [
+          {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          }
+        ]
+      }
+    ],
+    "blueprint": {
+      "rooms": [
+        {
+          "place": "grounds",
+          "description": "海伦与华生在此等候。可听取经历、查阅已有文件，并从走廊检查卧室。",
+          "floorSize": {
+            "x": 9,
+            "y": 1,
+            "z": 8
+          },
+          "color": "#667653",
+          "cameraPosition": {
+            "x": 6,
+            "y": 6,
+            "z": 7
+          },
+          "cameraTarget": {
+            "x": 0,
+            "y": 0.8,
+            "z": 0
+          }
+        },
+        {
+          "place": "corridor",
+          "description": "走廊连接可调查的两间卧室。具体尺寸为场景制作示意，不作为案件距离证据。",
+          "floorSize": {
+            "x": 9,
+            "y": 1,
+            "z": 8
+          },
+          "color": "#756550",
+          "cameraPosition": {
+            "x": 6,
+            "y": 6,
+            "z": 7
+          },
+          "cameraTarget": {
+            "x": 0,
+            "y": 0.8,
+            "z": 0
+          }
+        },
+        {
+          "place": "middle_room",
+          "description": "朱莉娅原来的卧室，海伦近期在此居住。检查床、拉绳、通气孔和窗户的实际关系。",
+          "floorSize": {
+            "x": 9,
+            "y": 1,
+            "z": 8
+          },
+          "color": "#655348",
+          "cameraPosition": {
+            "x": 6,
+            "y": 6,
+            "z": 7
+          },
+          "cameraTarget": {
+            "x": 0,
+            "y": 0.8,
+            "z": 0
+          }
+        },
+        {
+          "place": "roylott_room",
+          "description": "罗伊洛特尚在外。只检查已登记的柜体周围和短鞭；未打开柜门，不能确认当前内部。",
+          "floorSize": {
+            "x": 9,
+            "y": 1,
+            "z": 8
+          },
+          "color": "#57564c",
+          "cameraPosition": {
+            "x": 6,
+            "y": 6,
+            "z": 7
+          },
+          "cameraTarget": {
+            "x": 0,
+            "y": 0.8,
+            "z": 0
+          }
+        }
+      ],
+      "visuals": [
+        {
+          "node": "sb_node_helen",
+          "parts": [
+            {
+              "shape": "Cylinder",
+              "size": {
+                "x": 0.5,
+                "y": 1.3,
+                "z": 0.5
+              },
+              "offset": {
+                "x": 0,
+                "y": 0.65,
+                "z": 0
+              },
+              "color": "#739190"
+            },
+            {
+              "shape": "Sphere",
+              "size": {
+                "x": 0.4,
+                "y": 0.4,
+                "z": 0.4
+              },
+              "offset": {
+                "x": 0,
+                "y": 1.55,
+                "z": 0
+              },
+              "color": "#d6b99b"
+            }
+          ]
+        },
+        {
+          "node": "sb_node_watson",
+          "parts": [
+            {
+              "shape": "Cylinder",
+              "size": {
+                "x": 0.5,
+                "y": 1.3,
+                "z": 0.5
+              },
+              "offset": {
+                "x": 0,
+                "y": 0.65,
+                "z": 0
+              },
+              "color": "#746858"
+            },
+            {
+              "shape": "Sphere",
+              "size": {
+                "x": 0.4,
+                "y": 0.4,
+                "z": 0.4
+              },
+              "offset": {
+                "x": 0,
+                "y": 1.55,
+                "z": 0
+              },
+              "color": "#d0b393"
+            }
+          ]
+        },
+        {
+          "node": "sb_node_sb_case_file",
+          "parts": [
+            {
+              "shape": "Box",
+              "size": {
+                "x": 1.1,
+                "y": 0.7,
+                "z": 0.7
+              },
+              "offset": {
+                "x": 0,
+                "y": 0.35,
+                "z": 0
+              },
+              "color": "#765638"
+            },
+            {
+              "shape": "Box",
+              "size": {
+                "x": 0.7,
+                "y": 0.04,
+                "z": 0.4
+              },
+              "offset": {
+                "x": 0,
+                "y": 0.75,
+                "z": 0
+              },
+              "color": "#dbd1ad"
+            }
+          ]
+        },
+        {
+          "node": "sb_node_bed",
+          "parts": [
+            {
+              "shape": "Box",
+              "size": {
+                "x": 1.4,
+                "y": 0.4,
+                "z": 2.2
+              },
+              "offset": {
+                "x": 0,
+                "y": 0.2,
+                "z": 0
+              },
+              "color": "#674b33"
+            },
+            {
+              "shape": "Box",
+              "size": {
+                "x": 1.35,
+                "y": 0.2,
+                "z": 2.1
+              },
+              "offset": {
+                "x": 0,
+                "y": 0.5,
+                "z": 0
+              },
+              "color": "#d1c3a6"
+            }
+          ]
+        },
+        {
+          "node": "sb_node_bell_pull",
+          "parts": [
+            {
+              "shape": "Cylinder",
+              "size": {
+                "x": 0.05,
+                "y": 1.8,
+                "z": 0.05
+              },
+              "offset": {
+                "x": 0,
+                "y": 0.9,
+                "z": 0
+              },
+              "color": "#b5a575"
+            }
+          ]
+        },
+        {
+          "node": "sb_node_vent",
+          "parts": [
+            {
+              "shape": "Box",
+              "size": {
+                "x": 0.5,
+                "y": 0.35,
+                "z": 0.12
+              },
+              "offset": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "color": "#282e29"
+            }
+          ]
+        },
+        {
+          "node": "sb_node_window_shutters",
+          "parts": [
+            {
+              "shape": "Box",
+              "size": {
+                "x": 1.4,
+                "y": 1.5,
+                "z": 0.15
+              },
+              "offset": {
+                "x": 0,
+                "y": 1.25,
+                "z": 0
+              },
+              "color": "#7f8e7b"
+            }
+          ]
+        },
+        {
+          "node": "sb_node_safe",
+          "parts": [
+            {
+              "shape": "Box",
+              "size": {
+                "x": 1.1,
+                "y": 1.3,
+                "z": 0.9
+              },
+              "offset": {
+                "x": 0,
+                "y": 0.65,
+                "z": 0
+              },
+              "color": "#515c59"
+            }
+          ]
+        },
+        {
+          "node": "sb_node_milk_saucer",
+          "parts": [
+            {
+              "shape": "Cylinder",
+              "size": {
+                "x": 0.32,
+                "y": 0.05,
+                "z": 0.32
+              },
+              "offset": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "color": "#ddd6bf"
+            }
+          ]
+        },
+        {
+          "node": "sb_node_loop_lash",
+          "parts": [
+            {
+              "shape": "Cylinder",
+              "size": {
+                "x": 0.06,
+                "y": 0.8,
+                "z": 0.06
+              },
+              "offset": {
+                "x": 0,
+                "y": 0.4,
+                "z": 0
+              },
+              "color": "#69543a"
+            },
+            {
+              "shape": "Sphere",
+              "size": {
+                "x": 0.16,
+                "y": 0.16,
+                "z": 0.16
+              },
+              "offset": {
+                "x": 0,
+                "y": 0.05,
+                "z": 0
+              },
+              "color": "#69543a"
+            }
+          ]
+        },
+        {
+          "node": "sb_node_door_grounds_corridor",
+          "parts": [
+            {
+              "shape": "Box",
+              "size": {
+                "x": 0.8,
+                "y": 1.8,
+                "z": 0.16
+              },
+              "offset": {
+                "x": 0,
+                "y": 0.9,
+                "z": 0
+              },
+              "color": "#93754f"
+            }
+          ]
+        },
+        {
+          "node": "sb_node_door_corridor_grounds",
+          "parts": [
+            {
+              "shape": "Box",
+              "size": {
+                "x": 0.8,
+                "y": 1.8,
+                "z": 0.16
+              },
+              "offset": {
+                "x": 0,
+                "y": 0.9,
+                "z": 0
+              },
+              "color": "#93754f"
+            }
+          ]
+        },
+        {
+          "node": "sb_node_door_corridor_middle_room",
+          "parts": [
+            {
+              "shape": "Box",
+              "size": {
+                "x": 0.8,
+                "y": 1.8,
+                "z": 0.16
+              },
+              "offset": {
+                "x": 0,
+                "y": 0.9,
+                "z": 0
+              },
+              "color": "#93754f"
+            }
+          ]
+        },
+        {
+          "node": "sb_node_door_middle_room_corridor",
+          "parts": [
+            {
+              "shape": "Box",
+              "size": {
+                "x": 0.8,
+                "y": 1.8,
+                "z": 0.16
+              },
+              "offset": {
+                "x": 0,
+                "y": 0.9,
+                "z": 0
+              },
+              "color": "#93754f"
+            }
+          ]
+        },
+        {
+          "node": "sb_node_door_corridor_roylott_room",
+          "parts": [
+            {
+              "shape": "Box",
+              "size": {
+                "x": 0.8,
+                "y": 1.8,
+                "z": 0.16
+              },
+              "offset": {
+                "x": 0,
+                "y": 0.9,
+                "z": 0
+              },
+              "color": "#93754f"
+            }
+          ]
+        },
+        {
+          "node": "sb_node_door_roylott_room_corridor",
+          "parts": [
+            {
+              "shape": "Box",
+              "size": {
+                "x": 0.8,
+                "y": 1.8,
+                "z": 0.16
+              },
+              "offset": {
+                "x": 0,
+                "y": 0.9,
+                "z": 0
+              },
+              "color": "#93754f"
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "investigation": {
+    "clues": [
+      {
+        "id": "clue_helen_account",
+        "title": "海伦的经历记录",
+        "finding": "海伦说，朱莉娅约两年前去世，临终提到“带斑点的带子”。她回忆那夜在风雨中似乎听见口哨和金属声，但不能完全确定。近期维修使她搬入姐姐原来的卧室，前一夜又听见相似口哨。她害怕重演旧事，未看见声音的来源；惊吓致死是她曾有的猜测。",
+        "facts": [
+          "f_helen_report"
+        ],
+        "relatedClaims": [],
+        "result": {
+          "text": "海伦说，朱莉娅约两年前去世，临终提到“带斑点的带子”。她回忆那夜在风雨中似乎听见口哨和金属声，但不能完全确定。近期维修使她搬入姐姐原来的卧室，前一夜又听见相似口哨。她害怕重演旧事，未看见声音的来源；惊吓致死是她曾有的猜测。",
+          "media": []
+        },
+        "suggests": []
+      },
+      {
+        "id": "clue_will",
+        "title": "遗嘱核查摘要",
+        "finding": "已经核查的财产安排表明，继女结婚将使罗伊洛特的收入减少。它提供经济利益方向，不能单独证明谁实施了什么行为。",
+        "facts": [
+          "f_financial_motive"
+        ],
+        "relatedClaims": [],
+        "result": {
+          "text": "已经核查的财产安排表明，继女结婚将使罗伊洛特的收入减少。它提供经济利益方向，不能单独证明谁实施了什么行为。",
+          "media": []
+        },
+        "suggests": []
+      },
+      {
+        "id": "clue_pull",
+        "title": "拉绳检查记录",
+        "finding": "沿床边拉绳检查，确认它没有接到铃的拉线；上端固定在通气孔附近。这里记录连接状态，不替玩家认定用途。",
+        "facts": [
+          "f_pull_dummy"
+        ],
+        "relatedClaims": [],
+        "result": {
+          "text": "沿床边拉绳检查，确认它没有接到铃的拉线；上端固定在通气孔附近。这里记录连接状态，不替玩家认定用途。",
+          "media": []
+        },
+        "suggests": []
+      },
+      {
+        "id": "clue_vent",
+        "title": "通气孔检查记录",
+        "finding": "本次检查确认墙上小孔通向罗伊洛特的相邻卧室，并非直接通到室外。孔洞本身不能确认曾通过的对象。",
+        "facts": [
+          "f_vent_internal"
+        ],
+        "relatedClaims": [],
+        "result": {
+          "text": "本次检查确认墙上小孔通向罗伊洛特的相邻卧室，并非直接通到室外。孔洞本身不能确认曾通过的对象。",
+          "media": []
+        },
+        "suggests": []
+      },
+      {
+        "id": "clue_bed",
+        "title": "床的固定关系",
+        "finding": "检查床架与地板，确认床固定，不能随意移动；床、拉绳与通气孔的位置关系稳定。",
+        "facts": [
+          "f_bed_fixed"
+        ],
+        "relatedClaims": [],
+        "result": {
+          "text": "检查床架与地板，确认床固定，不能随意移动；床、拉绳与通气孔的位置关系稳定。",
+          "media": []
+        },
+        "suggests": []
+      },
+      {
+        "id": "clue_shutters",
+        "title": "窗户检查记录",
+        "finding": "本次将百叶窗关闭并插牢，从外侧按已试的方法无法打开。这是当次状态和检查范围内的结果，不等于无限范围的密室结论。",
+        "facts": [
+          "f_shutters_secure"
+        ],
+        "relatedClaims": [],
+        "result": {
+          "text": "本次将百叶窗关闭并插牢，从外侧按已试的方法无法打开。这是当次状态和检查范围内的结果，不等于无限范围的密室结论。",
+          "media": []
+        },
+        "suggests": []
+      },
+      {
+        "id": "clue_safe_surface",
+        "title": "铁柜周围观察",
+        "finding": "柜门关闭，柜顶放着一小碟牛奶。没有打开柜门，当前柜内内容仍未查明；不能把作者未公开内容当作现场所见。",
+        "facts": [
+          "f_safe_saucer"
+        ],
+        "relatedClaims": [],
+        "result": {
+          "text": "柜门关闭，柜顶放着一小碟牛奶。没有打开柜门，当前柜内内容仍未查明；不能把作者未公开内容当作现场所见。",
+          "media": []
+        },
+        "suggests": []
+      },
+      {
+        "id": "clue_lash",
+        "title": "套圈短鞭记录",
+        "finding": "近看短鞭，确认鞭梢结成套圈。形状已记录，具体用途尚未由这次检查证明。",
+        "facts": [
+          "f_lash_loop"
+        ],
+        "relatedClaims": [],
+        "result": {
+          "text": "近看短鞭，确认鞭梢结成套圈。形状已记录，具体用途尚未由这次检查证明。",
+          "media": []
+        },
+        "suggests": []
+      },
+      {
+        "id": "clue_helen_safe_memory",
+        "title": "海伦过去见过的柜内物品",
+        "finding": "海伦回忆，多年前曾见柜里放着文件。她没有检查当前内部；这段过去记忆不能确认现在柜中只有文件。",
+        "facts": [
+          "f_safe_memory_report"
+        ],
+        "relatedClaims": [],
+        "result": {
+          "text": "海伦回忆，多年前曾见柜里放着文件。她没有检查当前内部；这段过去记忆不能确认现在柜中只有文件。",
+          "media": []
+        },
+        "suggests": []
+      },
+      {
+        "id": "clue_watson_day",
+        "title": "华生的晨间与途中经历",
+        "finding": "华生参与晨间会面，听到海伦叙述，并在途中听到遗嘱核查的说明。他没有因此知道未检查房间的状态，也没有见到尚未发生的夜间情况。",
+        "facts": [
+          "f_watson_report"
+        ],
+        "relatedClaims": [],
+        "result": {
+          "text": "华生参与晨间会面，听到海伦叙述，并在途中听到遗嘱核查的说明。他没有因此知道未检查房间的状态，也没有见到尚未发生的夜间情况。",
+          "media": []
+        },
+        "suggests": []
+      },
+      {
+        "id": "clue_day_notes",
+        "title": "白天调查笔记",
+        "finding": "已将本局实际取得的经历记录、财产摘要和两室检查记录整理为白天笔记。现有材料仍须由玩家解释；没有生成凶手结论，也没有执行夜间守候或安全安排。",
+        "facts": [
+          "f_day_notes"
+        ],
+        "relatedClaims": [],
+        "result": {
+          "text": "已将本局实际取得的经历记录、财产摘要和两室检查记录整理为白天笔记。现有材料仍须由玩家解释；没有生成凶手结论，也没有执行夜间守候或安全安排。",
+          "media": []
+        },
+        "suggests": []
+      }
+    ],
+    "routes": [
+      {
+        "id": "route_helen_account",
+        "point": "sb_point_helen",
+        "condition": {
+          "kind": "Always"
+        },
+        "method": {
+          "kind": "Fixed",
+          "label": "询问海伦的经历"
+        },
+        "grants": [
+          "clue_helen_account"
+        ],
+        "reports": []
+      },
+      {
+        "id": "route_helen_safe",
+        "point": "sb_point_helen",
+        "condition": {
+          "kind": "Always"
+        },
+        "method": {
+          "kind": "Fixed",
+          "label": "询问海伦过去是否看过铁柜内部"
+        },
+        "grants": [
+          "clue_helen_safe_memory"
+        ],
+        "reports": []
+      },
+      {
+        "id": "route_watson_day",
+        "point": "sb_point_watson",
+        "condition": {
+          "kind": "Always"
+        },
+        "method": {
+          "kind": "Fixed",
+          "label": "询问华生已知的经历"
+        },
+        "grants": [
+          "clue_watson_day"
+        ],
+        "reports": []
+      },
+      {
+        "id": "route_will",
+        "point": "sb_point_sb_case_file",
+        "condition": {
+          "kind": "Always"
+        },
+        "method": {
+          "kind": "Fixed",
+          "label": "查阅遗嘱核查摘要"
+        },
+        "grants": [
+          "clue_will"
+        ],
+        "reports": []
+      },
+      {
+        "id": "route_pull",
+        "point": "sb_point_bell_pull",
+        "condition": {
+          "kind": "Always"
+        },
+        "method": {
+          "kind": "Fixed",
+          "label": "检查拉绳连接"
+        },
+        "grants": [
+          "clue_pull"
+        ],
+        "reports": []
+      },
+      {
+        "id": "route_vent",
+        "point": "sb_point_vent",
+        "condition": {
+          "kind": "Always"
+        },
+        "method": {
+          "kind": "Fixed",
+          "label": "检查通气孔方向"
+        },
+        "grants": [
+          "clue_vent"
+        ],
+        "reports": []
+      },
+      {
+        "id": "route_bed",
+        "point": "sb_point_bed",
+        "condition": {
+          "kind": "Always"
+        },
+        "method": {
+          "kind": "Fixed",
+          "label": "检查床与地板"
+        },
+        "grants": [
+          "clue_bed"
+        ],
+        "reports": []
+      },
+      {
+        "id": "route_shutters",
+        "point": "sb_point_window_shutters",
+        "condition": {
+          "kind": "Always"
+        },
+        "method": {
+          "kind": "Fixed",
+          "label": "检查窗户与百叶窗"
+        },
+        "grants": [
+          "clue_shutters"
+        ],
+        "reports": []
+      },
+      {
+        "id": "route_safe_surface",
+        "point": "sb_point_safe",
+        "condition": {
+          "kind": "Always"
+        },
+        "method": {
+          "kind": "Fixed",
+          "label": "检查铁柜周围"
+        },
+        "grants": [
+          "clue_safe_surface"
+        ],
+        "reports": []
+      },
+      {
+        "id": "route_lash",
+        "point": "sb_point_loop_lash",
+        "condition": {
+          "kind": "Always"
+        },
+        "method": {
+          "kind": "Fixed",
+          "label": "检查短鞭形状"
+        },
+        "grants": [
+          "clue_lash"
+        ],
+        "reports": []
+      },
+      {
+        "id": "route_day_notes",
+        "point": "sb_point_sb_case_file",
+        "condition": {
+          "kind": "CluesKnown",
+          "clues": [
+            "clue_helen_account",
+            "clue_will",
+            "clue_pull",
+            "clue_vent",
+            "clue_bed",
+            "clue_shutters",
+            "clue_safe_surface",
+            "clue_lash"
+          ]
+        },
+        "method": {
+          "kind": "Fixed",
+          "label": "整理白天调查笔记"
+        },
+        "grants": [
+          "clue_day_notes"
+        ],
+        "reports": []
+      }
+    ],
+    "operations": [
+      {
+        "id": "travel_grounds_corridor",
+        "point": "sb_point_door_grounds_corridor",
+        "label": "前往卧室走廊",
+        "condition": {
+          "kind": "All",
+          "items": []
+        },
+        "effects": [
+          {
+            "kind": "World",
+            "effect": {
+              "kind": "Relocate",
+              "place": "corridor",
+              "position": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              }
+            }
+          }
+        ],
+        "repeatable": true
+      },
+      {
+        "id": "travel_corridor_grounds",
+        "point": "sb_point_door_corridor_grounds",
+        "label": "前往庄园草坪与窗外",
+        "condition": {
+          "kind": "All",
+          "items": []
+        },
+        "effects": [
+          {
+            "kind": "World",
+            "effect": {
+              "kind": "Relocate",
+              "place": "grounds",
+              "position": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              }
+            }
+          }
+        ],
+        "repeatable": true
+      },
+      {
+        "id": "travel_corridor_middle_room",
+        "point": "sb_point_door_corridor_middle_room",
+        "label": "前往中间卧室",
+        "condition": {
+          "kind": "All",
+          "items": []
+        },
+        "effects": [
+          {
+            "kind": "World",
+            "effect": {
+              "kind": "Relocate",
+              "place": "middle_room",
+              "position": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              }
+            }
+          }
+        ],
+        "repeatable": true
+      },
+      {
+        "id": "travel_middle_room_corridor",
+        "point": "sb_point_door_middle_room_corridor",
+        "label": "前往卧室走廊",
+        "condition": {
+          "kind": "All",
+          "items": []
+        },
+        "effects": [
+          {
+            "kind": "World",
+            "effect": {
+              "kind": "Relocate",
+              "place": "corridor",
+              "position": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              }
+            }
+          }
+        ],
+        "repeatable": true
+      },
+      {
+        "id": "travel_corridor_roylott_room",
+        "point": "sb_point_door_corridor_roylott_room",
+        "label": "前往罗伊洛特卧室",
+        "condition": {
+          "kind": "All",
+          "items": []
+        },
+        "effects": [
+          {
+            "kind": "World",
+            "effect": {
+              "kind": "Relocate",
+              "place": "roylott_room",
+              "position": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              }
+            }
+          }
+        ],
+        "repeatable": true
+      },
+      {
+        "id": "travel_roylott_room_corridor",
+        "point": "sb_point_door_roylott_room_corridor",
+        "label": "前往卧室走廊",
+        "condition": {
+          "kind": "All",
+          "items": []
+        },
+        "effects": [
+          {
+            "kind": "World",
+            "effect": {
+              "kind": "Relocate",
+              "place": "corridor",
+              "position": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              }
+            }
+          }
+        ],
+        "repeatable": true
+      }
+    ],
+    "rules": [],
+    "questions": [],
+    "options": [],
+    "initial": {
+      "spawnPlace": "grounds",
+      "spawnPosition": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "opened": [],
+      "unlocked": [],
+      "occurredEvents": {},
+      "npcs": []
+    },
+    "scheduled": [],
+    "assessment": {
+      "kind": "InvestigationOnly"
+    },
+    "interviews": [
+      {
+        "id": "helen",
+        "person": "helen",
+        "point": "sb_point_helen",
+        "answers": [
+          {
+            "id": "helen_identity",
+            "text": "委托人，朱莉娅的孪生姐妹",
+            "routes": [],
+            "requiredEvidence": []
+          },
+          {
+            "id": "answer_helen_account",
+            "text": "海伦说，朱莉娅约两年前去世，临终提到“带斑点的带子”。她回忆那夜在风雨中似乎听见口哨和金属声，但不能完全确定。近期维修使她搬入姐姐原来的卧室，前一夜又听见相似口哨。她害怕重演旧事，未看见声音的来源；惊吓致死是她曾有的猜测。",
+            "routes": [
+              "route_helen_account"
+            ],
+            "requiredEvidence": []
+          },
+          {
+            "id": "answer_helen_safe",
+            "text": "海伦回忆，多年前曾见柜里放着文件。她没有检查当前内部；这段过去记忆不能确认现在柜中只有文件。",
+            "routes": [
+              "route_helen_safe"
+            ],
+            "requiredEvidence": []
+          }
+        ]
+      },
+      {
+        "id": "watson",
+        "person": "watson",
+        "point": "sb_point_watson",
+        "answers": [
+          {
+            "id": "watson_identity",
+            "text": "医生，侦探的同行者",
+            "routes": [],
+            "requiredEvidence": []
+          },
+          {
+            "id": "answer_watson_day",
+            "text": "华生参与晨间会面，听到海伦叙述，并在途中听到遗嘱核查的说明。他没有因此知道未检查房间的状态，也没有见到尚未发生的夜间情况。",
+            "routes": [
+              "route_watson_day"
+            ],
+            "requiredEvidence": []
+          }
+        ]
+      }
+    ],
+    "police": null,
+    "interviewPromptVersion": 2,
+    "continuousInterviews": [],
+    "externalChecks": [],
+    "followUps": [],
+    "statementComparisons": [],
+    "conclusion": null,
+    "clock": {
+      "startMinutesOfDay": 840,
+      "actionSeconds": 180,
+      "operationDurations": [
+        {
+          "operation": "travel_grounds_corridor",
+          "seconds": 300
+        },
+        {
+          "operation": "travel_corridor_grounds",
+          "seconds": 300
+        },
+        {
+          "operation": "travel_corridor_middle_room",
+          "seconds": 300
+        },
+        {
+          "operation": "travel_middle_room_corridor",
+          "seconds": 300
+        },
+        {
+          "operation": "travel_corridor_roylott_room",
+          "seconds": 300
+        },
+        {
+          "operation": "travel_roylott_room_corridor",
+          "seconds": 300
+        }
+      ],
+      "playableUntilSeconds": 12000,
+      "targets": [
+        {
+          "label": "夜间观察窗口",
+          "seconds": 32400
+        }
+      ]
+    },
+    "stage": {
+      "introduction": "海伦·斯托纳担心自己正在经历与姐姐去世前相似的事情。你受托前往庄园，调查当年的疑点，并核实她如今面临的危险。 当前开放白天调查，夜间行动另行开放。",
+      "objective": "听取海伦经历，检查两间卧室，区分观察、回忆与推断，整理白天笔记。",
+      "completionClue": "clue_day_notes",
+      "nextObjective": "白天笔记已保存。可回看材料和继续问询；夜间守候尚未开放。"
+    }
+  },
+  "characters": [
+    {
+      "id": "holmes",
+      "name": "夏洛克·福尔摩斯",
+      "identity": "受托调查的侦探",
+      "victimRelation": "旧案相关人或调查者",
+      "caseRelation": "本阶段不提供当面问询",
+      "background": "受托调查的侦探",
+      "voice": "以本人知识自然回应，保留不知道与不确定。",
+      "dossier": {
+        "knowledge": [],
+        "privateContext": [],
+        "policy": []
+      }
+    },
+    {
+      "id": "watson",
+      "name": "约翰·华生",
+      "identity": "医生，侦探的同行者",
+      "victimRelation": "旧案相关人或调查者",
+      "caseRelation": "在草坪提供本人实际所知",
+      "background": "医生，侦探的同行者",
+      "voice": "以本人知识自然回应，保留不知道与不确定。",
+      "dossier": {
+        "knowledge": [
+          "华生参与晨间会面，听到海伦叙述，并在途中听到遗嘱核查的说明。他没有因此知道未检查房间的状态，也没有见到尚未发生的夜间情况。",
+          "你在草坪等候，尚未随玩家进入卧室。没有夜间经历，不能把原著后续写成已发生。"
+        ],
+        "privateContext": [],
+        "policy": [
+          "可描述本人实际观察；不自动获得玩家未向他说明的推断。"
+        ]
+      }
+    },
+    {
+      "id": "helen",
+      "name": "海伦·斯托纳",
+      "identity": "委托人，朱莉娅的孪生姐妹",
+      "victimRelation": "朱莉娅的孪生姐妹",
+      "caseRelation": "在草坪提供本人实际所知",
+      "background": "委托人，朱莉娅的孪生姐妹",
+      "voice": "以本人知识自然回应，保留不知道与不确定。",
+      "dossier": {
+        "knowledge": [
+          "海伦说，朱莉娅约两年前去世，临终提到“带斑点的带子”。她回忆那夜在风雨中似乎听见口哨和金属声，但不能完全确定。近期维修使她搬入姐姐原来的卧室，前一夜又听见相似口哨。她害怕重演旧事，未看见声音的来源；惊吓致死是她曾有的猜测。",
+          "海伦回忆，多年前曾见柜里放着文件。她没有检查当前内部；这段过去记忆不能确认现在柜中只有文件。",
+          "你在庄园草坪等候。没有亲眼见到玩家在房内的新检查，只有实际出示的材料才可用于本次回应。"
+        ],
+        "privateContext": [
+          "对继父的暴力感到恐惧，初次可能回避描述其伤害；不将作者的杀人手法直接给她。"
+        ],
+        "policy": [
+          "如实表达记忆及其不确定性，愿意配合安全安排；不得提前讲出夜间结果。",
+          "不知道姐姐的客观死因，不知道隐秘手法；不把害怕或猜测说成已确认结果。"
+        ]
+      }
+    },
+    {
+      "id": "roylott",
+      "name": "格里姆斯比·罗伊洛特",
+      "identity": "医生，庄园主人，姐妹的继父",
+      "victimRelation": "旧案相关人或调查者",
+      "caseRelation": "本阶段不提供当面问询",
+      "background": "医生，庄园主人，姐妹的继父。当前在庄园外，尚未返回。",
+      "voice": "以本人知识自然回应，保留不知道与不确定。",
+      "dossier": {
+        "knowledge": [],
+        "privateContext": [],
+        "policy": []
+      }
+    },
+    {
+      "id": "julia",
+      "name": "朱莉娅·斯托纳",
+      "identity": "海伦的孪生姐妹，开局前已死亡",
+      "victimRelation": "朱莉娅本人",
+      "caseRelation": "本阶段不提供当面问询",
+      "background": "海伦的孪生姐妹，开局前已死亡",
+      "voice": "以本人知识自然回应，保留不知道与不确定。",
+      "dossier": {
+        "knowledge": [],
+        "privateContext": [],
+        "policy": []
+      }
+    }
+  ]
+}

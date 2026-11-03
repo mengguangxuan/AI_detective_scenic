@@ -5,7 +5,7 @@ import io.circe.{Decoder,Encoder}
 import io.circe.generic.semiauto.*
 import java.sql.Connection
 import services.cases.objects.*
-import services.cases.tables.CaseRevisionTable.CaseRevisionTable
+import services.cases.tables.CaseTable.CaseTable
 import services.games.objects.*
 import services.games.objects.apiTypes.CommandResult
 import services.games.tables.SessionTable.SessionTable
@@ -30,19 +30,19 @@ final case class ReportCluesMessage(userId: UserId,sessionId: SessionId,requestI
             _ <- MutationSupport.checkSequence(state,expectedSequence)
             _ <- IO.raiseUnless(evidence.nonEmpty && evidence.size <= 20)(GameError(ErrorCode.InvalidValue,"请选择1至20份已经取得的材料。"))
             _ <- IO.raiseUnless(evidence.subsetOf(state.clues))(GameError(ErrorCode.AccessDenied,"只能向警方出示已经取得的材料。"))
-            revision <- CaseRevisionTable.find(connection,state.caseId,state.caseRevision).flatMap(value =>
-              IO.fromOption(value)(GameError(ErrorCode.InvalidValue,"案件修订不存在。")))
-            contact <- IO.fromOption(revision.content.police.flatMap(id => revision.content.witnesses.find(_.id == id)))(GameError(ErrorCode.AccessDenied,"当前没有可接触的警方人员。"))
-            _ <- IO.raiseUnless(revision.content.points.exists(p => p.id == contact.point && SceneAccessRules.accessible(revision.content,state,p)))(
+            caseRecord <- CaseTable.find(connection,state.caseId).flatMap(value =>
+              IO.fromOption(value)(GameError(ErrorCode.InvalidValue,"案件不存在。")))
+            contact <- IO.fromOption(caseRecord.content.police.flatMap(id => caseRecord.content.witnesses.find(_.id == id)))(GameError(ErrorCode.AccessDenied,"当前没有可接触的警方人员。"))
+            _ <- IO.raiseUnless(caseRecord.content.points.exists(p => p.id == contact.point && SceneAccessRules.accessible(caseRecord.content,state,p)))(
               GameError(ErrorCode.AccessDenied,"当前无法与警方交流。"))
             previous <- PoliceExchangeTable.list(connection,sessionId)
             shared = previous.flatMap(_.evidence).toSet
             _ <- IO.raiseUnless((evidence -- shared).nonEmpty)(GameError(ErrorCode.ConditionFailed,"这些材料已经向警方出示过了。"))
-            titles = revision.content.clues.filter(c => evidence(c.id)).map(_.title.value).mkString("、")
+            titles = caseRecord.content.clues.filter(c => evidence(c.id)).map(_.title.value).mkString("、")
             reply = s"${contact.name}：收到了，$titles。我已把这几份材料记下。你可以继续检查现场，或向有关的人问清楚。"
             next = state.copy(sequence=Sequence(state.sequence.value+1))
             record = SessionRecord(RecordId(s"${requestId.value}:police"),sessionId,requestId,next.sequence,next.storyTimeSeconds,
-              contact.point,Some(RouteId("police_exchange")),None,s"向警方出示材料：$titles\n$reply",Set.empty,Set.empty)
+              Some(contact.point),Some(RouteId("police_exchange")),None,s"向警方出示材料：$titles\n$reply",Set.empty,Set.empty)
             result <- MutationSupport.commit(connection,state,requestId,digest,ActionPlan(next,record,
               CommandResult(next.sequence,Vector(Text(reply)),Set.empty)))
             _ <- PoliceExchangeTable.insert(connection,PoliceExchangeRecord(sessionId,requestId,next.sequence,evidence,reply))

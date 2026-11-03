@@ -8,7 +8,7 @@ import java.util.UUID
 import munit.FunSuite
 import services.cases.api.ImportCaseMessage
 import services.cases.objects.*
-import services.cases.tables.CaseRevisionTable.CaseRevisionTable
+import services.cases.tables.CaseTable.CaseTable
 import services.games.api.*
 import services.games.objects.*
 import services.games.utils.{ConclusionRules,FixtureRules,InterviewRules}
@@ -26,10 +26,10 @@ class ConclusionSuite extends FunSuite:
   private def setup(url: String,id: SessionId): IO[Unit]=DatabaseSession.connection(url).use(c =>
     DatabaseSchema.initialize(c) *> DatabaseSession.transaction(c)(
       (for
-        latest <- ImportCaseMessage(Paths.get("../docs/fixtures/browser_investigation_v21.json")).plan(c)
-        old=latest.copy(revision=Revision(16),content=LegacyFixture.withoutEvaluation(latest.content))
-        _ <- CaseRevisionTable.insert(c,old)
-        _ <- StartGameMessage(owner,id,old.caseId,old.revision).plan(c)
+        latest <- ImportCaseMessage(Paths.get("../docs/fixtures/investigation_base.json")).plan(c)
+        old=latest.copy(caseId=CaseId("coverage_case"),content=CaseContentSamples.coverageOnly(latest.content))
+        _ <- CaseTable.insert(c,old)
+        _ <- StartGameMessage(owner,id,old.caseId).plan(c)
       yield ())).void)
   private def view(url: String,id: SessionId)=tx(url)(GetInvestigationSnapshotMessage(owner,id).plan)
   private def read(url: String,id: SessionId,point: String,route: String): IO[Unit]=for
@@ -58,7 +58,6 @@ class ConclusionSuite extends FunSuite:
     (for
       _ <- setup(url,id)
       initial <- view(url,id)
-      _ = assertEquals(initial.caseRevision,Revision(16))
       _ = assert(initial.conclusion.isEmpty && initial.conclusionCandidates.nonEmpty)
       _ = assert(!initial.asJson.noSpaces.contains("作者复盘"))
       _ = assert(!initial.asJson.noSpaces.contains("requiredClues"))
@@ -86,8 +85,8 @@ class ConclusionSuite extends FunSuite:
     val url=database;val id=SessionId(UUID.randomUUID().toString)
     (for
       _ <- DatabaseSession.connection(url).use(DatabaseSchema.initialize)
-      latest <- tx(url)(ImportCaseMessage(Paths.get("../docs/fixtures/browser_investigation_v21.json")).plan)
-      r=latest.copy(content=LegacyFixture.withoutEvaluation(latest.content))
+      latest <- tx(url)(ImportCaseMessage(Paths.get("../docs/fixtures/investigation_base.json")).plan)
+      r=latest.copy(caseId=CaseId("coverage_case"),content=CaseContentSamples.coverageOnly(latest.content))
       spec=r.content.conclusion.get
       all=spec.evidenceGroups.flatMap(_.requiredClues).toSet
       state=FixtureRules.initial(r,id,owner).copy(clues=all)
@@ -148,8 +147,8 @@ class ConclusionSuite extends FunSuite:
       _ <- read(url,id,"point_clement","route_call")
       _ <- submit(url,id)
       state <- tx(url)(SessionTable.find(_,id)).map(_.get)
-      revision <- tx(url)(CaseRevisionTable.find(_,state.caseId,state.caseRevision)).map(_.get)
-      context=InterviewRules.context(revision.content,state,WitnessId("mary"),"你知道什么？",Set.empty,Vector.empty,Vector.empty).toOption.get
+      caseRecord <- tx(url)(CaseTable.find(_,state.caseId)).map(_.get)
+      context=InterviewRules.context(caseRecord.content,state,WitnessId("mary"),"你知道什么？",Set.empty,Vector.empty,Vector.empty).toOption.get
       _ = assert(!context.asJson.noSpaces.contains("作者复盘"))
       _ = assert(!context.asJson.noSpaces.contains("共同策划杀害"))
       saved <- view(url,id)
@@ -158,27 +157,25 @@ class ConclusionSuite extends FunSuite:
     yield ()).unsafeRunSync()
   }
 
-  test("an actual pre-column session and revision 15 retain their content and receipt after schema initialization") {
+
+  test("coverage scoring accepts independent group counts and uses the covered proportion") {
     val url=database;val id=SessionId(UUID.randomUUID().toString)
     (for
       _ <- DatabaseSession.connection(url).use(DatabaseSchema.initialize)
-      _ <- tx(url) { c => for
-        latest <- ImportCaseMessage(Paths.get("../docs/fixtures/browser_investigation_v21.json")).plan(c)
-        old=latest.copy(revision=Revision(15),content=LegacyFixture.withoutConclusion(latest.content))
-        _ <- CaseRevisionTable.insert(c,old)
-        _ <- StartGameMessage(owner,id,old.caseId,old.revision).plan(c)
-      yield () }
-      _ <- read(url,id,"point_clement","route_call")
-      before <- view(url,id)
-      _ <- DatabaseSession.connection(url).use(c => IO.blocking {
-        val statement=c.createStatement()
-        try statement.execute("ALTER TABLE game_sessions DROP COLUMN conclusion_json") finally statement.close()
-      } *> DatabaseSchema.initialize(c))
-      saved <- tx(url)(OpenStudyMessage(owner,id).plan)
-      _ = assertEquals(saved,before)
-      _ = assertEquals(saved.caseRevision,Revision(15))
-      _ = assert(saved.conclusionCandidates.isEmpty && saved.conclusion.isEmpty)
-      denied <- submit(url,id).attempt
-      _ = assertEquals(code(denied),Some(ErrorCode.AccessDenied))
+      original <- tx(url)(ImportCaseMessage(Paths.get("../docs/fixtures/investigation_base.json")).plan)
+      _ <- IO {
+        Vector(2,3,7).foreach { count =>
+          val groups=original.content.clues.take(count).zipWithIndex.map { (clue,index) =>
+            services.cases.objects.investigation.ConclusionEvidenceGroup(s"材料组$index",Set(clue.id))
+          }
+          val content=CaseContentSamples.coverageOnly(original.content).copy(conclusion=original.content.conclusion.map(_.copy(evaluation=None,evidenceGroups=groups)))
+          val record=original.copy(content=content)
+          val evidence=groups.take(1).flatMap(_.requiredClues).toSet
+          val state=FixtureRules.initial(record,id,owner).copy(clues=evidence)
+          val outcome=ConclusionRules.submit(content,state,RequestId("coverage"),both,evidence,explanation).toOption.get.session.conclusion.get
+          assertEquals(outcome.evidenceScore,50/count)
+          assertEquals(outcome.coverage.size,count)
+        }
+      }
     yield ()).unsafeRunSync()
   }

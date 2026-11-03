@@ -49,7 +49,7 @@ if (process.argv.includes('--restore') || process.argv.includes('--continue')) {
     await ask('mary-topic-switch', '先换个话题：你在寓所做什么工作？', [], 'mary');
   }
 } else {
-  await post('openlocalidentity'); state = await post('openinvestigation', { sessionId, caseId: 'vicarage_study', revision: { value: 23 } });
+  await post('openlocalidentity'); state = await post('openinvestigation', { sessionId, caseId: 'vicarage_study' });
   if (redding) {
     await read('route_redding_account'); await read('route_redding_gun');
     await ask('redding-unclear', '那支枪呢？我还没说明自己指哪一支，你先问清楚。');

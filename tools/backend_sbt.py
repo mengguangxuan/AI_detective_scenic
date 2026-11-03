@@ -52,8 +52,6 @@ def main() -> int:
         return subprocess.run([java, '-version'], check=False).returncode
     if tasks == ['serve']:
         tasks = ['runMain services.system.api.WebDemo']
-    if tasks == ['migrate']:
-        tasks = ['runMain services.system.api.MigrateLegacyDemo']
     prepare_outputs('linux')
     cache.mkdir(parents=True, exist_ok=True)
     if not (cache / 'boot').exists():

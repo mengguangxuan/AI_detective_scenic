@@ -4,7 +4,7 @@ import cats.effect.IO
 import io.circe.{Decoder,Encoder}
 import io.circe.generic.semiauto.*
 import java.sql.Connection
-import services.cases.tables.CaseRevisionTable.CaseRevisionTable
+import services.cases.tables.CaseTable.CaseTable
 import services.games.objects.*
 import services.games.objects.apiTypes.CommandResult
 import services.games.tables.SessionTable.SessionTable
@@ -29,13 +29,13 @@ final case class FinishReasoningMessage(userId: UserId,sessionId: SessionId,requ
         case None if request.leaseToken != leaseToken =>
           IO.pure(Left(GameError(ErrorCode.RequestPending,"这次推理评审已由另一请求接续，请稍后用原请求重试。")))
         case None if request.status != ReasoningRequestStatus.Pending || session.sequence != request.expectedSequence ||
-            session.caseId != request.context.caseId || session.caseRevision != request.context.revision || request.leaseUntilMillis <= now =>
+            session.caseId != request.context.caseId || request.leaseUntilMillis <= now =>
           ReasoningRequestTable.replace(connection,request.copy(status=ReasoningRequestStatus.Cancelled),leaseToken)
             .as(Left(GameError(ErrorCode.StaleState,"调查已有变化，请重新提出问题。")))
         case None =>
           for
-            revision <- CaseRevisionTable.find(connection,session.caseId,session.caseRevision).flatMap(value => IO.fromOption(value)(GameError(ErrorCode.InvalidValue,"案件修订不存在。")))
-            action <- IO.fromEither(ReasoningRules.finish(revision.content,session,request,decision,feedback,failure))
+            caseRecord <- CaseTable.find(connection,session.caseId).flatMap(value => IO.fromOption(value)(GameError(ErrorCode.InvalidValue,"案件不存在。")))
+            action <- IO.fromEither(ReasoningRules.finish(caseRecord.content,session,request,decision,feedback,failure))
             _ <- ReasoningRequestTable.replace(connection,request.copy(status=ReasoningRequestStatus.Finished),leaseToken)
             response <- MutationSupport.commit(connection,session,requestId,request.digest,action,pendingReasoning=true)
           yield Right(response)

@@ -17,7 +17,7 @@ export default function PolicePage({ ready, actions }: Props) {
   const disabled = ready.mutation.kind !== 'idle';
   const available = ready.snapshot.clues.filter(clue => !police.sharedClues.includes(clue.id));
   const evidence = selected.filter(id => available.some(clue => clue.id === id));
-  const contacted = ready.snapshot.witnesses.filter(w => ['valet', 'stone', 'hartnell', 'archer'].includes(w.id));
+  const contacted = ready.snapshot.witnesses.filter(w => w.point !== police.point);
   const titles = new Map(ready.snapshot.clues.map(clue => [clue.id, clue.title]));
   function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -27,8 +27,8 @@ export default function PolicePage({ ready, actions }: Props) {
     <div><h2 id="police-page-title" className="text-xl font-medium">警方交流</h2><p className="mt-2 text-sm leading-7 text-stone-400">询问警方掌握的情况，交换你已取得的材料。</p></div>
     <ExternalChecksPanel checks={ready.snapshot.externalChecks} disabled={disabled} onRequest={actions.requestCheck}/>
     {point.operations.length ? <section aria-label="调查安排" className="rounded-2xl border border-amber-200/25 bg-[#182421] p-5"><h3 className="text-lg font-medium">调查安排</h3><p className="mt-2 text-sm leading-7 text-stone-400">联系相关人物后，可前往人物问询取得证言，再把材料出示给警方。安排本身也会保存到调查记录。</p><div className="mt-4 flex flex-wrap gap-3">{point.operations.map(operation => <button key={operation.id} type="button" disabled={disabled} onClick={() => actions.execute(operation.id, point.id)} className="rounded-lg bg-amber-200 px-5 py-2.5 text-sm font-medium text-stone-950 disabled:opacity-40">{operation.label}</button>)}</div></section> : null}
-    {ready.snapshot.witnesses.some(w => w.id === 'anne') ? <InvestigationLink href="/interviews" className="inline-block text-sm text-amber-200 underline underline-offset-4">前往人物问询，与安妮交谈</InvestigationLink> : null}
-    {contacted.length > 0 ? <section aria-label="已联系的核查对象" className="rounded-2xl border border-white/10 bg-[#182421] p-5"><h3 className="font-medium">已联系的核查对象</h3><p className="mt-2 text-sm leading-7 text-stone-300">{contacted.map(w => w.name).join('、')}。会面已安排，证言需实际问询后取得。</p><InvestigationLink href="/interviews" className="mt-3 inline-block text-sm text-amber-200 underline underline-offset-4">前往人物问询，核查证言</InvestigationLink></section> : null}
+
+    {contacted.length > 0 ? <section aria-label="当前可问询的人物" className="rounded-2xl border border-white/10 bg-[#182421] p-5"><h3 className="font-medium">当前可问询的人物</h3><p className="mt-2 text-sm leading-7 text-stone-300">{contacted.map(w => w.name).join('、')}。可前往交谈，人物提供的信息以实际问询为准。</p><InvestigationLink href="/interviews" className="mt-3 inline-block text-sm text-amber-200 underline underline-offset-4">前往人物问询</InvestigationLink></section> : null}
     {witness ? <ConversationPanel key={`${ready.snapshot.sessionId}:${witness.id}`} witness={witness} clues={ready.snapshot.clues} turns={ready.snapshot.interviews.filter(t => t.witness === witness.id)} disabled={disabled} onAsk={actions.ask}/> : null}
     <details className="rounded-2xl border border-white/10 bg-[#182421] p-4"><summary className="cursor-pointer text-sm text-stone-300">固定问答与材料登记（备用）</summary><div className="mt-4 space-y-5">
     <section aria-label="向警方了解情况" className="rounded-2xl border border-white/10 bg-[#182421] p-5">

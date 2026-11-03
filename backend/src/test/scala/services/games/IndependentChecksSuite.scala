@@ -24,7 +24,7 @@ class IndependentChecksSuite extends FunSuite:
     DatabaseSession.connection(url).use(c => DatabaseSession.transaction(c)(run(c)))
   private def setup(url: String,id: SessionId): IO[Unit] = DatabaseSession.connection(url).use { c =>
     DatabaseSchema.initialize(c) *> DatabaseSession.transaction(c)(
-      ImportCaseMessage(Paths.get("../docs/fixtures/browser_investigation_v21.json")).plan(c) *> OpenStudyMessage(owner,id).plan(c)).void
+      ImportCaseMessage(Paths.get("../docs/fixtures/investigation_base.json")).plan(c) *> services.TestCases.open(owner,id,CaseId("vicarage_study"))(c)).void
   }
   private def view(url: String,id: SessionId)=tx(url)(GetInvestigationSnapshotMessage(owner,id).plan)
   private def read(url: String,id: SessionId,point: String,route: String): IO[Unit] = for
@@ -55,7 +55,6 @@ class IndependentChecksSuite extends FunSuite:
     (for
       _ <- setup(url,id)
       initial <- view(url,id)
-      _ = assertEquals(initial.caseRevision,Revision(21))
       _ = assert(initial.people.filter(p => Set("valet","stone","hartnell")(p.id.value)).forall(_.witness.isEmpty))
       early <- execute(url,id,"open_movement_meetings").attempt
       hidden <- read(url,id,"point_valet","route_valet_gun").attempt

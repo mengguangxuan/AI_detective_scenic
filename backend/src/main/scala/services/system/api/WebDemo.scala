@@ -7,7 +7,6 @@ import services.accounts.tables.LocalIdentityTable.LocalIdentityTableInitializer
 import services.cases.api.ImportCaseMessage
 import services.cases.objects.{CaseId, CaseReleaseRecord}
 import services.games.api.RegisterPlayableCaseMessage
-import services.system.objects.Revision
 import services.models.api.ChatCompletionClient
 object WebDemo extends IOApp.Simple:
   override def run: IO[Unit] =
@@ -22,31 +21,14 @@ object WebDemo extends IOApp.Simple:
       _ <- DatabaseSession.connection(url).use { c => for
         _ <- DatabaseSchema.initialize(c)
         _ <- LocalIdentityTableInitializer.initialize(c)
-        _ <- DatabaseSession.transaction(c)(ImportCaseMessage(Paths.get("../docs/fixtures/browser_investigation_v20.json")).plan(c))
-        _ <- DatabaseSession.transaction(c)(ImportCaseMessage(Paths.get("../docs/fixtures/browser_investigation_v21.json")).plan(c))
-        _ <- DatabaseSession.transaction(c)(ImportCaseMessage(Paths.get("../docs/fixtures/browser_investigation_v22.json")).plan(c))
-        _ <- DatabaseSession.transaction(c)(ImportCaseMessage(Paths.get("../docs/fixtures/browser_investigation_v23.json")).plan(c))
-        _ <- DatabaseSession.transaction(c)(ImportCaseMessage(Paths.get("../docs/fixtures/browser_investigation_v24.json")).plan(c))
-        _ <- DatabaseSession.transaction(c)(ImportCaseMessage(Paths.get("../docs/fixtures/browser_investigation_v25.json")).plan(c))
         _ <- DatabaseSession.transaction(c)(ImportCaseMessage(Paths.get("../docs/fixtures/browser_investigation.json")).plan(c))
-        _ <- DatabaseSession.transaction(c)(RegisterPlayableCaseMessage(CaseReleaseRecord(CaseId("vicarage_study"),Revision(21),
-          "1930年的圣玛丽米德，上校死在牧师寓所的书房。走进保留现场，询问相关人物，对照证词与检查记录，提出你对案件的解释。",
-          Vector("经典推理","现场探索","人物问询"),"study","5")).plan(c))
-        _ <- DatabaseSession.transaction(c)(RegisterPlayableCaseMessage(CaseReleaseRecord(CaseId("vicarage_study"),Revision(22),
-          "1930年的圣玛丽米德，上校死在牧师寓所的书房。走进保留现场，询问相关人物，对照证词与检查记录，提出你对案件的解释。",
-          Vector("经典推理","现场探索","人物问询"),"study","5")).plan(c))
-        _ <- DatabaseSession.transaction(c)(RegisterPlayableCaseMessage(CaseReleaseRecord(CaseId("vicarage_study"),Revision(23),
-          "1930年的圣玛丽米德，上校死在牧师寓所的书房。走进保留现场，询问相关人物，对照证词与检查记录，提出你对案件的解释。",
-          Vector("经典推理","现场探索","人物问询"),"study","5")).plan(c))
-        _ <- DatabaseSession.transaction(c)(RegisterPlayableCaseMessage(CaseReleaseRecord(CaseId("vicarage_study"),Revision(24),
-          "走进牧师寓所与附近林地，亲手寻找现场线索，询问相关人物，对照材料提出你的解释。",
-          Vector("经典推理","双场景探索","人物问询"),"study","6")).plan(c))
-        _ <- DatabaseSession.transaction(c)(RegisterPlayableCaseMessage(CaseReleaseRecord(CaseId("vicarage_study"),Revision(25),
-          "走进牧师寓所与附近林地，自由联系会面人物，寻找线索并提出你的解释。",
-          Vector("经典推理","双场景探索","自由会面"),"study","6")).plan(c))
-        _ <- DatabaseSession.transaction(c)(RegisterPlayableCaseMessage(CaseReleaseRecord(CaseId("vicarage_study"),Revision(26),
+        _ <- DatabaseSession.transaction(c)(RegisterPlayableCaseMessage(CaseReleaseRecord(CaseId("vicarage_study"),
           "亲自寻找线索，自由联系会面人物，结合实际问答与材料推进调查并提出你的解释。",
-          Vector("经典推理","双场景探索","语义问询"),"study","6")).plan(c))
+          Vector("经典推理","双场景探索","语义问询"),"study")).plan(c))
+        _ <- DatabaseSession.transaction(c)(ImportCaseMessage(Paths.get("../docs/fixtures/speckled_band_daytime.json")).plan(c))
+        _ <- DatabaseSession.transaction(c)(RegisterPlayableCaseMessage(CaseReleaseRecord(CaseId("speckled_band"),
+          "白天调查试玩：听取海伦经历，检查两间卧室并整理笔记。本阶段截至17:20，夜间守候尚未开放。",
+          Vector("独立案件","白天试玩","数据场景"),"authored")).plan(c))
       yield () }
       modelPath = Option(System.getenv("DETECTIVE_MODEL_CONFIG")).filter(_.trim.nonEmpty)
         .map(Paths.get(_)).getOrElse(Paths.get("config","model-api.local.json"))

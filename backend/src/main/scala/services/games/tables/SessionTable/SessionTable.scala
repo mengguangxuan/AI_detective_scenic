@@ -11,31 +11,31 @@ import services.games.objects.*
 import services.games.objects.apiTypes.*
 
 object SessionTable:
-  private val insertSql = "INSERT INTO game_sessions(session_id,owner_id,case_id,case_revision,state_schema_version,sequence_no,story_time_seconds,player_place,player_x,player_y,player_z,opened_json,unlocked_json,visible_nodes_json,completed_operations_json,clues_json,facts_json,checks_json,conclusion_json,reasoning_json,updated_at_ms) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"
+  private val insertSql = "INSERT INTO game_sessions(session_id,owner_id,case_id,state_schema_version,sequence_no,story_time_seconds,player_place,player_x,player_y,player_z,opened_json,unlocked_json,visible_nodes_json,completed_operations_json,clues_json,facts_json,checks_json,conclusion_json,reasoning_json,updated_at_ms) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"
   def insert(connection: Connection, row: GameSessionRecord): IO[Unit] = IO.blocking {
     require(row.stateSchemaVersion == 1 && row.sequence.value >= 0)
     Using.resource(connection.prepareStatement(insertSql)) { s =>
       s.setString(1,row.id.value)
       s.setString(2,row.owner.value)
       s.setString(3,row.caseId.value)
-      s.setInt(4,row.caseRevision.value)
-      s.setInt(5,row.stateSchemaVersion)
-      s.setLong(6,row.sequence.value)
-      s.setLong(7,row.storyTimeSeconds)
-      s.setString(8,row.playerPlace.value)
-      s.setDouble(9,row.playerPosition.x)
-      s.setDouble(10,row.playerPosition.y)
-      s.setDouble(11,row.playerPosition.z)
-      s.setString(12,row.opened.asJson.noSpaces)
-      s.setString(13,row.unlocked.asJson.noSpaces)
-      s.setString(14,row.visibleNodes.asJson.noSpaces)
-      s.setString(15,row.completedOperations.asJson.noSpaces)
-      s.setString(16,row.clues.asJson.noSpaces)
-      s.setString(17,row.facts.asJson.noSpaces)
-      s.setString(18,row.externalChecks.asJson.noSpaces)
-      s.setString(19,row.conclusion.asJson.noSpaces)
-      s.setString(20,row.reasoning.asJson.noSpaces)
-      s.setLong(21,System.currentTimeMillis())
+
+      s.setInt(4,row.stateSchemaVersion)
+      s.setLong(5,row.sequence.value)
+      s.setLong(6,row.storyTimeSeconds)
+      s.setString(7,row.playerPlace.value)
+      s.setDouble(8,row.playerPosition.x)
+      s.setDouble(9,row.playerPosition.y)
+      s.setDouble(10,row.playerPosition.z)
+      s.setString(11,row.opened.asJson.noSpaces)
+      s.setString(12,row.unlocked.asJson.noSpaces)
+      s.setString(13,row.visibleNodes.asJson.noSpaces)
+      s.setString(14,row.completedOperations.asJson.noSpaces)
+      s.setString(15,row.clues.asJson.noSpaces)
+      s.setString(16,row.facts.asJson.noSpaces)
+      s.setString(17,row.externalChecks.asJson.noSpaces)
+      s.setString(18,row.conclusion.asJson.noSpaces)
+      s.setString(19,row.reasoning.asJson.noSpaces)
+      s.setLong(20,System.currentTimeMillis())
       s.executeUpdate()
     }
     ()
@@ -55,7 +55,7 @@ object SessionTable:
 
   private def read(r: ResultSet): GameSessionRecord =
     if r.getInt("state_schema_version") != 1 then throw GameError(ErrorCode.InvalidValue,"不支持的会话存储版本。")
-    GameSessionRecord(SessionId(r.getString("session_id")),UserId(r.getString("owner_id")),CaseId(r.getString("case_id")),Revision(r.getInt("case_revision")),r.getInt("state_schema_version"),Sequence(r.getLong("sequence_no")),r.getLong("story_time_seconds"),PlaceId(r.getString("player_place")),Vec3(r.getDouble("player_x"),r.getDouble("player_y"),r.getDouble("player_z")),
+    GameSessionRecord(SessionId(r.getString("session_id")),UserId(r.getString("owner_id")),CaseId(r.getString("case_id")),r.getInt("state_schema_version"),Sequence(r.getLong("sequence_no")),r.getLong("story_time_seconds"),PlaceId(r.getString("player_place")),Vec3(r.getDouble("player_x"),r.getDouble("player_y"),r.getDouble("player_z")),
       decode[Set[EntityId]](r.getString("opened_json")).fold(throw _,identity),
       decode[Set[EntityId]](r.getString("unlocked_json")).fold(throw _,identity),
       decode[Set[SceneNodeId]](r.getString("visible_nodes_json")).fold(throw _,identity),
@@ -68,7 +68,7 @@ object SessionTable:
 
   private val updateSql = "UPDATE game_sessions SET state_schema_version=?,sequence_no=?,story_time_seconds=?,player_place=?,player_x=?,player_y=?,player_z=?,opened_json=?,unlocked_json=?,visible_nodes_json=?,completed_operations_json=?,clues_json=?,facts_json=?,checks_json=?,conclusion_json=?,reasoning_json=?,updated_at_ms=GREATEST(updated_at_ms,?) WHERE session_id=? AND sequence_no=?"
   def update(connection: Connection, previous: GameSessionRecord, row: GameSessionRecord): IO[Unit] = IO.blocking {
-    require(row.id==previous.id && row.owner==previous.owner && row.caseId==previous.caseId && row.caseRevision==previous.caseRevision && row.stateSchemaVersion==1 && row.sequence.value==previous.sequence.value+1)
+    require(row.id==previous.id && row.owner==previous.owner && row.caseId==previous.caseId && row.stateSchemaVersion==1 && row.sequence.value==previous.sequence.value+1)
     Using.resource(connection.prepareStatement(updateSql)) { s =>
       s.setInt(1,row.stateSchemaVersion)
       s.setLong(2,row.sequence.value)
@@ -91,8 +91,8 @@ object SessionTable:
     }
   }
 
-  private val listOwnedSql = """SELECT s.session_id,s.case_id,s.case_revision,s.sequence_no,s.updated_at_ms,s.reasoning_json,s.conclusion_json,c.title
-    FROM game_sessions s JOIN case_revisions c ON c.case_id=s.case_id AND c.revision=s.case_revision
+  private val listOwnedSql = """SELECT s.session_id,s.case_id,s.sequence_no,s.updated_at_ms,s.reasoning_json,s.conclusion_json,c.title
+    FROM game_sessions s JOIN cases c ON c.case_id=s.case_id
     WHERE s.owner_id=? ORDER BY s.updated_at_ms DESC,s.session_id"""
   def listOwned(connection: Connection,owner: UserId): IO[Vector[InvestigationListRecord]] = IO.blocking {
     Using.resource(connection.prepareStatement(listOwnedSql)) { s =>
@@ -100,7 +100,7 @@ object SessionTable:
       Using.resource(s.executeQuery()) { rows =>
         val result=Vector.newBuilder[InvestigationListRecord]
         while rows.next() do
-          result += InvestigationListRecord(SessionId(rows.getString("session_id")),CaseId(rows.getString("case_id")),Revision(rows.getInt("case_revision")),
+          result += InvestigationListRecord(SessionId(rows.getString("session_id")),CaseId(rows.getString("case_id")),
             rows.getString("title"),Sequence(rows.getLong("sequence_no")),Option.when(rows.getLong("updated_at_ms") > 0)(rows.getLong("updated_at_ms")),
             decode[ReasoningProgress](rows.getString("reasoning_json")).fold(throw _,identity),
             decode[Option[CaseConclusionRecord]](rows.getString("conclusion_json")).fold(throw _,identity).nonEmpty)

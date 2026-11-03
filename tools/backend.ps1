@@ -1,5 +1,5 @@
-﻿param(
-    [ValidateSet('doctor', 'test', 'run', 'migrate', 'serve', 'stop-serve', 'inspect-interviews')]
+param(
+    [ValidateSet('doctor', 'compile', 'test', 'run', 'serve', 'stop-serve', 'inspect-interviews')]
     [string]$Task = 'doctor'
 )
 $ErrorActionPreference = 'Stop'
@@ -113,7 +113,7 @@ try {
         '-Dsbt.boot.server=false', '-Dsbt.server.autostart=false'
         '-Dsbt.supershell=false', '-Dsbt.log.noformat=true'
         '-Dsbt.override.build.repos=true', "-Dsbt.repository.config=$Repositories"
-        '-jar', $Launcher, $(if ($Task -eq 'migrate') { 'runMain services.system.api.MigrateLegacyDemo' } elseif ($Task -eq 'serve') { 'runMain services.system.api.WebDemo' } elseif ($Task -eq 'inspect-interviews') { 'runMain services.games.api.InspectInterviewEvidence' } else { $Task })
+        '-jar', $Launcher, $(if ($Task -eq 'serve') { 'runMain services.system.api.WebDemo' } elseif ($Task -eq 'inspect-interviews') { 'runMain services.games.api.InspectInterviewEvidence' } else { $Task })
     )
     Write-Host "[log]   $Log"
     Write-Host '[info] First dependency resolution may take several minutes. sbt output follows.'

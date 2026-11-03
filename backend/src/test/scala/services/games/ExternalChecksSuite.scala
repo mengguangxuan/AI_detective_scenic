@@ -10,7 +10,7 @@ import scala.util.Using
 import munit.FunSuite
 import services.cases.api.ImportCaseMessage
 import services.cases.objects.*
-import services.cases.tables.CaseRevisionTable.CaseRevisionTable
+import services.cases.tables.CaseTable.CaseTable
 import services.games.api.*
 import services.games.objects.*
 import services.models.api.ChatCompletionClient
@@ -23,7 +23,7 @@ class ExternalChecksSuite extends FunSuite:
   private def database=s"jdbc:h2:mem:${UUID.randomUUID()};DB_CLOSE_DELAY=-1;LOCK_TIMEOUT=3000"
   private def tx[A](url: String)(run: java.sql.Connection => IO[A]): IO[A] = DatabaseSession.connection(url).use(c => DatabaseSession.transaction(c)(run(c)))
   private def setup(url: String,id: SessionId): IO[Unit]=DatabaseSession.connection(url).use(c => DatabaseSchema.initialize(c) *> DatabaseSession.transaction(c)(
-    ImportCaseMessage(Paths.get("../docs/fixtures/browser_investigation_v21.json")).plan(c) *> OpenStudyMessage(owner,id).plan(c)).void)
+    ImportCaseMessage(Paths.get("../docs/fixtures/investigation_base.json")).plan(c) *> services.TestCases.open(owner,id,CaseId("vicarage_study"))(c)).void)
   private def view(url: String,id: SessionId)=tx(url)(GetInvestigationSnapshotMessage(owner,id).plan)
   private def request(id: SessionId,check: String="gun_verification",seq: Long=0)=RequestExternalCheckMessage(owner,id,RequestId(check),Sequence(seq),ExternalCheckId(check))
   private def waitFor(id: SessionId,seq: Long,minutes: Int=15)=AdvanceTimeMessage(owner,id,RequestId(s"wait-$seq"),Sequence(seq),minutes)
@@ -36,7 +36,7 @@ class ExternalChecksSuite extends FunSuite:
       a <- view(url,id)
       b <- view(url,id)
       _ = assertEquals(a,b)
-      _ = assertEquals(a.clock.get.label,"周五 09:00")
+      _ = assertEquals(a.clock.get.label,"周五上午初查 09:00")
       _ = assertEquals(a.clock.get.elapsedSeconds,0L)
       _ = assert(a.areaMap.get.locations.exists(_.id == PlaceId("haydock_home")))
       _ = assert(a.areaMap.get.roads.exists(r => r.from == PlaceId("study") && r.to == PlaceId("lower_farm") && r.meters == 3100))
@@ -57,7 +57,7 @@ class ExternalChecksSuite extends FunSuite:
       _ = assertEquals(started,retry)
       pending <- view(url,id)
       _ = assertEquals(pending.clock.get.elapsedSeconds,120L)
-      _ = assertEquals(pending.externalChecks.find(_.id == ExternalCheckId("gun_verification")).get.progress.get.readyAt,"周五 09:20")
+      _ = assertEquals(pending.externalChecks.find(_.id == ExternalCheckId("gun_verification")).get.progress.get.readyAt,"周五上午初查 09:20")
       _ <- tx(url)(waitFor(id,1).plan)
       before <- view(url,id)
       _ = assertEquals(before.clock.get.elapsedSeconds,1020L)
@@ -70,7 +70,7 @@ class ExternalChecksSuite extends FunSuite:
       _ = assertEquals(completed,repeated)
       done <- view(url,id)
       _ = assertEquals(done.clock.get.elapsedSeconds,1200L)
-      _ = assertEquals(done.externalChecks.find(_.id == ExternalCheckId("gun_verification")).get.progress.get.completedAt,Some("周五 09:20"))
+      _ = assertEquals(done.externalChecks.find(_.id == ExternalCheckId("gun_verification")).get.progress.get.completedAt,Some("周五上午初查 09:20"))
       _ = assert(done.clues.find(_.id == ClueId("clue_gun_verification")).get.text.contains(".25"))
       _ = assert(completed.acquiredClues(ClueId("clue_gun_verification")))
       _ = assertEquals(done.journal.count(_.clueIds(ClueId("clue_gun_verification"))),1)
@@ -132,36 +132,13 @@ class ExternalChecksSuite extends FunSuite:
     (for
       _ <- setup(url,id)
       _ <- tx(url)(request(id).plan)
-      _ <- question(1,"melchett",client(input => { assert(input.user.contains("预计周五 09:20"));assert(!input.user.contains("送交登记中的手枪"));assert(!input.user.contains(".25"));assert(!input.user.contains("约19:00"));assert(!input.user.contains("\"id\":\"gun_verification\"")) }))
+      _ <- question(1,"melchett",client(input => { assert(input.user.contains("预计周五上午初查 09:20"));assert(!input.user.contains("送交登记中的手枪"));assert(!input.user.contains(".25"));assert(!input.user.contains("约19:00"));assert(!input.user.contains("\"id\":\"gun_verification\"")) }))
       _ <- tx(url)(waitFor(id,2,20).plan)
       _ <- question(3,"melchett",client(input => { assert(input.user.contains("送交登记中的手枪"));assert(input.user.contains("已完成"));assert(input.user.contains("\"id\":\"gun_verification\"")) }))
       _ <- question(4,"mary",client(input => assert(!input.user.contains("送交登记中的手枪"))))
     yield ()).unsafeRunSync()
   }
 
-  test("existing revision 7 and a database without the new column restore without time migration") {
-    val url=database;val id=SessionId(UUID.randomUUID().toString)
-    (for
-      _ <- DatabaseSession.connection(url).use(DatabaseSchema.initialize)
-      _ <- tx(url) { c => for
-        latest <- ImportCaseMessage(Paths.get("../docs/fixtures/browser_investigation_v21.json")).plan(c)
-        old=latest.copy(revision=Revision(7),content=LegacyFixture.withoutFollowUps(latest.content).copy(clock=None,areaMap=None,externalChecks=Vector.empty))
-        _ <- CaseRevisionTable.insert(c,old)
-        _ <- StartGameMessage(owner,id,old.caseId,old.revision).plan(c)
-      yield () }
-      receipt <- tx(url)(InvestigateMessage(owner,id,RequestId("old-clock"),Sequence(0),PointId("point_clock"),RouteId("route_clock")).plan)
-      before <- view(url,id)
-      _ <- DatabaseSession.connection(url).use { c => IO.blocking { Using.resource(c.createStatement())(_.execute("ALTER TABLE game_sessions DROP COLUMN checks_json")); () } *> DatabaseSchema.initialize(c) }
-      restored <- view(url,id)
-      retry <- tx(url)(InvestigateMessage(owner,id,RequestId("old-clock"),Sequence(0),PointId("point_clock"),RouteId("route_clock")).plan)
-      denied <- tx(url)(waitFor(id,1).plan).attempt
-      _ = assertEquals(restored,before)
-      _ = assertEquals(receipt,retry)
-      _ = assertEquals(restored.clock,None)
-      _ = assertEquals(restored.externalChecks,Vector.empty)
-      _ = assertEquals(code(denied),Some(ErrorCode.ConflictingContent))
-    yield ()).unsafeRunSync()
-  }
 
   test("completed reports have legal disclosure references without executing routes or leaking to other people") {
     val url=database;val id=SessionId(UUID.randomUUID().toString)
@@ -193,7 +170,7 @@ class ExternalChecksSuite extends FunSuite:
     val url=database
     (for
       _ <- DatabaseSession.connection(url).use(c => DatabaseSchema.initialize(c))
-      record <- tx(url)(ImportCaseMessage(Paths.get("../docs/fixtures/browser_investigation_v21.json")).plan)
+      record <- tx(url)(ImportCaseMessage(Paths.get("../docs/fixtures/investigation_base.json")).plan)
       content = record.content
       officer = content.witnesses.find(w => content.police.contains(w.id)).get
       ordinary = content.witnesses.find(_.id == WitnessId("clement")).get.copy(name=officer.name)

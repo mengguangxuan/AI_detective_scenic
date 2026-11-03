@@ -76,7 +76,7 @@ private[games] object SemanticInterviewRules:
       val next=state.copy(sequence=Sequence(state.sequence.value+1),clues=state.clues++clues,facts=state.facts++facts)
       val turn=InterviewTurnRecord(state.id,request.requestId,next.sequence,request.witness,request.question,request.shownClues,reply,InterviewReplyMode.Answered,Vector.empty,Vector.empty,decision.focus,Some(recognition))
       val log=SessionRecord(RecordId(s"${request.requestId.value}:interview"),state.id,request.requestId,next.sequence,next.storyTimeSeconds,
-        request.context.profile.point,Some(RouteId(s"interview_${request.witness.value}")),None,s"问询${request.context.profile.name}：${request.question}\n$reply",clues,facts)
+        Some(request.context.profile.point),Some(RouteId(s"interview_${request.witness.value}")),None,s"问询${request.context.profile.name}：${request.question}\n$reply",clues,facts)
       (ActionPlan(next,log,CommandResult(next.sequence,Vector(Text(reply)),clues)),turn)
 
   private[games] def reviewSummary(raw: String): String =

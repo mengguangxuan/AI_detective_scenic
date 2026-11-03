@@ -1,0 +1,3712 @@
+{
+  "documentFormat": "detective-author-draft-proposal/1",
+  "artifactKind": "author_input_example",
+  "status": "draft_for_review",
+  "compatibility": {
+    "acceptedByCurrentFixtureLoader": false,
+    "uploadApiImplemented": false,
+    "executableCaseTimeline": false,
+    "note": "这是作者输入提案，枚举使用可读kind字段，不冒充现有Circe运行协议；不得直接导入旧schemaVersion=2或声称可玩。"
+  },
+  "metadata": {
+    "caseId": "speckled_band",
+    "title": "斑点带子案",
+    "language": "zh-CN",
+    "referenceVersion": "1892年美国版短篇文本",
+    "updatedOn": "2026-11-03",
+    "visibility": "author_private",
+    "playScope": "白天现场调查、夜间守候及原作干预路径；测试变体单独运行。",
+    "playerPersonId": "holmes"
+  },
+  "sources": [
+    {
+      "id": "src_original",
+      "title": "The Adventures of Sherlock Holmes (1892, US), The Adventure of the Speckled Band",
+      "url": "https://en.wikisource.org/wiki/The_Adventures_of_Sherlock_Holmes_(1892,_US)/The_Adventure_of_the_Speckled_Band",
+      "role": "原文版本依据；不混用戏剧或影视",
+      "checkedOn": "2026-11-03"
+    },
+    {
+      "id": "src_collection",
+      "title": "Conan Doyle Collection: It was the band! The speckled band!",
+      "url": "https://www.conandoylecollection.com/conan-doyle/blog/read/2023/11/it-was-the-band-the-speckled-band-b102",
+      "role": "馆藏机构的作品与虚构蛇种说明",
+      "checkedOn": "2026-11-03"
+    }
+  ],
+  "publicInfo": {
+    "summary": "海伦·斯托纳担心自己正在经历与姐姐去世前相似的事情。你受托前往庄园，调查当年的疑点，并核实她如今面临的危险。",
+    "objective": "检查现场，听取相关人物的实际经历，查明旧案并设法保护委托人。",
+    "background": "英国维多利亚时代的乡间庄园。海伦的姐姐约两年前离世，近期维修使海伦搬进姐姐原来的卧室。",
+    "openingKnownFacts": [
+      "f_julia_dead",
+      "f_helen_moved"
+    ],
+    "initialMaterials": [
+      "clue_helen_account",
+      "clue_will"
+    ],
+    "exclusions": "不公开凶手、蛇、隐秘通道用途、未来死亡、计划时刻或完整人物私情。"
+  },
+  "authorTruth": {
+    "responsiblePersonIds": [
+      "roylott"
+    ],
+    "historicalVictimIds": [
+      "julia"
+    ],
+    "threatenedPersonIds": [
+      "helen"
+    ],
+    "motiveFactIds": [
+      "f_financial_motive"
+    ],
+    "methodFactIds": [
+      "f_snake_route_truth",
+      "f_julia_killed"
+    ],
+    "fixedConstraints": [
+      "固定旧案责任、动机、手法和主要空间关系。",
+      "未来结果以本局实际发生记录为准，不强制所有游玩进入原作结局。",
+      "不增设现代监控、现代法医仪器或原作未提供的化验结论。",
+      "不因普通提问自动认罪，不向NPC下发本作者文件。"
+    ],
+    "fictionalAssumptions": [
+      {
+        "id": "assumption_snake",
+        "description": "沿用原作虚构蛇的路径行为、召回设定与快速毒性；不宣称真实动物学或医学成立。",
+        "origin": "original_fiction",
+        "sourceIds": [
+          "src_original",
+          "src_collection"
+        ],
+        "reviewExpectation": "报告为需要明确保留的作品设定；不得擅自换成枪杀或删除整条手法。",
+        "authorDecision": "本作者样本选择保留原作设定，现实可靠性仍须在审核报告列明。"
+      }
+    ]
+  },
+  "opening": {
+    "sourceTime": "原作白天下午到庄园，日期和分钟未固定。",
+    "storyOrigin": "第1日14:00，项目制作原点",
+    "calendarPrecision": "1883年4月上旬，具体日与星期不设定",
+    "storyTimeSeconds": 0,
+    "timeProvenance": "adaptation",
+    "playerPlace": "grounds",
+    "initiallyOccurredEventIds": [
+      "h_julia_death",
+      "h_helen_moved",
+      "h_recent_whistle",
+      "h_morning_meeting",
+      "h_will_check"
+    ],
+    "historicalTimes": "见historicalEvents；chosenSeconds为空是有意保留的精度，不能自动变成0或同一时刻。",
+    "initialPersons": [
+      {
+        "person": "holmes",
+        "body": "body_holmes",
+        "life": "Alive",
+        "detained": false
+      },
+      {
+        "person": "watson",
+        "body": "body_watson",
+        "life": "Alive",
+        "detained": false
+      },
+      {
+        "person": "helen",
+        "body": "body_helen",
+        "life": "Alive",
+        "detained": false
+      },
+      {
+        "person": "roylott",
+        "body": "body_roylott",
+        "life": "Alive",
+        "detained": false
+      }
+    ],
+    "historicalPersons": [
+      {
+        "person": "julia",
+        "life": "Dead",
+        "currentBodyPlace": null,
+        "reason": "原作未给出当前遗体位置，不纳入现场活动人物。"
+      }
+    ],
+    "initialEntityPlaces": {
+      "body_holmes": "grounds",
+      "body_watson": "grounds",
+      "body_helen": "grounds",
+      "body_roylott": "offsite",
+      "bed": "middle_room",
+      "bell_pull": "middle_room",
+      "vent": "middle_room",
+      "safe": "roylott_room",
+      "milk_saucer": "roylott_room",
+      "loop_lash": "roylott_room",
+      "snake": "roylott_room",
+      "dark_lantern": "roylott_room",
+      "signal_lamp": "middle_room",
+      "window_shutters": "middle_room",
+      "cane": "grounds"
+    },
+    "initialContainment": [
+      {
+        "entity": "snake",
+        "container": "safe",
+        "origin": "原作手法与结局的制作初态安排"
+      }
+    ],
+    "initialOpened": {
+      "safe": false,
+      "window_shutters": false
+    },
+    "sceneCoordinatesStatus": "由后续模型制作登记；不让用户填坐标，不以0,0,0填满未知值。"
+  },
+  "characters": [
+    {
+      "id": "holmes",
+      "name": "夏洛克·福尔摩斯",
+      "role": "player",
+      "body": "body_holmes",
+      "publicIdentity": "受托调查的侦探",
+      "relationships": [
+        {
+          "person": "watson",
+          "description": "调查同伴"
+        },
+        {
+          "person": "helen",
+          "description": "委托人"
+        }
+      ],
+      "initialKnowledge": {
+        "factIds": [
+          "f_julia_dead",
+          "f_helen_moved",
+          "f_financial_motive"
+        ],
+        "claimIds": [
+          "claim_helen_history",
+          "claim_helen_recent_whistle",
+          "claim_helen_fear"
+        ],
+        "basis": "开局前听取海伦叙述，并核查遗嘱；原作白天检查及结论不提前灌入玩家。"
+      },
+      "privateContext": [],
+      "beliefs": [
+        "尚需检查现场和取得证据。"
+      ],
+      "goals": [
+        "查明朱莉娅死亡原因，并保护海伦。"
+      ],
+      "outwardStrategy": [
+        "由玩家提出问题和推理；不生成一个全知福尔摩斯NPC替玩家破案。"
+      ],
+      "provenance": {
+        "origin": "adaptation",
+        "sourceIds": [],
+        "detail": "扮演原作侦探，但原作侦探的后续推理必须由玩家完成。"
+      }
+    },
+    {
+      "id": "watson",
+      "name": "约翰·华生",
+      "role": "witness",
+      "body": "body_watson",
+      "publicIdentity": "医生，侦探的同行者",
+      "relationships": [
+        {
+          "person": "holmes",
+          "description": "调查同伴"
+        }
+      ],
+      "initialKnowledge": {
+        "factIds": [
+          "f_julia_dead",
+          "f_helen_moved",
+          "f_financial_motive"
+        ],
+        "claimIds": [
+          "claim_helen_history",
+          "claim_helen_recent_whistle",
+          "claim_helen_fear"
+        ],
+        "basis": "参与晨间会面，同行途中听到遗嘱核查说明。"
+      },
+      "privateContext": [],
+      "beliefs": [
+        "愿意帮助调查；对未看清的对象保持不知道。"
+      ],
+      "goals": [
+        "协助调查并保护同伴。"
+      ],
+      "outwardStrategy": [
+        "可描述本人实际观察；不自动获得玩家未向他说明的推断。"
+      ],
+      "provenance": {
+        "origin": "original",
+        "sourceIds": [
+          "src_original"
+        ],
+        "detail": "口吻可补写，知识边界取实际在场经历。"
+      }
+    },
+    {
+      "id": "helen",
+      "name": "海伦·斯托纳",
+      "role": "witness",
+      "body": "body_helen",
+      "publicIdentity": "委托人，朱莉娅的孪生姐妹",
+      "relationships": [
+        {
+          "person": "julia",
+          "description": "孪生姐妹"
+        },
+        {
+          "person": "roylott",
+          "description": "继父"
+        }
+      ],
+      "initialKnowledge": {
+        "factIds": [
+          "f_julia_dead",
+          "f_helen_moved"
+        ],
+        "claimIds": [
+          "claim_helen_history",
+          "claim_helen_recent_whistle",
+          "claim_helen_fear"
+        ],
+        "basis": "亲身经历和姐姐生前告诉她的内容；婚后收入安排按本人所知表达，不自动获得已核查的金额。"
+      },
+      "privateContext": [
+        "对继父的暴力感到恐惧，初次可能回避描述其伤害；不将作者的杀人手法直接给她。"
+      ],
+      "beliefs": [
+        "怀疑自己处境危险；曾猜测姐姐因惊恐而死，此为信念。"
+      ],
+      "goals": [
+        "了解姐姐死因，安全结婚并离开危险处境。"
+      ],
+      "outwardStrategy": [
+        "如实表达记忆及其不确定性，愿意配合安全安排；不得提前讲出夜间结果。"
+      ],
+      "provenance": {
+        "origin": "original",
+        "sourceIds": [
+          "src_original"
+        ],
+        "detail": "对白另写，不照抄完整原文。"
+      }
+    },
+    {
+      "id": "roylott",
+      "name": "格里姆斯比·罗伊洛特",
+      "role": "witness",
+      "body": "body_roylott",
+      "publicIdentity": "医生，庄园主人，姐妹的继父",
+      "relationships": [
+        {
+          "person": "helen",
+          "description": "继女"
+        },
+        {
+          "person": "julia",
+          "description": "已故继女"
+        }
+      ],
+      "initialKnowledge": {
+        "factIds": [
+          "f_julia_dead",
+          "f_julia_killed",
+          "f_financial_motive",
+          "f_helen_moved",
+          "f_pull_dummy",
+          "f_vent_internal",
+          "f_bed_fixed",
+          "f_snake_route_truth"
+        ],
+        "claimIds": [],
+        "basis": "本人过去实施行为及私下准备；只知道自己的计划，不知道侦探尚未发生的布置。"
+      },
+      "privateContext": [
+        "作者固定责任与经济动机；本人知道蛇的用途及以维修促成换房的意图。"
+      ],
+      "beliefs": [
+        "调查者可能妨碍自己的安排，但没有全知的监视能力。"
+      ],
+      "goals": [
+        "保住收入，隐瞒旧案并实施预设袭击。"
+      ],
+      "outwardStrategy": [
+        "以威吓和拒绝干涉回应，不因普通提问自动认罪；被控制后不能靠台词继续执行行动。"
+      ],
+      "provenance": {
+        "origin": "original",
+        "sourceIds": [
+          "src_original"
+        ],
+        "detail": "自由问询内容属于项目改编，不能改写本人历史。"
+      }
+    },
+    {
+      "id": "julia",
+      "name": "朱莉娅·斯托纳",
+      "role": "historical_victim",
+      "body": "body_julia",
+      "publicIdentity": "海伦的孪生姐妹，开局前已死亡",
+      "relationships": [
+        {
+          "person": "helen",
+          "description": "孪生姐妹"
+        },
+        {
+          "person": "roylott",
+          "description": "继父"
+        }
+      ],
+      "initialKnowledge": {
+        "factIds": [],
+        "claimIds": [],
+        "basis": "不配置当前问询或开局知识，不能向死者发起会话。"
+      },
+      "privateContext": [],
+      "beliefs": [],
+      "goals": [],
+      "outwardStrategy": [],
+      "provenance": {
+        "origin": "original",
+        "sourceIds": [
+          "src_original"
+        ],
+        "detail": "遗言通过海伦的转述保存；遗体当前地点未设定，不在旧卧室生成尸体。"
+      }
+    }
+  ],
+  "places": [
+    {
+      "id": "grounds",
+      "name": "庄园草坪与窗外",
+      "description": "可观察卧室窗户，进入建筑的相邻区域。",
+      "rendering": "由模型设计",
+      "provenance": {
+        "origin": "original",
+        "sourceIds": [
+          "src_original"
+        ],
+        "detail": "名称、连接按原作，尺寸和坐标由后续表现制作决定。"
+      }
+    },
+    {
+      "id": "corridor",
+      "name": "卧室走廊",
+      "description": "连通三间卧室。",
+      "rendering": "由模型设计",
+      "provenance": {
+        "origin": "original",
+        "sourceIds": [
+          "src_original"
+        ],
+        "detail": "名称、连接按原作，尺寸和坐标由后续表现制作决定。"
+      }
+    },
+    {
+      "id": "middle_room",
+      "name": "中间卧室",
+      "description": "朱莉娅原来的卧室，海伦近期居住的房间；主要调查与守候现场。",
+      "rendering": "由模型设计",
+      "provenance": {
+        "origin": "original",
+        "sourceIds": [
+          "src_original"
+        ],
+        "detail": "名称、连接按原作，尺寸和坐标由后续表现制作决定。"
+      }
+    },
+    {
+      "id": "helen_old_room",
+      "name": "海伦原卧室",
+      "description": "有维修安排，夜间可暂住。",
+      "rendering": "由模型设计",
+      "provenance": {
+        "origin": "original",
+        "sourceIds": [
+          "src_original"
+        ],
+        "detail": "名称、连接按原作，尺寸和坐标由后续表现制作决定。"
+      }
+    },
+    {
+      "id": "roylott_room",
+      "name": "罗伊洛特卧室",
+      "description": "与中间卧室通过通气孔相连。",
+      "rendering": "由模型设计",
+      "provenance": {
+        "origin": "original",
+        "sourceIds": [
+          "src_original"
+        ],
+        "detail": "名称、连接按原作，尺寸和坐标由后续表现制作决定。"
+      }
+    },
+    {
+      "id": "inn",
+      "name": "皇冠旅店观察位置",
+      "description": "隔着庄园方向可以观察约定窗口；不能仅因为人物在旅店就断言其正在看窗外。",
+      "rendering": "由模型设计",
+      "provenance": {
+        "origin": "original",
+        "sourceIds": [
+          "src_original"
+        ],
+        "detail": "名称、连接按原作，尺寸和坐标由后续表现制作决定。"
+      }
+    },
+    {
+      "id": "offsite",
+      "name": "庄园外",
+      "description": "表示罗伊洛特开局外出的范围，不假定精确路线。",
+      "rendering": "地图标记或文字即可",
+      "provenance": {
+        "origin": "adaptation",
+        "sourceIds": [],
+        "detail": "名称、连接按原作，尺寸和坐标由后续表现制作决定。"
+      }
+    },
+    {
+      "id": "baker_street",
+      "name": "贝克街会面地点",
+      "description": "只作为晨间会面的背景引用，不制作本阶段探索场景。",
+      "rendering": "背景文本",
+      "provenance": {
+        "origin": "original",
+        "sourceIds": [
+          "src_original"
+        ],
+        "detail": "历史事件地点。"
+      }
+    }
+  ],
+  "entities": [
+    {
+      "id": "body_holmes",
+      "label": "福尔摩斯身体",
+      "kind": "person_body",
+      "initialPlace": "grounds",
+      "initialVisibility": "by_accessible_scene",
+      "provenance": {
+        "origin": "original",
+        "sourceIds": [
+          "src_original"
+        ],
+        "detail": "表现节点与坐标未生成。"
+      }
+    },
+    {
+      "id": "body_watson",
+      "label": "华生身体",
+      "kind": "person_body",
+      "initialPlace": "grounds",
+      "initialVisibility": "by_accessible_scene",
+      "provenance": {
+        "origin": "original",
+        "sourceIds": [
+          "src_original"
+        ],
+        "detail": "表现节点与坐标未生成。"
+      }
+    },
+    {
+      "id": "body_helen",
+      "label": "海伦身体",
+      "kind": "person_body",
+      "initialPlace": "grounds",
+      "initialVisibility": "by_accessible_scene",
+      "provenance": {
+        "origin": "original",
+        "sourceIds": [
+          "src_original"
+        ],
+        "detail": "表现节点与坐标未生成。"
+      }
+    },
+    {
+      "id": "body_roylott",
+      "label": "罗伊洛特身体",
+      "kind": "person_body",
+      "initialPlace": "offsite",
+      "initialVisibility": "by_accessible_scene",
+      "provenance": {
+        "origin": "original",
+        "sourceIds": [
+          "src_original"
+        ],
+        "detail": "表现节点与坐标未生成。"
+      }
+    },
+    {
+      "id": "body_julia",
+      "label": "朱莉娅遗体",
+      "kind": "historical_body",
+      "initialPlace": null,
+      "initialVisibility": "hidden_or_offstage",
+      "provenance": {
+        "origin": "original",
+        "sourceIds": [
+          "src_original"
+        ],
+        "detail": "当前地点原作未提供；null不得解释为不存在。"
+      }
+    },
+    {
+      "id": "bed",
+      "label": "固定床",
+      "kind": "object",
+      "initialPlace": "middle_room",
+      "initialVisibility": "by_accessible_scene",
+      "provenance": {
+        "origin": "original",
+        "sourceIds": [
+          "src_original"
+        ],
+        "detail": "表现节点与坐标未生成。"
+      }
+    },
+    {
+      "id": "bell_pull",
+      "label": "假拉绳",
+      "kind": "object",
+      "initialPlace": "middle_room",
+      "initialVisibility": "by_accessible_scene",
+      "provenance": {
+        "origin": "original",
+        "sourceIds": [
+          "src_original"
+        ],
+        "detail": "表现节点与坐标未生成。"
+      }
+    },
+    {
+      "id": "vent",
+      "label": "连接两室的通气孔",
+      "kind": "object",
+      "initialPlace": "middle_room",
+      "initialVisibility": "by_accessible_scene",
+      "provenance": {
+        "origin": "original",
+        "sourceIds": [
+          "src_original"
+        ],
+        "detail": "表现节点与坐标未生成。"
+      }
+    },
+    {
+      "id": "safe",
+      "label": "铁柜",
+      "kind": "container",
+      "initialPlace": "roylott_room",
+      "initialVisibility": "by_accessible_scene",
+      "provenance": {
+        "origin": "original",
+        "sourceIds": [
+          "src_original"
+        ],
+        "detail": "表现节点与坐标未生成。"
+      }
+    },
+    {
+      "id": "milk_saucer",
+      "label": "牛奶碟",
+      "kind": "object",
+      "initialPlace": "roylott_room",
+      "initialVisibility": "by_accessible_scene",
+      "provenance": {
+        "origin": "original",
+        "sourceIds": [
+          "src_original"
+        ],
+        "detail": "表现节点与坐标未生成。"
+      }
+    },
+    {
+      "id": "loop_lash",
+      "label": "结成套圈的短鞭",
+      "kind": "object",
+      "initialPlace": "roylott_room",
+      "initialVisibility": "by_accessible_scene",
+      "provenance": {
+        "origin": "original",
+        "sourceIds": [
+          "src_original"
+        ],
+        "detail": "表现节点与坐标未生成。"
+      }
+    },
+    {
+      "id": "snake",
+      "label": "原作虚构毒蛇",
+      "kind": "animal",
+      "initialPlace": "roylott_room",
+      "initialVisibility": "hidden_or_offstage",
+      "provenance": {
+        "origin": "original",
+        "sourceIds": [
+          "src_original"
+        ],
+        "detail": "表现节点与坐标未生成。"
+      }
+    },
+    {
+      "id": "dark_lantern",
+      "label": "遮光灯",
+      "kind": "object",
+      "initialPlace": "roylott_room",
+      "initialVisibility": "by_accessible_scene",
+      "provenance": {
+        "origin": "original",
+        "sourceIds": [
+          "src_original"
+        ],
+        "detail": "表现节点与坐标未生成。"
+      }
+    },
+    {
+      "id": "signal_lamp",
+      "label": "信号灯",
+      "kind": "object",
+      "initialPlace": "middle_room",
+      "initialVisibility": "by_accessible_scene",
+      "provenance": {
+        "origin": "original",
+        "sourceIds": [
+          "src_original"
+        ],
+        "detail": "表现节点与坐标未生成。"
+      }
+    },
+    {
+      "id": "window_shutters",
+      "label": "中间卧室窗户与百叶窗",
+      "kind": "object",
+      "initialPlace": "middle_room",
+      "initialVisibility": "by_accessible_scene",
+      "provenance": {
+        "origin": "original",
+        "sourceIds": [
+          "src_original"
+        ],
+        "detail": "表现节点与坐标未生成。"
+      }
+    },
+    {
+      "id": "cane",
+      "label": "守候用细杖",
+      "kind": "prop",
+      "initialPlace": "grounds",
+      "initialVisibility": "by_accessible_scene",
+      "provenance": {
+        "origin": "original",
+        "sourceIds": [
+          "src_original"
+        ],
+        "detail": "表现节点与坐标未生成。"
+      }
+    }
+  ],
+  "facts": [
+    {
+      "id": "f_julia_dead",
+      "statement": "朱莉娅在开局前约两年前死亡。",
+      "scope": "history",
+      "requiresOccurred": [
+        "h_julia_death"
+      ],
+      "provenance": {
+        "origin": "original",
+        "sourceIds": [
+          "src_original"
+        ],
+        "detail": "中文概述；事实与可披露范围分开配置。"
+      }
+    },
+    {
+      "id": "f_financial_motive",
+      "statement": "继女结婚将分走收入，罗伊洛特有阻止婚事的经济动机。",
+      "scope": "author_truth",
+      "requiresOccurred": [],
+      "provenance": {
+        "origin": "original",
+        "sourceIds": [
+          "src_original"
+        ],
+        "detail": "中文概述；事实与可披露范围分开配置。"
+      }
+    },
+    {
+      "id": "f_julia_killed",
+      "statement": "本案作者真相：罗伊洛特利用蛇杀害朱莉娅。",
+      "scope": "author_truth",
+      "requiresOccurred": [
+        "h_julia_death"
+      ],
+      "provenance": {
+        "origin": "original",
+        "sourceIds": [
+          "src_original"
+        ],
+        "detail": "中文概述；事实与可披露范围分开配置。"
+      }
+    },
+    {
+      "id": "f_helen_moved",
+      "statement": "海伦近期因维修搬到朱莉娅原来的房间。",
+      "scope": "history",
+      "requiresOccurred": [
+        "h_helen_moved"
+      ],
+      "provenance": {
+        "origin": "original",
+        "sourceIds": [
+          "src_original"
+        ],
+        "detail": "中文概述；事实与可披露范围分开配置。"
+      }
+    },
+    {
+      "id": "f_pull_dummy",
+      "statement": "床边拉绳没有接通铃的拉线。",
+      "scope": "physical",
+      "requiresOccurred": [],
+      "provenance": {
+        "origin": "original",
+        "sourceIds": [
+          "src_original"
+        ],
+        "detail": "中文概述；事实与可披露范围分开配置。"
+      }
+    },
+    {
+      "id": "f_vent_internal",
+      "statement": "通气孔连接中间卧室与罗伊洛特房间。",
+      "scope": "physical",
+      "requiresOccurred": [],
+      "provenance": {
+        "origin": "original",
+        "sourceIds": [
+          "src_original"
+        ],
+        "detail": "中文概述；事实与可披露范围分开配置。"
+      }
+    },
+    {
+      "id": "f_bed_fixed",
+      "statement": "床固定在地板上，不能随意改变与通气孔及拉绳的相对位置。",
+      "scope": "physical",
+      "requiresOccurred": [],
+      "provenance": {
+        "origin": "original",
+        "sourceIds": [
+          "src_original"
+        ],
+        "detail": "中文概述；事实与可披露范围分开配置。"
+      }
+    },
+    {
+      "id": "f_shutters_secure",
+      "statement": "本次白天检查确认关闭并插牢后的百叶窗不能从外侧按所试方法打开。",
+      "scope": "physical",
+      "requiresOccurred": [],
+      "provenance": {
+        "origin": "original",
+        "sourceIds": [
+          "src_original"
+        ],
+        "detail": "中文概述；事实与可披露范围分开配置。"
+      }
+    },
+    {
+      "id": "f_safe_saucer",
+      "statement": "罗伊洛特房内铁柜上有一小碟牛奶；该物本身不证明用途。",
+      "scope": "physical",
+      "requiresOccurred": [],
+      "provenance": {
+        "origin": "original",
+        "sourceIds": [
+          "src_original"
+        ],
+        "detail": "中文概述；事实与可披露范围分开配置。"
+      }
+    },
+    {
+      "id": "f_lash_loop",
+      "statement": "房内短鞭的鞭梢结成套圈。",
+      "scope": "physical",
+      "requiresOccurred": [],
+      "provenance": {
+        "origin": "original",
+        "sourceIds": [
+          "src_original"
+        ],
+        "detail": "中文概述；事实与可披露范围分开配置。"
+      }
+    },
+    {
+      "id": "f_snake_route_truth",
+      "statement": "本案手法利用通气孔与假拉绳提供的路径，不依赖人穿过孔洞。",
+      "scope": "author_truth",
+      "requiresOccurred": [],
+      "provenance": {
+        "origin": "original",
+        "sourceIds": [
+          "src_original"
+        ],
+        "detail": "中文概述；事实与可披露范围分开配置。"
+      }
+    },
+    {
+      "id": "f_roylott_returned",
+      "statement": "罗伊洛特当日晚些时候返回庄园。",
+      "scope": "occurrence",
+      "requiresOccurred": [
+        "e_return"
+      ],
+      "provenance": {
+        "origin": "original",
+        "sourceIds": [
+          "src_original"
+        ],
+        "detail": "中文概述；事实与可披露范围分开配置。"
+      }
+    },
+    {
+      "id": "f_roylott_retired",
+      "statement": "罗伊洛特退回自己的房间。",
+      "scope": "occurrence",
+      "requiresOccurred": [
+        "e_retire"
+      ],
+      "provenance": {
+        "origin": "original",
+        "sourceIds": [
+          "src_original"
+        ],
+        "detail": "中文概述；事实与可披露范围分开配置。"
+      }
+    },
+    {
+      "id": "f_signal_seen",
+      "statement": "观察者实际看见约定窗口出现灯光信号。",
+      "scope": "perception",
+      "requiresOccurred": [
+        "e_signal"
+      ],
+      "provenance": {
+        "origin": "original",
+        "sourceIds": [
+          "src_original"
+        ],
+        "detail": "中文概述；事实与可披露范围分开配置。"
+      }
+    },
+    {
+      "id": "f_helen_relocated",
+      "statement": "海伦离开中间卧室，转移到自己原来的房间。",
+      "scope": "occurrence",
+      "requiresOccurred": [
+        "e_helen_relocate"
+      ],
+      "provenance": {
+        "origin": "original",
+        "sourceIds": [
+          "src_original"
+        ],
+        "detail": "中文概述；事实与可披露范围分开配置。"
+      }
+    },
+    {
+      "id": "f_guard_entered",
+      "statement": "调查者已进入中间卧室守候。",
+      "scope": "occurrence",
+      "requiresOccurred": [
+        "e_enter_watch"
+      ],
+      "provenance": {
+        "origin": "original",
+        "sourceIds": [
+          "src_original"
+        ],
+        "detail": "中文概述；事实与可披露范围分开配置。"
+      }
+    },
+    {
+      "id": "f_lantern_signs",
+      "statement": "中间卧室观察者看见通气孔方向短暂亮光，并闻到热油和金属气味。",
+      "scope": "perception",
+      "requiresOccurred": [
+        "e_lantern"
+      ],
+      "provenance": {
+        "origin": "original",
+        "sourceIds": [
+          "src_original"
+        ],
+        "detail": "中文概述；事实与可披露范围分开配置。"
+      }
+    },
+    {
+      "id": "f_snake_entered",
+      "statement": "蛇已经从罗伊洛特房间进入中间卧室。",
+      "scope": "author_truth",
+      "requiresOccurred": [
+        "e_release"
+      ],
+      "provenance": {
+        "origin": "original",
+        "sourceIds": [
+          "src_original"
+        ],
+        "detail": "中文概述；事实与可披露范围分开配置。"
+      }
+    },
+    {
+      "id": "f_hiss_heard",
+      "statement": "在场守候者听见轻微嘶响，单凭此声尚不能确认动物种类。",
+      "scope": "perception",
+      "requiresOccurred": [
+        "e_release"
+      ],
+      "provenance": {
+        "origin": "original",
+        "sourceIds": [
+          "src_original"
+        ],
+        "detail": "中文概述；事实与可披露范围分开配置。"
+      }
+    },
+    {
+      "id": "f_strike_performed",
+      "statement": "调查者点亮火柴并朝拉绳附近挥杖。",
+      "scope": "occurrence",
+      "requiresOccurred": [
+        "e_strike"
+      ],
+      "provenance": {
+        "origin": "original",
+        "sourceIds": [
+          "src_original"
+        ],
+        "detail": "中文概述；事实与可披露范围分开配置。"
+      }
+    },
+    {
+      "id": "f_watson_did_not_identify",
+      "statement": "华生听见口哨并看见同伴动作，但未看清被击打的对象。",
+      "scope": "perspective_record",
+      "requiresOccurred": [
+        "e_strike"
+      ],
+      "provenance": {
+        "origin": "original",
+        "sourceIds": [
+          "src_original"
+        ],
+        "detail": "中文概述；事实与可披露范围分开配置。"
+      }
+    },
+    {
+      "id": "f_snake_returned",
+      "statement": "蛇受驱赶后返回罗伊洛特房间。",
+      "scope": "author_truth",
+      "requiresOccurred": [
+        "e_snake_return"
+      ],
+      "provenance": {
+        "origin": "original",
+        "sourceIds": [
+          "src_original"
+        ],
+        "detail": "中文概述；事实与可披露范围分开配置。"
+      }
+    },
+    {
+      "id": "f_roylott_bitten",
+      "statement": "罗伊洛特被返回的蛇咬伤。",
+      "scope": "author_truth",
+      "requiresOccurred": [
+        "e_roylott_bitten"
+      ],
+      "provenance": {
+        "origin": "original",
+        "sourceIds": [
+          "src_original"
+        ],
+        "detail": "中文概述；事实与可披露范围分开配置。"
+      }
+    },
+    {
+      "id": "f_roylott_dead",
+      "statement": "罗伊洛特在本局中已死亡；不是开局事实。",
+      "scope": "occurrence",
+      "requiresOccurred": [
+        "e_roylott_death"
+      ],
+      "provenance": {
+        "origin": "original",
+        "sourceIds": [
+          "src_original"
+        ],
+        "detail": "中文概述；事实与可披露范围分开配置。"
+      }
+    },
+    {
+      "id": "f_cry_heard",
+      "statement": "接收者实际听见相邻房间传来惨叫，尚不能据此确认谁已死亡。",
+      "scope": "perception",
+      "requiresOccurred": [
+        "e_cry"
+      ],
+      "provenance": {
+        "origin": "original",
+        "sourceIds": [
+          "src_original"
+        ],
+        "detail": "中文概述；事实与可披露范围分开配置。"
+      }
+    },
+    {
+      "id": "f_body_discovered",
+      "statement": "调查者进入房间，看见罗伊洛特死亡现场。",
+      "scope": "perception",
+      "requiresOccurred": [
+        "e_discover"
+      ],
+      "provenance": {
+        "origin": "original",
+        "sourceIds": [
+          "src_original"
+        ],
+        "detail": "中文概述；事实与可披露范围分开配置。"
+      }
+    },
+    {
+      "id": "f_snake_seen",
+      "statement": "进入房间的调查者看到罗伊洛特身上的蛇。",
+      "scope": "perception",
+      "requiresOccurred": [
+        "e_discover"
+      ],
+      "provenance": {
+        "origin": "original",
+        "sourceIds": [
+          "src_original"
+        ],
+        "detail": "中文概述；事实与可披露范围分开配置。"
+      }
+    },
+    {
+      "id": "f_snake_contained",
+      "statement": "调查者已将蛇收回铁柜并关闭柜门。",
+      "scope": "occurrence",
+      "requiresOccurred": [
+        "e_contain"
+      ],
+      "provenance": {
+        "origin": "original",
+        "sourceIds": [
+          "src_original"
+        ],
+        "detail": "中文概述；事实与可披露范围分开配置。"
+      }
+    },
+    {
+      "id": "f_signal_emitted",
+      "statement": "海伦已在约定窗口发出灯光信号；不表示侦探已看见。",
+      "scope": "occurrence",
+      "requiresOccurred": [
+        "e_signal"
+      ],
+      "provenance": {
+        "origin": "original",
+        "sourceIds": [
+          "src_original"
+        ],
+        "detail": "将事件发生与观察者看见分开。"
+      }
+    }
+  ],
+  "claims": [
+    {
+      "id": "claim_helen_history",
+      "speaker": "helen",
+      "text": "海伦转述姐姐临死前提到带斑点的带子，并回忆当晚疑似口哨与金属声。",
+      "claimedTime": "约两年前的夜间",
+      "basis": "海伦本人经历与姐姐的话",
+      "boundary": "她对风雨中听到的声音明确不完全确定；转述不能直接证明发声者。",
+      "provenance": {
+        "origin": "original",
+        "sourceIds": [
+          "src_original"
+        ],
+        "detail": "中文转述，不要求NPC逐字照念。"
+      }
+    },
+    {
+      "id": "claim_helen_recent_whistle",
+      "speaker": "helen",
+      "text": "海伦称最近搬房后又听到相似口哨。",
+      "claimedTime": "开局前一夜",
+      "basis": "本人听闻",
+      "boundary": "未看见发声者，不自动确认蛇或继父。",
+      "provenance": {
+        "origin": "original",
+        "sourceIds": [
+          "src_original"
+        ],
+        "detail": "中文转述，不要求NPC逐字照念。"
+      }
+    },
+    {
+      "id": "claim_helen_fear",
+      "speaker": "helen",
+      "text": "海伦曾怀疑姐姐因惊吓死亡。",
+      "claimedTime": "晨间陈述",
+      "basis": "本人解释",
+      "boundary": "主观信念，不进入客观死因。",
+      "provenance": {
+        "origin": "original",
+        "sourceIds": [
+          "src_original"
+        ],
+        "detail": "中文转述，不要求NPC逐字照念。"
+      }
+    },
+    {
+      "id": "claim_safe_papers",
+      "speaker": "helen",
+      "text": "海伦说多年前见过铁柜中放着文件。",
+      "claimedTime": "多年前",
+      "basis": "过去一次查看",
+      "boundary": "不能作为当前柜内只有文件的检查结果。",
+      "provenance": {
+        "origin": "original",
+        "sourceIds": [
+          "src_original"
+        ],
+        "detail": "中文转述，不要求NPC逐字照念。"
+      }
+    }
+  ],
+  "evidence": [
+    {
+      "id": "clue_helen_account",
+      "title": "海伦的经历记录",
+      "acquisition": "op_ask_helen",
+      "factIds": [],
+      "claimIds": [
+        "claim_helen_history",
+        "claim_helen_recent_whistle",
+        "claim_helen_fear"
+      ],
+      "requiresOccurred": [],
+      "text": "海伦关于旧案、换房及近夜声音的叙述，保留本人不确定的部分。",
+      "disclosure": "仅给实际取得者；NPC需另有实际获知记录",
+      "provenance": {
+        "origin": "adaptation",
+        "sourceIds": [],
+        "detail": "材料标题、记录形式及取得入口为项目安排，正文依据原作。"
+      }
+    },
+    {
+      "id": "clue_will",
+      "title": "遗嘱核查摘要",
+      "acquisition": "op_review_will",
+      "factIds": [
+        "f_financial_motive"
+      ],
+      "claimIds": [],
+      "requiresOccurred": [],
+      "text": "婚姻会影响罗伊洛特收入；只说明动机方向。",
+      "disclosure": "仅给实际取得者；NPC需另有实际获知记录",
+      "provenance": {
+        "origin": "adaptation",
+        "sourceIds": [],
+        "detail": "材料标题、记录形式及取得入口为项目安排，正文依据原作。"
+      }
+    },
+    {
+      "id": "clue_pull",
+      "title": "拉绳检查记录",
+      "acquisition": "op_inspect_pull",
+      "factIds": [
+        "f_pull_dummy"
+      ],
+      "claimIds": [],
+      "requiresOccurred": [],
+      "text": "拉绳没有接通铃线。",
+      "disclosure": "仅给实际取得者；NPC需另有实际获知记录",
+      "provenance": {
+        "origin": "adaptation",
+        "sourceIds": [],
+        "detail": "材料标题、记录形式及取得入口为项目安排，正文依据原作。"
+      }
+    },
+    {
+      "id": "clue_vent",
+      "title": "通气孔检查记录",
+      "acquisition": "op_inspect_vent",
+      "factIds": [
+        "f_vent_internal"
+      ],
+      "claimIds": [],
+      "requiresOccurred": [],
+      "text": "孔洞通向相邻卧室，不能仅凭此确认凶器。",
+      "disclosure": "仅给实际取得者；NPC需另有实际获知记录",
+      "provenance": {
+        "origin": "adaptation",
+        "sourceIds": [],
+        "detail": "材料标题、记录形式及取得入口为项目安排，正文依据原作。"
+      }
+    },
+    {
+      "id": "clue_bed",
+      "title": "床的固定关系",
+      "acquisition": "op_inspect_bed",
+      "factIds": [
+        "f_bed_fixed"
+      ],
+      "claimIds": [],
+      "requiresOccurred": [],
+      "text": "床固定在地板，与拉绳及孔洞的位置关系稳定。",
+      "disclosure": "仅给实际取得者；NPC需另有实际获知记录",
+      "provenance": {
+        "origin": "adaptation",
+        "sourceIds": [],
+        "detail": "材料标题、记录形式及取得入口为项目安排，正文依据原作。"
+      }
+    },
+    {
+      "id": "clue_shutters",
+      "title": "窗户检查记录",
+      "acquisition": "op_inspect_shutters",
+      "factIds": [
+        "f_shutters_secure"
+      ],
+      "claimIds": [],
+      "requiresOccurred": [],
+      "text": "记录本次检查状态与方法，不作无限范围的密室结论。",
+      "disclosure": "仅给实际取得者；NPC需另有实际获知记录",
+      "provenance": {
+        "origin": "adaptation",
+        "sourceIds": [],
+        "detail": "材料标题、记录形式及取得入口为项目安排，正文依据原作。"
+      }
+    },
+    {
+      "id": "clue_safe_surface",
+      "title": "铁柜周围观察",
+      "acquisition": "op_inspect_safe_surface",
+      "factIds": [
+        "f_safe_saucer"
+      ],
+      "claimIds": [],
+      "requiresOccurred": [],
+      "text": "当前只观察铁柜周围与牛奶碟，不读取海伦尚未讲出的记忆。",
+      "disclosure": "仅给实际取得者；NPC需另有实际获知记录",
+      "provenance": {
+        "origin": "adaptation",
+        "sourceIds": [],
+        "detail": "材料标题、记录形式及取得入口为项目安排，正文依据原作。"
+      }
+    },
+    {
+      "id": "clue_lash",
+      "title": "套圈短鞭记录",
+      "acquisition": "op_inspect_lash",
+      "factIds": [
+        "f_lash_loop"
+      ],
+      "claimIds": [],
+      "requiresOccurred": [],
+      "text": "记录形状，暂不替玩家说明用途。",
+      "disclosure": "仅给实际取得者；NPC需另有实际获知记录",
+      "provenance": {
+        "origin": "adaptation",
+        "sourceIds": [],
+        "detail": "材料标题、记录形式及取得入口为项目安排，正文依据原作。"
+      }
+    },
+    {
+      "id": "clue_signal",
+      "title": "灯光信号记录",
+      "acquisition": "actual_observation",
+      "factIds": [
+        "f_signal_seen"
+      ],
+      "claimIds": [],
+      "requiresOccurred": [
+        "e_signal"
+      ],
+      "text": "实际观察到约定灯光的记录。",
+      "disclosure": "仅给实际取得者；NPC需另有实际获知记录",
+      "provenance": {
+        "origin": "adaptation",
+        "sourceIds": [],
+        "detail": "材料标题、记录形式及取得入口为项目安排，正文依据原作。"
+      }
+    },
+    {
+      "id": "clue_lantern_signs",
+      "title": "通气孔方向的光与气味",
+      "acquisition": "actual_observation",
+      "factIds": [
+        "f_lantern_signs"
+      ],
+      "claimIds": [],
+      "requiresOccurred": [
+        "e_lantern"
+      ],
+      "text": "实际感到的短暂光线与热油、金属气味，不包含之后才出现的声音。",
+      "disclosure": "只给实际在场且感知到的接收者。"
+    },
+    {
+      "id": "clue_hiss",
+      "title": "守候中的轻微嘶响",
+      "acquisition": "actual_observation",
+      "factIds": [
+        "f_hiss_heard"
+      ],
+      "claimIds": [],
+      "requiresOccurred": [
+        "e_release"
+      ],
+      "text": "听见轻微嘶响，未仅凭声音确认蛇。",
+      "disclosure": "只给实际在场且听见的接收者。"
+    },
+    {
+      "id": "clue_watson_night",
+      "title": "华生当夜经历",
+      "acquisition": "actual_interview",
+      "factIds": [
+        "f_watson_did_not_identify"
+      ],
+      "claimIds": [],
+      "requiresOccurred": [
+        "e_strike"
+      ],
+      "text": "本人听闻与未看清的范围，不变成看见蛇的证词。",
+      "disclosure": "仅给实际取得者；NPC需另有实际获知记录",
+      "provenance": {
+        "origin": "adaptation",
+        "sourceIds": [],
+        "detail": "材料标题、记录形式及取得入口为项目安排，正文依据原作。"
+      },
+      "witness": "watson"
+    },
+    {
+      "id": "clue_final_scene",
+      "title": "罗伊洛特房内现场",
+      "acquisition": "op_enter_roylott",
+      "factIds": [
+        "f_body_discovered",
+        "f_snake_seen",
+        "f_roylott_dead"
+      ],
+      "claimIds": [],
+      "requiresOccurred": [
+        "e_discover"
+      ],
+      "text": "到场后的死亡现场及蛇的观察。",
+      "disclosure": "仅给实际取得者；NPC需另有实际获知记录",
+      "provenance": {
+        "origin": "adaptation",
+        "sourceIds": [],
+        "detail": "材料标题、记录形式及取得入口为项目安排，正文依据原作。"
+      }
+    },
+    {
+      "id": "clue_containment",
+      "title": "危险动物隔离记录",
+      "acquisition": "op_contain_snake",
+      "factIds": [
+        "f_snake_contained"
+      ],
+      "claimIds": [],
+      "requiresOccurred": [
+        "e_contain"
+      ],
+      "text": "实际完成后才登记，不等于自动知悉旧案完整真相。",
+      "disclosure": "仅给实际取得者；NPC需另有实际获知记录",
+      "provenance": {
+        "origin": "adaptation",
+        "sourceIds": [],
+        "detail": "材料标题、记录形式及取得入口为项目安排，正文依据原作。"
+      }
+    },
+    {
+      "id": "clue_helen_safe_memory",
+      "title": "海伦过去见过的柜内物品",
+      "acquisition": {
+        "operation": "op_ask_helen",
+        "topic": "过去是否看过铁柜内部"
+      },
+      "factIds": [],
+      "claimIds": [
+        "claim_safe_papers"
+      ],
+      "requiresOccurred": [],
+      "text": "海伦多年前曾见其中存放文件；这是过去记忆，不能确认当前全部内容。",
+      "disclosure": "仅在人物实际表达后保存原话。"
+    }
+  ],
+  "operations": [
+    {
+      "id": "op_ask_helen",
+      "label": "询问海伦的经历",
+      "precondition": "与海伦实际会面",
+      "meaning": "保留记忆的不确定性，不把个人猜测确认为死因。",
+      "provenance": {
+        "origin": "adaptation",
+        "sourceIds": [],
+        "detail": "交互入口与程序条件为制作安排；已发生结果仍须有原作依据或明确补充。"
+      }
+    },
+    {
+      "id": "op_review_will",
+      "label": "查看已核查的遗嘱摘要",
+      "precondition": "玩家开局已有的文件",
+      "meaning": "财产动机不单独证明作案手法。",
+      "provenance": {
+        "origin": "adaptation",
+        "sourceIds": [],
+        "detail": "交互入口与程序条件为制作安排；已发生结果仍须有原作依据或明确补充。"
+      }
+    },
+    {
+      "id": "op_inspect_pull",
+      "label": "检查床边拉绳",
+      "precondition": "可接近拉绳",
+      "meaning": "确认没有连接铃线。",
+      "provenance": {
+        "origin": "adaptation",
+        "sourceIds": [],
+        "detail": "交互入口与程序条件为制作安排；已发生结果仍须有原作依据或明确补充。"
+      }
+    },
+    {
+      "id": "op_inspect_vent",
+      "label": "检查通气孔",
+      "precondition": "可接近中间卧室墙面",
+      "meaning": "确认连接方向，不因孔洞存在自动发放杀人真相。",
+      "provenance": {
+        "origin": "adaptation",
+        "sourceIds": [],
+        "detail": "交互入口与程序条件为制作安排；已发生结果仍须有原作依据或明确补充。"
+      }
+    },
+    {
+      "id": "op_inspect_bed",
+      "label": "检查床与地板",
+      "precondition": "可接近床",
+      "meaning": "确认固定关系。",
+      "provenance": {
+        "origin": "adaptation",
+        "sourceIds": [],
+        "detail": "交互入口与程序条件为制作安排；已发生结果仍须有原作依据或明确补充。"
+      }
+    },
+    {
+      "id": "op_inspect_shutters",
+      "label": "检查窗户与百叶窗",
+      "precondition": "白天可接近中间卧室窗户",
+      "meaning": "检查结论限定当次关闭插牢状态和已试方法。",
+      "provenance": {
+        "origin": "adaptation",
+        "sourceIds": [],
+        "detail": "交互入口与程序条件为制作安排；已发生结果仍须有原作依据或明确补充。"
+      }
+    },
+    {
+      "id": "op_inspect_safe_surface",
+      "label": "查看铁柜及周围",
+      "precondition": "可进入罗伊洛特房间",
+      "meaning": "查看牛奶碟，不自动打开柜门发现蛇。",
+      "provenance": {
+        "origin": "adaptation",
+        "sourceIds": [],
+        "detail": "交互入口与程序条件为制作安排；已发生结果仍须有原作依据或明确补充。"
+      }
+    },
+    {
+      "id": "op_inspect_lash",
+      "label": "检查短鞭",
+      "precondition": "可进入罗伊洛特房间",
+      "meaning": "看到套圈，不自动推定其用途。",
+      "provenance": {
+        "origin": "adaptation",
+        "sourceIds": [],
+        "detail": "交互入口与程序条件为制作安排；已发生结果仍须有原作依据或明确补充。"
+      }
+    },
+    {
+      "id": "op_arrange_watch",
+      "label": "与同伴和海伦商量夜间安排",
+      "precondition": "实际会面并交流安排",
+      "meaning": "同意后才登记知晓信号、换房和守候计划；不保证未来已完成。",
+      "provenance": {
+        "origin": "adaptation",
+        "sourceIds": [],
+        "detail": "交互入口与程序条件为制作安排；已发生结果仍须有原作依据或明确补充。"
+      }
+    },
+    {
+      "id": "op_watch_window",
+      "label": "在旅店观察约定窗口",
+      "precondition": "玩家在旅店，已商量安排",
+      "meaning": "只对实际观察期间发生的信号登记看见。",
+      "provenance": {
+        "origin": "adaptation",
+        "sourceIds": [],
+        "detail": "交互入口与程序条件为制作安排；已发生结果仍须有原作依据或明确补充。"
+      }
+    },
+    {
+      "id": "op_enter_watch",
+      "label": "进入中间卧室守候",
+      "precondition": "信号已实际收到，能从窗户进入",
+      "meaning": "移动玩家身体实体；华生是否同行依其实际位置与约定处理，不能瞬移。",
+      "provenance": {
+        "origin": "adaptation",
+        "sourceIds": [],
+        "detail": "交互入口与程序条件为制作安排；已发生结果仍须有原作依据或明确补充。"
+      }
+    },
+    {
+      "id": "op_keep_dark",
+      "label": "关闭灯光安静守候",
+      "precondition": "玩家在中间卧室",
+      "meaning": "用于主路径守候安排，不创建道具持有门槛。",
+      "provenance": {
+        "origin": "adaptation",
+        "sourceIds": [],
+        "detail": "交互入口与程序条件为制作安排；已发生结果仍须有原作依据或明确补充。"
+      }
+    },
+    {
+      "id": "op_respond_sound",
+      "label": "点亮火柴并挥杖驱赶响动",
+      "precondition": "已实际听到嘶响、在场且事件尚可干预",
+      "meaning": "原作路径的玩家行动；不通过后台自动替玩家选择。",
+      "provenance": {
+        "origin": "adaptation",
+        "sourceIds": [],
+        "detail": "交互入口与程序条件为制作安排；已发生结果仍须有原作依据或明确补充。"
+      }
+    },
+    {
+      "id": "op_enter_roylott",
+      "label": "沿走廊查看相邻房间",
+      "precondition": "现场门路可达",
+      "meaning": "到场后才获得实际可见现场；听到惨叫不自动完成该动作。",
+      "provenance": {
+        "origin": "adaptation",
+        "sourceIds": [],
+        "detail": "交互入口与程序条件为制作安排；已发生结果仍须有原作依据或明确补充。"
+      }
+    },
+    {
+      "id": "op_contain_snake",
+      "label": "按作者已审核的方式隔离危险动物",
+      "precondition": "已发现蛇与现场，具备作者登记的安全执行条件",
+      "meaning": "原作叙事动作，不提供现实动物处置指导，不设置装备背包门槛。",
+      "provenance": {
+        "origin": "adaptation",
+        "sourceIds": [],
+        "detail": "交互入口与程序条件为制作安排；已发生结果仍须有原作依据或明确补充。"
+      }
+    },
+    {
+      "id": "op_inform_helen",
+      "label": "向海伦说明已确认情况",
+      "precondition": "有实际会面或明确通信渠道",
+      "meaning": "只传递玩家实际表达的内容；不能给她整份作者稿。",
+      "provenance": {
+        "origin": "adaptation",
+        "sourceIds": [],
+        "detail": "交互入口与程序条件为制作安排；已发生结果仍须有原作依据或明确补充。"
+      }
+    },
+    {
+      "id": "op_notify_police",
+      "label": "通知警方并记录调查结果",
+      "precondition": "已有登记的报案渠道",
+      "meaning": "项目以报案记录收束，不凭此生成警方原作未交代的侦查细节。",
+      "provenance": {
+        "origin": "adaptation",
+        "sourceIds": [],
+        "detail": "交互入口与程序条件为制作安排；已发生结果仍须有原作依据或明确补充。"
+      }
+    }
+  ],
+  "historicalEvents": [
+    {
+      "id": "h_julia_death",
+      "title": "朱莉娅旧案",
+      "time": {
+        "relation": "before_opening",
+        "sourceLabel": "约两年前",
+        "earliestSeconds": null,
+        "latestSeconds": -1,
+        "chosenSeconds": null,
+        "provenance": {
+          "origin": "original",
+          "sourceIds": [
+            "src_original"
+          ],
+          "detail": "不把约年数换算成伪造的精确秒；当前运行初始发生类型需要另行解决未知精度。"
+        }
+      },
+      "actors": [
+        "roylott"
+      ],
+      "targets": [
+        "body_julia"
+      ],
+      "places": [
+        "middle_room"
+      ],
+      "tools": [
+        "snake"
+      ],
+      "causedBy": [],
+      "resultingFacts": [
+        "f_julia_dead",
+        "f_julia_killed"
+      ],
+      "account": "旧案历史；当前尸体位置不从过去死亡地点推断。",
+      "provenance": {
+        "origin": "original",
+        "sourceIds": [
+          "src_original"
+        ],
+        "detail": "事件内容概述；未登记精确发生时刻。"
+      }
+    },
+    {
+      "id": "h_helen_moved",
+      "title": "海伦换房",
+      "time": {
+        "relation": "before_opening",
+        "sourceLabel": "开局约两天前",
+        "earliestSeconds": null,
+        "latestSeconds": -1,
+        "chosenSeconds": null,
+        "provenance": {
+          "origin": "original",
+          "sourceIds": [
+            "src_original"
+          ],
+          "detail": "不把约年数换算成伪造的精确秒；当前运行初始发生类型需要另行解决未知精度。"
+        }
+      },
+      "actors": [
+        "helen"
+      ],
+      "targets": [
+        "body_helen"
+      ],
+      "places": [
+        "helen_old_room",
+        "middle_room"
+      ],
+      "tools": [],
+      "causedBy": [],
+      "resultingFacts": [
+        "f_helen_moved"
+      ],
+      "account": "维修导致换房；幕后意图与海伦知道的理由分开。",
+      "provenance": {
+        "origin": "original",
+        "sourceIds": [
+          "src_original"
+        ],
+        "detail": "事件内容概述；未登记精确发生时刻。"
+      }
+    },
+    {
+      "id": "h_recent_whistle",
+      "title": "海伦听到近夜口哨",
+      "time": {
+        "relation": "before_opening",
+        "sourceLabel": "开局前一夜",
+        "earliestSeconds": null,
+        "latestSeconds": -1,
+        "chosenSeconds": null,
+        "provenance": {
+          "origin": "original",
+          "sourceIds": [
+            "src_original"
+          ],
+          "detail": "不把约年数换算成伪造的精确秒；当前运行初始发生类型需要另行解决未知精度。"
+        }
+      },
+      "actors": [
+        "helen"
+      ],
+      "targets": [],
+      "places": [
+        "middle_room"
+      ],
+      "tools": [],
+      "causedBy": [
+        "h_helen_moved"
+      ],
+      "resultingFacts": [],
+      "account": "只固定她的听闻经历，不凭此补造一次已咬人的袭击。",
+      "provenance": {
+        "origin": "original",
+        "sourceIds": [
+          "src_original"
+        ],
+        "detail": "事件内容概述；未登记精确发生时刻。"
+      }
+    },
+    {
+      "id": "h_morning_meeting",
+      "title": "晨间委托",
+      "time": {
+        "relation": "before_opening",
+        "sourceLabel": "开局当日上午",
+        "earliestSeconds": null,
+        "latestSeconds": -1,
+        "chosenSeconds": null,
+        "provenance": {
+          "origin": "original",
+          "sourceIds": [
+            "src_original"
+          ],
+          "detail": "不把约年数换算成伪造的精确秒；当前运行初始发生类型需要另行解决未知精度。"
+        }
+      },
+      "actors": [
+        "holmes",
+        "watson",
+        "helen"
+      ],
+      "targets": [],
+      "places": [
+        "baker_street"
+      ],
+      "tools": [],
+      "causedBy": [],
+      "resultingFacts": [],
+      "account": "背景会面地点不在本轮可探索地图中，保留原文叙述，不假造地图节点。",
+      "provenance": {
+        "origin": "original",
+        "sourceIds": [
+          "src_original"
+        ],
+        "detail": "事件内容概述；未登记精确发生时刻。"
+      }
+    },
+    {
+      "id": "h_will_check",
+      "title": "核查遗嘱",
+      "time": {
+        "relation": "before_opening",
+        "sourceLabel": "开局当日上午，晨间会面之后",
+        "earliestSeconds": null,
+        "latestSeconds": -1,
+        "chosenSeconds": null,
+        "provenance": {
+          "origin": "original",
+          "sourceIds": [
+            "src_original"
+          ],
+          "detail": "不把约年数换算成伪造的精确秒；当前运行初始发生类型需要另行解决未知精度。"
+        }
+      },
+      "actors": [
+        "holmes"
+      ],
+      "targets": [],
+      "places": [
+        "offsite"
+      ],
+      "tools": [],
+      "causedBy": [
+        "h_morning_meeting"
+      ],
+      "resultingFacts": [
+        "f_financial_motive"
+      ],
+      "account": "以已取得背景材料进入开局，后续查看不重复改写历史。",
+      "provenance": {
+        "origin": "original",
+        "sourceIds": [
+          "src_original"
+        ],
+        "detail": "事件内容概述；未登记精确发生时刻。"
+      }
+    }
+  ],
+  "futureEvents": [
+    {
+      "id": "e_return",
+      "title": "罗伊洛特返庄园",
+      "time": {
+        "relation": "after_opening",
+        "sourceLabel": "当日傍晚",
+        "earliestSeconds": 16200,
+        "latestSeconds": 16200,
+        "chosenSeconds": 16200,
+        "provenance": {
+          "origin": "adaptation",
+          "sourceIds": [],
+          "detail": "以第1日14:00为测试原点的制作时刻；即使参考原文钟点，完整数值也不是原作精确时间线。"
+        }
+      },
+      "actors": [
+        "roylott"
+      ],
+      "targets": [
+        "body_roylott"
+      ],
+      "places": [
+        "grounds"
+      ],
+      "tools": [],
+      "causedBy": [],
+      "resultingFacts": [
+        "f_roylott_returned"
+      ],
+      "account": "原作傍晚归来；18:30为制作安排。",
+      "provenance": {
+        "origin": "original",
+        "sourceIds": [
+          "src_original"
+        ],
+        "detail": "事件路径取自原作；执行时点、交互门槛和表现细节为项目安排。"
+      }
+    },
+    {
+      "id": "e_retire",
+      "title": "罗伊洛特退回卧室",
+      "time": {
+        "relation": "after_opening",
+        "sourceLabel": "当夜约21时",
+        "earliestSeconds": 25200,
+        "latestSeconds": 25200,
+        "chosenSeconds": 25200,
+        "provenance": {
+          "origin": "adaptation",
+          "sourceIds": [],
+          "detail": "以第1日14:00为测试原点的制作时刻；即使参考原文钟点，完整数值也不是原作精确时间线。"
+        }
+      },
+      "actors": [
+        "roylott"
+      ],
+      "targets": [
+        "body_roylott"
+      ],
+      "places": [
+        "roylott_room"
+      ],
+      "tools": [],
+      "causedBy": [
+        "e_return"
+      ],
+      "resultingFacts": [
+        "f_roylott_retired"
+      ],
+      "account": "原作灯光熄灭与退居安排分开理解；21:00的精确执行时刻为制作安排。",
+      "provenance": {
+        "origin": "original",
+        "sourceIds": [
+          "src_original"
+        ],
+        "detail": "事件路径取自原作；执行时点、交互门槛和表现细节为项目安排。"
+      }
+    },
+    {
+      "id": "e_signal",
+      "title": "海伦发出约定信号",
+      "time": {
+        "relation": "after_opening",
+        "sourceLabel": "当夜23时",
+        "earliestSeconds": 32400,
+        "latestSeconds": 32400,
+        "chosenSeconds": 32400,
+        "provenance": {
+          "origin": "adaptation",
+          "sourceIds": [],
+          "detail": "以第1日14:00为测试原点的制作时刻；即使参考原文钟点，完整数值也不是原作精确时间线。"
+        }
+      },
+      "actors": [
+        "helen"
+      ],
+      "targets": [
+        "signal_lamp"
+      ],
+      "places": [
+        "middle_room"
+      ],
+      "tools": [
+        "signal_lamp"
+      ],
+      "causedBy": [
+        "e_retire"
+      ],
+      "resultingFacts": [
+        "f_signal_emitted"
+      ],
+      "account": "信号是否被看见取决于实际观察者；resultingFacts不自动授予所有人。",
+      "provenance": {
+        "origin": "original",
+        "sourceIds": [
+          "src_original"
+        ],
+        "detail": "事件路径取自原作；执行时点、交互门槛和表现细节为项目安排。"
+      }
+    },
+    {
+      "id": "e_helen_relocate",
+      "title": "海伦转移房间",
+      "time": {
+        "relation": "after_opening",
+        "sourceLabel": "发出信号后",
+        "earliestSeconds": 32400,
+        "latestSeconds": 32400,
+        "chosenSeconds": 32400,
+        "provenance": {
+          "origin": "adaptation",
+          "sourceIds": [],
+          "detail": "以第1日14:00为测试原点的制作时刻；即使参考原文钟点，完整数值也不是原作精确时间线。"
+        }
+      },
+      "actors": [
+        "helen"
+      ],
+      "targets": [
+        "body_helen"
+      ],
+      "places": [
+        "middle_room",
+        "helen_old_room"
+      ],
+      "tools": [],
+      "causedBy": [
+        "e_signal"
+      ],
+      "resultingFacts": [
+        "f_helen_relocated"
+      ],
+      "account": "信号后离开危险卧室；不自动通知远处侦探换房已完成。",
+      "provenance": {
+        "origin": "original",
+        "sourceIds": [
+          "src_original"
+        ],
+        "detail": "事件路径取自原作；执行时点、交互门槛和表现细节为项目安排。"
+      }
+    },
+    {
+      "id": "e_enter_watch",
+      "title": "调查者进入守候位置",
+      "time": {
+        "relation": "after_opening",
+        "sourceLabel": "收到信号后，测试取23:05",
+        "earliestSeconds": 32400,
+        "latestSeconds": 46799,
+        "chosenSeconds": null,
+        "provenance": {
+          "origin": "adaptation",
+          "sourceIds": [],
+          "detail": "以第1日14:00为测试原点的制作时刻；即使参考原文钟点，完整数值也不是原作精确时间线。"
+        },
+        "baselineActionSeconds": 32700
+      },
+      "actors": [
+        "holmes",
+        "watson"
+      ],
+      "targets": [
+        "body_holmes",
+        "body_watson"
+      ],
+      "places": [
+        "middle_room"
+      ],
+      "tools": [],
+      "causedBy": [
+        "e_signal",
+        "e_helen_relocate"
+      ],
+      "resultingFacts": [
+        "f_guard_entered"
+      ],
+      "account": "本样本固定为两名调查者都已实际到场的路径；一人缺席不能写成两人到场，需要不同事件或明确阶段未完成。",
+      "provenance": {
+        "origin": "original",
+        "sourceIds": [
+          "src_original"
+        ],
+        "detail": "事件路径取自原作；执行时点、交互门槛和表现细节为项目安排。"
+      }
+    },
+    {
+      "id": "e_lantern",
+      "title": "相邻房间点亮遮光灯",
+      "time": {
+        "relation": "after_opening",
+        "sourceLabel": "过凌晨3时后",
+        "earliestSeconds": 46800,
+        "latestSeconds": 46800,
+        "chosenSeconds": 46800,
+        "provenance": {
+          "origin": "adaptation",
+          "sourceIds": [],
+          "detail": "以第1日14:00为测试原点的制作时刻；即使参考原文钟点，完整数值也不是原作精确时间线。"
+        }
+      },
+      "actors": [
+        "roylott"
+      ],
+      "targets": [
+        "dark_lantern"
+      ],
+      "places": [
+        "roylott_room"
+      ],
+      "tools": [
+        "dark_lantern"
+      ],
+      "causedBy": [
+        "e_retire"
+      ],
+      "resultingFacts": [
+        "f_lantern_signs"
+      ],
+      "account": "03:00为测试选点；原作先过钟点后出现亮光与气味，并非精确03:00。",
+      "provenance": {
+        "origin": "original",
+        "sourceIds": [
+          "src_original"
+        ],
+        "detail": "事件路径取自原作；执行时点、交互门槛和表现细节为项目安排。"
+      }
+    },
+    {
+      "id": "e_release",
+      "title": "蛇进入中间卧室",
+      "time": {
+        "relation": "after_opening",
+        "sourceLabel": "亮光后约半小时",
+        "earliestSeconds": 48600,
+        "latestSeconds": 48600,
+        "chosenSeconds": 48600,
+        "provenance": {
+          "origin": "adaptation",
+          "sourceIds": [],
+          "detail": "以第1日14:00为测试原点的制作时刻；即使参考原文钟点，完整数值也不是原作精确时间线。"
+        }
+      },
+      "actors": [
+        "roylott"
+      ],
+      "targets": [
+        "snake"
+      ],
+      "places": [
+        "roylott_room",
+        "middle_room"
+      ],
+      "tools": [
+        "snake",
+        "vent",
+        "bell_pull"
+      ],
+      "causedBy": [
+        "e_lantern"
+      ],
+      "resultingFacts": [
+        "f_snake_entered",
+        "f_hiss_heard"
+      ],
+      "account": "固定作者手法；嘶响仅给实际接收到的观察者。",
+      "provenance": {
+        "origin": "original",
+        "sourceIds": [
+          "src_original"
+        ],
+        "detail": "事件路径取自原作；执行时点、交互门槛和表现细节为项目安排。"
+      }
+    },
+    {
+      "id": "e_strike",
+      "title": "玩家对响动采取干预",
+      "time": {
+        "relation": "after_opening",
+        "sourceLabel": "听见嘶响并响应后",
+        "earliestSeconds": 48600,
+        "latestSeconds": 48610,
+        "chosenSeconds": null,
+        "provenance": {
+          "origin": "adaptation",
+          "sourceIds": [],
+          "detail": "以第1日14:00为测试原点的制作时刻；即使参考原文钟点，完整数值也不是原作精确时间线。"
+        },
+        "baselineActionSeconds": 48601
+      },
+      "actors": [
+        "holmes"
+      ],
+      "targets": [
+        "snake"
+      ],
+      "places": [
+        "middle_room"
+      ],
+      "tools": [
+        "cane"
+      ],
+      "causedBy": [
+        "e_release"
+      ],
+      "resultingFacts": [
+        "f_strike_performed",
+        "f_watson_did_not_identify"
+      ],
+      "account": "玩家操作触发，原作动作不自动替玩家选择；1秒为测试安排。",
+      "provenance": {
+        "origin": "original",
+        "sourceIds": [
+          "src_original"
+        ],
+        "detail": "事件路径取自原作；执行时点、交互门槛和表现细节为项目安排。"
+      }
+    },
+    {
+      "id": "e_snake_return",
+      "title": "蛇受驱赶返回",
+      "time": {
+        "relation": "after_opening",
+        "sourceLabel": "干预后",
+        "earliestSeconds": 48600,
+        "latestSeconds": 48630,
+        "chosenSeconds": null,
+        "provenance": {
+          "origin": "adaptation",
+          "sourceIds": [],
+          "detail": "以第1日14:00为测试原点的制作时刻；即使参考原文钟点，完整数值也不是原作精确时间线。"
+        },
+        "baselineActionSeconds": 48601
+      },
+      "actors": [],
+      "targets": [
+        "snake"
+      ],
+      "places": [
+        "middle_room",
+        "roylott_room"
+      ],
+      "tools": [],
+      "causedBy": [
+        "e_strike"
+      ],
+      "resultingFacts": [
+        "f_snake_returned"
+      ],
+      "account": "由本次干预引发，不能在没有干预时照表触发。",
+      "provenance": {
+        "origin": "original",
+        "sourceIds": [
+          "src_original"
+        ],
+        "detail": "事件路径取自原作；执行时点、交互门槛和表现细节为项目安排。"
+      }
+    },
+    {
+      "id": "e_roylott_bitten",
+      "title": "罗伊洛特被蛇反噬",
+      "time": {
+        "relation": "after_opening",
+        "sourceLabel": "蛇返回之后",
+        "earliestSeconds": 48600,
+        "latestSeconds": 48630,
+        "chosenSeconds": null,
+        "provenance": {
+          "origin": "adaptation",
+          "sourceIds": [],
+          "detail": "以第1日14:00为测试原点的制作时刻；即使参考原文钟点，完整数值也不是原作精确时间线。"
+        },
+        "baselineActionSeconds": 48602
+      },
+      "actors": [
+        "roylott"
+      ],
+      "targets": [
+        "body_roylott"
+      ],
+      "places": [
+        "roylott_room"
+      ],
+      "tools": [
+        "snake"
+      ],
+      "causedBy": [
+        "e_snake_return"
+      ],
+      "resultingFacts": [
+        "f_roylott_bitten"
+      ],
+      "account": "目标必须仍在相应位置且存活；1秒延迟为制作安排。",
+      "provenance": {
+        "origin": "original",
+        "sourceIds": [
+          "src_original"
+        ],
+        "detail": "事件路径取自原作；执行时点、交互门槛和表现细节为项目安排。"
+      }
+    },
+    {
+      "id": "e_cry",
+      "title": "相邻房间发出惨叫",
+      "time": {
+        "relation": "after_opening",
+        "sourceLabel": "反噬后",
+        "earliestSeconds": 48600,
+        "latestSeconds": 48630,
+        "chosenSeconds": null,
+        "provenance": {
+          "origin": "adaptation",
+          "sourceIds": [],
+          "detail": "以第1日14:00为测试原点的制作时刻；即使参考原文钟点，完整数值也不是原作精确时间线。"
+        },
+        "baselineActionSeconds": 48602
+      },
+      "actors": [
+        "roylott"
+      ],
+      "targets": [],
+      "places": [
+        "roylott_room"
+      ],
+      "tools": [],
+      "causedBy": [
+        "e_roylott_bitten"
+      ],
+      "resultingFacts": [
+        "f_cry_heard"
+      ],
+      "account": "惨叫与死亡确认分开；听到声音不自动确认死者。",
+      "provenance": {
+        "origin": "original",
+        "sourceIds": [
+          "src_original"
+        ],
+        "detail": "事件路径取自原作；执行时点、交互门槛和表现细节为项目安排。"
+      }
+    },
+    {
+      "id": "e_roylott_death",
+      "title": "罗伊洛特死亡",
+      "time": {
+        "relation": "after_opening",
+        "sourceLabel": "反噬后短时间内",
+        "earliestSeconds": 48600,
+        "latestSeconds": 48630,
+        "chosenSeconds": null,
+        "provenance": {
+          "origin": "adaptation",
+          "sourceIds": [],
+          "detail": "以第1日14:00为测试原点的制作时刻；即使参考原文钟点，完整数值也不是原作精确时间线。"
+        },
+        "baselineActionSeconds": 48607
+      },
+      "actors": [
+        "roylott"
+      ],
+      "targets": [
+        "body_roylott"
+      ],
+      "places": [
+        "roylott_room"
+      ],
+      "tools": [
+        "snake"
+      ],
+      "causedBy": [
+        "e_roylott_bitten"
+      ],
+      "resultingFacts": [
+        "f_roylott_dead"
+      ],
+      "account": "采用原作虚构快速毒性；5秒为测试时间，不宣称为现实毒理。",
+      "provenance": {
+        "origin": "original",
+        "sourceIds": [
+          "src_original"
+        ],
+        "detail": "事件路径取自原作；执行时点、交互门槛和表现细节为项目安排。"
+      }
+    },
+    {
+      "id": "e_discover",
+      "title": "调查者发现房内现场",
+      "time": {
+        "relation": "after_opening",
+        "sourceLabel": "实际进入罗伊洛特房间后",
+        "earliestSeconds": 48607,
+        "latestSeconds": 50400,
+        "chosenSeconds": null,
+        "provenance": {
+          "origin": "adaptation",
+          "sourceIds": [],
+          "detail": "以第1日14:00为测试原点的制作时刻；即使参考原文钟点，完整数值也不是原作精确时间线。"
+        },
+        "baselineActionSeconds": 48620
+      },
+      "actors": [
+        "holmes",
+        "watson"
+      ],
+      "targets": [
+        "body_roylott",
+        "snake"
+      ],
+      "places": [
+        "roylott_room"
+      ],
+      "tools": [],
+      "causedBy": [
+        "e_roylott_death"
+      ],
+      "resultingFacts": [
+        "f_body_discovered",
+        "f_snake_seen"
+      ],
+      "account": "由到场动作触发；20秒为基准操作序列，非无条件定时发现。",
+      "provenance": {
+        "origin": "original",
+        "sourceIds": [
+          "src_original"
+        ],
+        "detail": "事件路径取自原作；执行时点、交互门槛和表现细节为项目安排。"
+      }
+    },
+    {
+      "id": "e_contain",
+      "title": "蛇被隔离回铁柜",
+      "time": {
+        "relation": "after_opening",
+        "sourceLabel": "实际完成隔离动作后",
+        "earliestSeconds": 48607,
+        "latestSeconds": 50400,
+        "chosenSeconds": null,
+        "provenance": {
+          "origin": "adaptation",
+          "sourceIds": [],
+          "detail": "以第1日14:00为测试原点的制作时刻；即使参考原文钟点，完整数值也不是原作精确时间线。"
+        },
+        "baselineActionSeconds": 48630
+      },
+      "actors": [
+        "holmes"
+      ],
+      "targets": [
+        "snake",
+        "safe"
+      ],
+      "places": [
+        "roylott_room"
+      ],
+      "tools": [
+        "loop_lash"
+      ],
+      "causedBy": [
+        "e_discover"
+      ],
+      "resultingFacts": [
+        "f_snake_contained"
+      ],
+      "account": "原作叙事处置以固定结果表现；不运行真实动物模拟。",
+      "provenance": {
+        "origin": "original",
+        "sourceIds": [
+          "src_original"
+        ],
+        "detail": "事件路径取自原作；执行时点、交互门槛和表现细节为项目安排。"
+      }
+    }
+  ],
+  "timelinePlans": [
+    {
+      "id": "plan_return",
+      "event": "e_return",
+      "trigger": {
+        "kind": "At",
+        "seconds": 16200
+      },
+      "order": 10,
+      "requirements": {
+        "occurredEvents": [],
+        "absentEvents": [],
+        "completedOperations": [],
+        "opened": [],
+        "persons": [
+          {
+            "person": "roylott",
+            "life": "Alive",
+            "detained": false,
+            "place": "offsite"
+          }
+        ],
+        "entityPlaces": {}
+      },
+      "onUnmet": {
+        "kind": "Cancel"
+      },
+      "effects": [
+        {
+          "kind": "PlaceEntity",
+          "entity": "body_roylott",
+          "place": "grounds",
+          "sceneAnchorStatus": "由模型制作并验证，当前没有伪造节点坐标",
+          "destinationAnchor": "anchor_lawn_arrival"
+        }
+      ],
+      "observations": [
+        {
+          "id": "obs_return_player",
+          "recipient": "player",
+          "access": {
+            "atPlace": "inn",
+            "requiredOperations": [
+              "op_watch_window"
+            ],
+            "perceptionBoundary": "地点只是必要条件；只能获得此处明确列出的感知内容。",
+            "activePerception": "watching_signal_window"
+          },
+          "disclosure": {
+            "text": "看见罗伊洛特返回庄园。",
+            "confirmedFacts": [
+              "f_roylott_returned"
+            ],
+            "fullClues": []
+          }
+        },
+        {
+          "id": "obs_return_watson",
+          "recipient": "watson",
+          "access": {
+            "atPlace": "inn",
+            "requiredOperations": [],
+            "perceptionBoundary": "地点只是必要条件；只能获得此处明确列出的感知内容。",
+            "activePerception": "watching_signal_window"
+          },
+          "disclosure": {
+            "text": "看见罗伊洛特返回庄园。",
+            "confirmedFacts": [
+              "f_roylott_returned"
+            ],
+            "fullClues": []
+          }
+        }
+      ]
+    },
+    {
+      "id": "plan_retire",
+      "event": "e_retire",
+      "trigger": {
+        "kind": "At",
+        "seconds": 25200
+      },
+      "order": 10,
+      "requirements": {
+        "occurredEvents": [
+          "e_return"
+        ],
+        "absentEvents": [],
+        "completedOperations": [],
+        "opened": [],
+        "persons": [
+          {
+            "person": "roylott",
+            "life": "Alive",
+            "detained": false,
+            "place": "grounds"
+          }
+        ],
+        "entityPlaces": {}
+      },
+      "onUnmet": {
+        "kind": "Cancel"
+      },
+      "effects": [
+        {
+          "kind": "PlaceEntity",
+          "entity": "body_roylott",
+          "place": "roylott_room",
+          "sceneAnchorStatus": "由模型制作并验证，当前没有伪造节点坐标",
+          "destinationAnchor": "anchor_roylott_near_safe"
+        }
+      ],
+      "observations": [
+        {
+          "id": "obs_retire_helen",
+          "recipient": "helen",
+          "access": {
+            "atPlace": "middle_room",
+            "requiredOperations": [],
+            "perceptionBoundary": "地点只是必要条件；只能获得此处明确列出的感知内容。",
+            "activePerception": null
+          },
+          "disclosure": {
+            "text": "按约定判断继父已经退回房间。",
+            "confirmedFacts": [
+              "f_roylott_retired"
+            ],
+            "fullClues": []
+          }
+        }
+      ]
+    },
+    {
+      "id": "plan_signal",
+      "event": "e_signal",
+      "trigger": {
+        "kind": "At",
+        "seconds": 32400
+      },
+      "order": 10,
+      "requirements": {
+        "occurredEvents": [
+          "e_retire"
+        ],
+        "absentEvents": [],
+        "completedOperations": [
+          "op_arrange_watch"
+        ],
+        "opened": [],
+        "persons": [
+          {
+            "person": "helen",
+            "life": "Alive",
+            "detained": false,
+            "place": "middle_room"
+          }
+        ],
+        "entityPlaces": {}
+      },
+      "onUnmet": {
+        "kind": "Cancel"
+      },
+      "effects": [
+        {
+          "kind": "SetEntityOpened",
+          "entity": "window_shutters",
+          "opened": true
+        }
+      ],
+      "observations": [
+        {
+          "id": "obs_signal_player",
+          "recipient": "player",
+          "access": {
+            "atPlace": "inn",
+            "requiredOperations": [
+              "op_watch_window"
+            ],
+            "perceptionBoundary": "地点只是必要条件；只能获得此处明确列出的感知内容。",
+            "activePerception": "watching_signal_window"
+          },
+          "disclosure": {
+            "text": "约定窗口出现灯光。",
+            "confirmedFacts": [
+              "f_signal_seen"
+            ],
+            "fullClues": [
+              "clue_signal"
+            ]
+          }
+        },
+        {
+          "id": "obs_signal_watson",
+          "recipient": "watson",
+          "access": {
+            "atPlace": "inn",
+            "requiredOperations": [],
+            "perceptionBoundary": "地点只是必要条件；只能获得此处明确列出的感知内容。",
+            "activePerception": "watching_signal_window"
+          },
+          "disclosure": {
+            "text": "约定窗口出现灯光。",
+            "confirmedFacts": [
+              "f_signal_seen"
+            ],
+            "fullClues": [
+              "clue_signal"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "plan_helen_relocate",
+      "event": "e_helen_relocate",
+      "trigger": {
+        "kind": "AfterEvent",
+        "event": "e_signal",
+        "delaySeconds": 0
+      },
+      "order": 20,
+      "requirements": {
+        "occurredEvents": [],
+        "absentEvents": [],
+        "completedOperations": [],
+        "opened": [],
+        "persons": [
+          {
+            "person": "helen",
+            "life": "Alive",
+            "detained": false,
+            "place": "middle_room"
+          }
+        ],
+        "entityPlaces": {}
+      },
+      "onUnmet": {
+        "kind": "Cancel"
+      },
+      "effects": [
+        {
+          "kind": "PlaceEntity",
+          "entity": "body_helen",
+          "place": "helen_old_room",
+          "sceneAnchorStatus": "由模型制作并验证，当前没有伪造节点坐标",
+          "destinationAnchor": "anchor_helen_shelter"
+        }
+      ],
+      "observations": [
+        {
+          "id": "obs_helen_self_move",
+          "recipient": "helen",
+          "access": {
+            "atPlace": "helen_old_room",
+            "requiredOperations": [],
+            "perceptionBoundary": "地点只是必要条件；只能获得此处明确列出的感知内容。",
+            "activePerception": null
+          },
+          "disclosure": {
+            "text": "我已转移到原来的房间。",
+            "confirmedFacts": [
+              "f_helen_relocated"
+            ],
+            "fullClues": []
+          }
+        }
+      ]
+    },
+    {
+      "id": "plan_enter_watch",
+      "event": "e_enter_watch",
+      "trigger": {
+        "kind": "When",
+        "earliestSeconds": 32400,
+        "latestSeconds": 46799
+      },
+      "order": 30,
+      "requirements": {
+        "occurredEvents": [
+          "e_signal",
+          "e_helen_relocate"
+        ],
+        "absentEvents": [],
+        "completedOperations": [
+          "op_enter_watch"
+        ],
+        "opened": [],
+        "persons": [
+          {
+            "person": "holmes",
+            "life": "Alive",
+            "detained": false,
+            "place": "middle_room"
+          },
+          {
+            "person": "watson",
+            "life": "Alive",
+            "detained": false,
+            "place": "middle_room"
+          }
+        ],
+        "entityPlaces": {}
+      },
+      "onUnmet": {
+        "kind": "WaitUntil",
+        "deadlineSeconds": 46799
+      },
+      "effects": [],
+      "observations": [
+        {
+          "id": "obs_watch_player",
+          "recipient": "player",
+          "access": {
+            "atPlace": "middle_room",
+            "requiredOperations": [],
+            "perceptionBoundary": "地点只是必要条件；只能获得此处明确列出的感知内容。",
+            "activePerception": null
+          },
+          "disclosure": {
+            "text": "与华生已经实际进入房间守候。",
+            "confirmedFacts": [
+              "f_guard_entered"
+            ],
+            "fullClues": []
+          }
+        },
+        {
+          "id": "obs_watch_watson",
+          "recipient": "watson",
+          "access": {
+            "atPlace": "middle_room",
+            "requiredOperations": [],
+            "perceptionBoundary": "地点只是必要条件；只能获得此处明确列出的感知内容。",
+            "activePerception": null
+          },
+          "disclosure": {
+            "text": "与同伴进入房间守候。",
+            "confirmedFacts": [
+              "f_guard_entered"
+            ],
+            "fullClues": []
+          }
+        }
+      ]
+    },
+    {
+      "id": "plan_lantern",
+      "event": "e_lantern",
+      "trigger": {
+        "kind": "At",
+        "seconds": 46800
+      },
+      "order": 10,
+      "requirements": {
+        "occurredEvents": [
+          "e_retire"
+        ],
+        "absentEvents": [],
+        "completedOperations": [],
+        "opened": [],
+        "persons": [
+          {
+            "person": "roylott",
+            "life": "Alive",
+            "detained": false,
+            "place": "roylott_room"
+          }
+        ],
+        "entityPlaces": {
+          "snake": "roylott_room"
+        }
+      },
+      "onUnmet": {
+        "kind": "Cancel"
+      },
+      "effects": [],
+      "observations": [
+        {
+          "id": "obs_light_player",
+          "recipient": "player",
+          "access": {
+            "atPlace": "middle_room",
+            "requiredOperations": [],
+            "perceptionBoundary": "地点只是必要条件；只能获得此处明确列出的感知内容。",
+            "activePerception": null
+          },
+          "disclosure": {
+            "text": "通气孔方向闪过亮光，随后闻到热油和金属气味。",
+            "confirmedFacts": [
+              "f_lantern_signs"
+            ],
+            "fullClues": [
+              "clue_lantern_signs"
+            ]
+          }
+        },
+        {
+          "id": "obs_light_watson",
+          "recipient": "watson",
+          "access": {
+            "atPlace": "middle_room",
+            "requiredOperations": [],
+            "perceptionBoundary": "地点只是必要条件；只能获得此处明确列出的感知内容。",
+            "activePerception": null
+          },
+          "disclosure": {
+            "text": "见到短暂亮光并闻到气味。",
+            "confirmedFacts": [
+              "f_lantern_signs"
+            ],
+            "fullClues": [
+              "clue_lantern_signs"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "plan_release",
+      "event": "e_release",
+      "trigger": {
+        "kind": "AfterEvent",
+        "event": "e_lantern",
+        "delaySeconds": 1800
+      },
+      "order": 10,
+      "requirements": {
+        "occurredEvents": [],
+        "absentEvents": [],
+        "completedOperations": [],
+        "opened": [],
+        "persons": [
+          {
+            "person": "roylott",
+            "life": "Alive",
+            "detained": false,
+            "place": "roylott_room"
+          }
+        ],
+        "entityPlaces": {
+          "snake": "roylott_room"
+        }
+      },
+      "onUnmet": {
+        "kind": "Cancel"
+      },
+      "effects": [
+        {
+          "kind": "SetEntityOpened",
+          "entity": "safe",
+          "opened": true
+        },
+        {
+          "kind": "PlaceEntity",
+          "entity": "snake",
+          "place": "middle_room",
+          "sceneAnchorStatus": "由模型制作并验证，当前没有伪造节点坐标",
+          "destinationAnchor": "anchor_bell_bed_route"
+        }
+      ],
+      "observations": [
+        {
+          "id": "obs_hiss_player",
+          "recipient": "player",
+          "access": {
+            "atPlace": "middle_room",
+            "requiredOperations": [],
+            "perceptionBoundary": "地点只是必要条件；只能获得此处明确列出的感知内容。",
+            "activePerception": null
+          },
+          "disclosure": {
+            "text": "附近出现轻微嘶响。",
+            "confirmedFacts": [
+              "f_hiss_heard"
+            ],
+            "fullClues": [
+              "clue_hiss"
+            ]
+          }
+        },
+        {
+          "id": "obs_hiss_watson",
+          "recipient": "watson",
+          "access": {
+            "atPlace": "middle_room",
+            "requiredOperations": [],
+            "perceptionBoundary": "地点只是必要条件；只能获得此处明确列出的感知内容。",
+            "activePerception": null
+          },
+          "disclosure": {
+            "text": "附近出现轻微嘶响。",
+            "confirmedFacts": [
+              "f_hiss_heard"
+            ],
+            "fullClues": [
+              "clue_hiss"
+            ]
+          }
+        },
+        {
+          "id": "obs_release_roylott",
+          "recipient": "roylott",
+          "access": {
+            "atPlace": "roylott_room",
+            "requiredOperations": [],
+            "perceptionBoundary": "地点只是必要条件；只能获得此处明确列出的感知内容。",
+            "activePerception": null
+          },
+          "disclosure": {
+            "text": "自己实施了预设放蛇行为。",
+            "confirmedFacts": [
+              "f_snake_entered"
+            ],
+            "fullClues": []
+          }
+        }
+      ]
+    },
+    {
+      "id": "plan_strike",
+      "event": "e_strike",
+      "trigger": {
+        "kind": "When",
+        "earliestSeconds": 48600,
+        "latestSeconds": 48610
+      },
+      "order": 20,
+      "requirements": {
+        "occurredEvents": [
+          "e_release"
+        ],
+        "absentEvents": [],
+        "completedOperations": [
+          "op_respond_sound"
+        ],
+        "opened": [],
+        "persons": [
+          {
+            "person": "holmes",
+            "life": "Alive",
+            "detained": false,
+            "place": "middle_room"
+          }
+        ],
+        "entityPlaces": {
+          "snake": "middle_room"
+        }
+      },
+      "onUnmet": {
+        "kind": "WaitUntil",
+        "deadlineSeconds": 48610
+      },
+      "effects": [],
+      "observations": [
+        {
+          "id": "obs_strike_player",
+          "recipient": "player",
+          "access": {
+            "atPlace": "middle_room",
+            "requiredOperations": [],
+            "perceptionBoundary": "地点只是必要条件；只能获得此处明确列出的感知内容。",
+            "activePerception": null
+          },
+          "disclosure": {
+            "text": "点亮火柴并向响动附近挥杖。",
+            "confirmedFacts": [
+              "f_strike_performed"
+            ],
+            "fullClues": []
+          }
+        },
+        {
+          "id": "obs_strike_watson",
+          "recipient": "watson",
+          "access": {
+            "atPlace": "middle_room",
+            "requiredOperations": [],
+            "perceptionBoundary": "地点只是必要条件；只能获得此处明确列出的感知内容。",
+            "activePerception": null
+          },
+          "disclosure": {
+            "text": "看见同伴点火挥杖，并听见口哨；没有看清被击打对象。",
+            "confirmedFacts": [
+              "f_watson_did_not_identify"
+            ],
+            "fullClues": [
+              "clue_watson_night"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "plan_snake_return",
+      "event": "e_snake_return",
+      "trigger": {
+        "kind": "AfterEvent",
+        "event": "e_strike",
+        "delaySeconds": 0
+      },
+      "order": 30,
+      "requirements": {
+        "occurredEvents": [],
+        "absentEvents": [],
+        "completedOperations": [],
+        "opened": [],
+        "persons": [],
+        "entityPlaces": {
+          "snake": "middle_room"
+        }
+      },
+      "onUnmet": {
+        "kind": "Cancel"
+      },
+      "effects": [
+        {
+          "kind": "PlaceEntity",
+          "entity": "snake",
+          "place": "roylott_room",
+          "sceneAnchorStatus": "由模型制作并验证，当前没有伪造节点坐标",
+          "destinationAnchor": "anchor_roylott_near_safe"
+        }
+      ],
+      "observations": []
+    },
+    {
+      "id": "plan_roylott_bitten",
+      "event": "e_roylott_bitten",
+      "trigger": {
+        "kind": "AfterEvent",
+        "event": "e_snake_return",
+        "delaySeconds": 1
+      },
+      "order": 10,
+      "requirements": {
+        "occurredEvents": [],
+        "absentEvents": [],
+        "completedOperations": [],
+        "opened": [],
+        "persons": [
+          {
+            "person": "roylott",
+            "life": "Alive",
+            "detained": null,
+            "place": "roylott_room"
+          }
+        ],
+        "entityPlaces": {
+          "snake": "roylott_room"
+        }
+      },
+      "onUnmet": {
+        "kind": "Cancel"
+      },
+      "effects": [
+        {
+          "kind": "PlaceEntity",
+          "entity": "snake",
+          "place": "roylott_room",
+          "destinationAnchor": "anchor_roylott_body",
+          "sceneAnchorStatus": "仅作原作固定现场表现，不自动展示给隔壁人物"
+        }
+      ],
+      "observations": []
+    },
+    {
+      "id": "plan_cry",
+      "event": "e_cry",
+      "trigger": {
+        "kind": "AfterEvent",
+        "event": "e_roylott_bitten",
+        "delaySeconds": 0
+      },
+      "order": 20,
+      "requirements": {
+        "occurredEvents": [],
+        "absentEvents": [],
+        "completedOperations": [],
+        "opened": [],
+        "persons": [
+          {
+            "person": "roylott",
+            "life": "Alive",
+            "detained": null,
+            "place": "roylott_room"
+          }
+        ],
+        "entityPlaces": {}
+      },
+      "onUnmet": {
+        "kind": "Cancel"
+      },
+      "effects": [],
+      "observations": [
+        {
+          "id": "obs_cry_player",
+          "recipient": "player",
+          "access": {
+            "atPlace": "middle_room",
+            "requiredOperations": [],
+            "perceptionBoundary": "地点只是必要条件；只能获得此处明确列出的感知内容。",
+            "activePerception": null
+          },
+          "disclosure": {
+            "text": "相邻房间传来惨叫。",
+            "confirmedFacts": [
+              "f_cry_heard"
+            ],
+            "fullClues": []
+          }
+        },
+        {
+          "id": "obs_cry_watson",
+          "recipient": "watson",
+          "access": {
+            "atPlace": "middle_room",
+            "requiredOperations": [],
+            "perceptionBoundary": "地点只是必要条件；只能获得此处明确列出的感知内容。",
+            "activePerception": null
+          },
+          "disclosure": {
+            "text": "相邻房间传来惨叫。",
+            "confirmedFacts": [
+              "f_cry_heard"
+            ],
+            "fullClues": []
+          }
+        }
+      ]
+    },
+    {
+      "id": "plan_roylott_death",
+      "event": "e_roylott_death",
+      "trigger": {
+        "kind": "AfterEvent",
+        "event": "e_roylott_bitten",
+        "delaySeconds": 5
+      },
+      "order": 30,
+      "requirements": {
+        "occurredEvents": [],
+        "absentEvents": [],
+        "completedOperations": [],
+        "opened": [],
+        "persons": [
+          {
+            "person": "roylott",
+            "life": "Alive",
+            "detained": null,
+            "place": null
+          }
+        ],
+        "entityPlaces": {}
+      },
+      "onUnmet": {
+        "kind": "Cancel"
+      },
+      "effects": [
+        {
+          "kind": "SetPersonLife",
+          "person": "roylott",
+          "life": "Dead"
+        }
+      ],
+      "observations": []
+    },
+    {
+      "id": "plan_discover",
+      "event": "e_discover",
+      "trigger": {
+        "kind": "When",
+        "earliestSeconds": 48607,
+        "latestSeconds": 50400
+      },
+      "order": 40,
+      "requirements": {
+        "occurredEvents": [
+          "e_roylott_death"
+        ],
+        "absentEvents": [],
+        "completedOperations": [
+          "op_enter_roylott"
+        ],
+        "opened": [],
+        "persons": [
+          {
+            "person": "holmes",
+            "life": "Alive",
+            "detained": false,
+            "place": "roylott_room"
+          },
+          {
+            "person": "watson",
+            "life": "Alive",
+            "detained": false,
+            "place": "roylott_room"
+          }
+        ],
+        "entityPlaces": {}
+      },
+      "onUnmet": {
+        "kind": "WaitUntil",
+        "deadlineSeconds": 50400
+      },
+      "effects": [],
+      "observations": [
+        {
+          "id": "obs_discover_player",
+          "recipient": "player",
+          "access": {
+            "atPlace": "roylott_room",
+            "requiredOperations": [],
+            "perceptionBoundary": "地点只是必要条件；只能获得此处明确列出的感知内容。",
+            "activePerception": null
+          },
+          "disclosure": {
+            "text": "在现场看到死者与其身上的蛇。",
+            "confirmedFacts": [
+              "f_roylott_dead",
+              "f_body_discovered",
+              "f_snake_seen"
+            ],
+            "fullClues": [
+              "clue_final_scene"
+            ]
+          }
+        },
+        {
+          "id": "obs_discover_watson",
+          "recipient": "watson",
+          "access": {
+            "atPlace": "roylott_room",
+            "requiredOperations": [],
+            "perceptionBoundary": "地点只是必要条件；只能获得此处明确列出的感知内容。",
+            "activePerception": null
+          },
+          "disclosure": {
+            "text": "到场看到死者与蛇。",
+            "confirmedFacts": [
+              "f_roylott_dead",
+              "f_body_discovered",
+              "f_snake_seen"
+            ],
+            "fullClues": [
+              "clue_final_scene"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "plan_contain",
+      "event": "e_contain",
+      "trigger": {
+        "kind": "When",
+        "earliestSeconds": 48607,
+        "latestSeconds": 50400
+      },
+      "order": 50,
+      "requirements": {
+        "occurredEvents": [
+          "e_discover"
+        ],
+        "absentEvents": [],
+        "completedOperations": [
+          "op_contain_snake"
+        ],
+        "opened": [],
+        "persons": [],
+        "entityPlaces": {
+          "snake": "roylott_room"
+        }
+      },
+      "onUnmet": {
+        "kind": "WaitUntil",
+        "deadlineSeconds": 50400
+      },
+      "effects": [
+        {
+          "kind": "PlaceEntity",
+          "entity": "snake",
+          "place": "roylott_room",
+          "sceneAnchorStatus": "由模型制作并验证，当前没有伪造节点坐标",
+          "destinationAnchor": "anchor_safe_interior"
+        },
+        {
+          "kind": "SetEntityOpened",
+          "entity": "safe",
+          "opened": false
+        }
+      ],
+      "observations": [
+        {
+          "id": "obs_contain_player",
+          "recipient": "player",
+          "access": {
+            "atPlace": "roylott_room",
+            "requiredOperations": [],
+            "perceptionBoundary": "地点只是必要条件；只能获得此处明确列出的感知内容。",
+            "activePerception": null
+          },
+          "disclosure": {
+            "text": "蛇已被隔离回关闭的铁柜。",
+            "confirmedFacts": [
+              "f_snake_contained"
+            ],
+            "fullClues": [
+              "clue_containment"
+            ]
+          }
+        },
+        {
+          "id": "obs_contain_watson",
+          "recipient": "watson",
+          "access": {
+            "atPlace": "roylott_room",
+            "requiredOperations": [],
+            "perceptionBoundary": "地点只是必要条件；只能获得此处明确列出的感知内容。",
+            "activePerception": null
+          },
+          "disclosure": {
+            "text": "看到隔离动作完成。",
+            "confirmedFacts": [
+              "f_snake_contained"
+            ],
+            "fullClues": [
+              "clue_containment"
+            ]
+          }
+        }
+      ]
+    }
+  ],
+  "baselineActionSequence": [
+    {
+      "atSeconds": 0,
+      "action": "查看开局材料、会面并开始现场检查",
+      "operations": [
+        "op_ask_helen",
+        "op_review_will",
+        "op_inspect_pull",
+        "op_inspect_vent",
+        "op_inspect_bed",
+        "op_inspect_shutters",
+        "op_inspect_safe_surface",
+        "op_inspect_lash"
+      ],
+      "boundary": "未规定每次耗时；实际编译需动作耗时配置，不能把这些动作强行视作同时发生。"
+    },
+    {
+      "atSeconds": 12000,
+      "action": "已在实际会面中商量守候安排，之后到旅店观察",
+      "operations": [
+        "op_arrange_watch",
+        "op_watch_window"
+      ],
+      "boundary": "17:20是可重复测试选点，非原作精确时刻；人物移动耗时由场景编译补齐。"
+    },
+    {
+      "atSeconds": 32700,
+      "action": "信号实际收到后，两名调查者到中间卧室守候",
+      "operations": [
+        "op_enter_watch",
+        "op_keep_dark"
+      ],
+      "boundary": "灯熄灭、百叶窗重新关闭及同伴到场必须产生真实状态变更；目前仅列作者意图。"
+    },
+    {
+      "atSeconds": 48601,
+      "action": "实际听到声音后，玩家选择作出干预",
+      "operations": [
+        "op_respond_sound"
+      ],
+      "boundary": "不能在模型回复等待期间偷偷执行玩家动作。"
+    },
+    {
+      "atSeconds": 48620,
+      "action": "两名调查者沿走廊到相邻房间",
+      "operations": [
+        "op_enter_roylott"
+      ],
+      "boundary": "实际移动后才触发发现，不能看到惨叫字幕就自动领取现场材料。"
+    },
+    {
+      "atSeconds": 48630,
+      "action": "固定叙事隔离动作完成",
+      "operations": [
+        "op_contain_snake"
+      ],
+      "boundary": "需由作者审核的结果与场景能力支持，不执行模型自由代码。"
+    },
+    {
+      "atSeconds": 49000,
+      "action": "与海伦实际交流并记录报案",
+      "operations": [
+        "op_inform_helen",
+        "op_notify_police"
+      ],
+      "boundary": "给谁说明了什么单独保存，不自动公开完整推理。"
+    }
+  ],
+  "sceneRequirements": [
+    {
+      "id": "sr_rooms",
+      "entities": [
+        "vent",
+        "bed",
+        "bell_pull"
+      ],
+      "places": [
+        "middle_room",
+        "roylott_room",
+        "helen_old_room",
+        "corridor"
+      ],
+      "requirement": "三间卧室独立通向走廊，通气孔连中间卧室与罗伊洛特房间；不能布置为通向室外。",
+      "acceptance": "检查连接关系、视图及调查文本一致。"
+    },
+    {
+      "id": "sr_route",
+      "entities": [
+        "bed",
+        "bell_pull",
+        "vent"
+      ],
+      "places": [
+        "middle_room"
+      ],
+      "requirement": "床固定，假拉绳与孔洞构成原作手法所需关系；用户未给尺寸，由模型制作并检查。",
+      "acceptance": "关键节点可检查；画面不在调查前直接标注作案用途。"
+    },
+    {
+      "id": "sr_signal",
+      "entities": [
+        "signal_lamp",
+        "window_shutters"
+      ],
+      "places": [
+        "inn",
+        "middle_room",
+        "grounds"
+      ],
+      "requirement": "旅店指定观察位可看到约定窗口；不使全部房间和私密动作可见。",
+      "acceptance": "验证实际观察位置、持续观察状态、视线与灯状态；观察者离开或停止观察时不登记信号。"
+    },
+    {
+      "id": "sr_safe",
+      "entities": [
+        "safe",
+        "snake",
+        "milk_saucer",
+        "loop_lash"
+      ],
+      "places": [
+        "roylott_room"
+      ],
+      "requirement": "铁柜可容纳叙事中的蛇；蛇在关闭柜内时不可作为外部可见物或直接可检查对象。",
+      "acceptance": "核对容器内外表现、开启状态与线索门槛。"
+    },
+    {
+      "id": "sr_night",
+      "entities": [
+        "dark_lantern",
+        "vent"
+      ],
+      "places": [
+        "middle_room",
+        "roylott_room"
+      ],
+      "requirement": "夜间可表现原作亮光、气味文字与声音；听觉与视觉分开发放。",
+      "acceptance": "华生的披露不得确认他没看清的对象；3D失效时文本入口遵守同样权限。"
+    },
+    {
+      "id": "sr_final",
+      "entities": [
+        "body_roylott",
+        "snake"
+      ],
+      "places": [
+        "roylott_room"
+      ],
+      "requirement": "死亡与发现分开，隔壁不提前渲染房内秘密；遗体等视觉如暂不支持，应明确用审核后的现场文字表现。",
+      "acceptance": "尚未发生事件不加载未来现场；仅到场者可取得观察材料。"
+    }
+  ],
+  "resolution": {
+    "historicalResponsibility": [
+      "roylott"
+    ],
+    "criteria": [
+      {
+        "id": "responsibility",
+        "requirement": "指出罗伊洛特对旧案的责任；不能仅凭威吓或不讨喜的性格认定。",
+        "evidenceIds": [
+          "clue_helen_account",
+          "clue_final_scene"
+        ]
+      },
+      {
+        "id": "motive",
+        "requirement": "解释婚姻与收入安排的关系。",
+        "evidenceIds": [
+          "clue_will"
+        ]
+      },
+      {
+        "id": "route",
+        "requirement": "将固定床、假拉绳和连接两室的孔洞组织为手法解释。",
+        "evidenceIds": [
+          "clue_pull",
+          "clue_bed",
+          "clue_vent"
+        ]
+      },
+      {
+        "id": "observation_limits",
+        "requirement": "区分听闻、亲眼所见和推理；不得把华生未看清的部分写成其目击供词。",
+        "evidenceIds": [
+          "clue_hiss",
+          "clue_watson_night",
+          "clue_final_scene"
+        ]
+      },
+      {
+        "id": "actual_outcome",
+        "requirement": "说明本局实际发生的袭击、干预与后续；未发生的原作结局不能作为已发生依据。",
+        "evidenceIds": [
+          "clue_final_scene",
+          "clue_containment"
+        ]
+      }
+    ],
+    "fixedGroupsCount": null,
+    "reviewPolicy": "作者解答只在明确结案或主动查看后公开；权责判断引用固定案情和本局实际材料。",
+    "endingBoundary": "复盘限于本局已发生内容；原作后续官方调查不被扩写成完整警方办案模拟。"
+  },
+  "testVariants": [
+    {
+      "id": "variant_roylott_detained",
+      "origin": "test_adaptation",
+      "setup": "在plan_lantern或plan_release执行前，通过受控测试状态使roylott.detained=true。",
+      "expected": "相应犯罪计划前提失败并明确取消；不出现蛇已进卧室、未来咬伤、死亡和现场材料。",
+      "boundary": "这不是原作情节，也不授予普通玩家一句话拘留人的能力；被取消的依赖计划需有终止记录。"
+    },
+    {
+      "id": "variant_miss_signal",
+      "origin": "test_adaptation",
+      "setup": "在e_signal时玩家不在旅店观察位，或此刻没有持续观察窗口；即使之前完成过观察操作也算错过。",
+      "expected": "海伦可已发信号，但玩家没有看见记录；不能自动完成进入守候的前提。",
+      "boundary": "不因此改写事件为没有发生，也不补造玩家远程目击。"
+    },
+    {
+      "id": "variant_watson_away",
+      "origin": "test_adaptation",
+      "setup": "声音或挥杖发生时华生不在中间卧室。",
+      "expected": "不给华生相应获知记录，不把该单人路径伪装成样本的双人到场事件。",
+      "boundary": "原作双人主路径与此变体分开；需补不同事件或标注该分支未完成。"
+    },
+    {
+      "id": "variant_no_response",
+      "origin": "test_adaptation",
+      "setup": "玩家未在已登记的响应窗口执行op_respond_sound。",
+      "expected": "不发生e_strike及以其为因果前提的回返、反噬和死亡；阶段记录为未完成，不擅自宣称海伦死亡或案件已解决。",
+      "boundary": "这只是未覆盖后续的阶段边界，不声称世界永远停止，也不声称所有潜在受害者已安全。"
+    },
+    {
+      "id": "variant_retry_restart",
+      "origin": "engineering_test",
+      "setup": "在e_release后保存并真实重启；以原请求重试推进。",
+      "expected": "本局位置、知识、实际事件时刻与回执不变，不重复放蛇、死亡或发材料。"
+    }
+  ],
+  "expectedReview": [
+    {
+      "id": "review_fiction",
+      "severity": "author_acknowledgement",
+      "path": "/authorTruth/fictionalAssumptions/0",
+      "message": "原作动物行为与毒性为虚构设定；保留作者选择并在报告注明现实局限。"
+    },
+    {
+      "id": "review_history_precision",
+      "severity": "capability_gap",
+      "path": "/historicalEvents",
+      "message": "作者稿保留未知精度；当前initialOccurrences精确秒类型不能无损承载，禁止静默补零。"
+    },
+    {
+      "id": "review_scene",
+      "severity": "requires_production",
+      "path": "/sceneRequirements",
+      "message": "模型需生成并验收节点、坐标、容器关系、视线和资源；当前没有发布场景包。"
+    },
+    {
+      "id": "review_observation",
+      "severity": "capability_gap",
+      "path": "/timelinePlans",
+      "message": "观察安排含requiredOperations及activePerception，当前EventObservation仅Direct/AtPlace；不能把完成过观察操作当成一直在看，也不能丢弃实际观察条件。"
+    },
+    {
+      "id": "review_operations",
+      "severity": "requires_compilation",
+      "path": "/operations",
+      "message": "需编译具体条件、移动耗时、灯光开关与行动效果；自然语言前提不直接执行。"
+    },
+    {
+      "id": "review_boundaries",
+      "severity": "scope_boundary",
+      "path": "/testVariants",
+      "message": "主路径与测试变体分开；主路径失败仅记录阶段未完成，不能虚报完整自由分支或整案已破。"
+    },
+    {
+      "id": "review_engine",
+      "severity": "capability_gap",
+      "path": "/timelinePlans",
+      "message": "当前仅有新类型，尚无调度、取消传播、事务集成和新协议导入；不得发布为可玩案件。"
+    }
+  ],
+  "uploadAcceptance": {
+    "draftSave": "未来上传入口应能保存并原样读取本提案中的事实、来源、未知值和约束，按作者隔离。",
+    "review": "应输出上述类别的定向问题；不能只说通过，也不能擅自改写事实。",
+    "preview": "只能在完成内容编译与已登记场景能力后开放；当前样本没有通过此步。",
+    "publication": "仅在作者明确发布、内容与能力检查通过后登记案件当前发布内容；不使用案件修订号或修订链，旧调查允许清空，新流程发布重试仍须幂等。",
+    "negativeMutations": [
+      {
+        "jsonPointer": "/timelinePlans/6/requirements/occurredEvents",
+        "mutation": "引用missing_event",
+        "expected": "指出未知事件引用，不接受模糊匹配。"
+      },
+      {
+        "jsonPointer": "/timelinePlans/8/trigger",
+        "mutation": "改为在e_strike之前固定触发",
+        "expected": "指出与e_strike因果及前提冲突。"
+      },
+      {
+        "jsonPointer": "/characters/2/initialKnowledge/factIds",
+        "mutation": "加入f_roylott_dead",
+        "expected": "指出开局知识引用未来死亡。"
+      },
+      {
+        "jsonPointer": "/claims/3/text",
+        "mutation": "以海伦多年前见文件的记忆推出当前柜内绝无其他物品",
+        "expected": "指出时间和认识范围被错误扩大。"
+      },
+      {
+        "jsonPointer": "/publicInfo/summary",
+        "mutation": "加入作者完整凶手及手法",
+        "expected": "指出公开字段泄密，保留作者稿供修改但阻止发布。"
+      }
+    ]
+  },
+  "unresolvedFields": [
+    {
+      "path": "/opening/historicalTimes",
+      "value": null,
+      "meaning": "历史实际发生时刻精度，禁止伪造。"
+    },
+    {
+      "path": "/opening/sceneCoordinatesStatus",
+      "value": null,
+      "meaning": "模型尚未制作登记的节点、坐标与资源。"
+    },
+    {
+      "path": "/operations",
+      "value": null,
+      "meaning": "尚未完成的执行配置，不能用自然语言绕过能力校验。"
+    }
+  ]
+}

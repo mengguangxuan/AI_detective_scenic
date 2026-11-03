@@ -7,7 +7,7 @@ import services.cases.objects.*
 import services.cases.objects.content.FixtureClue
 import services.cases.objects.dialogue.WitnessProfile
 
-final case class InterviewContext(profile: WitnessProfile, evidence: Vector[FixtureClue], history: Vector[InterviewTurnRecord], caseId: CaseId, revision: Revision, responseVersion: Int = 1,
+final case class InterviewContext(profile: WitnessProfile, evidence: Vector[FixtureClue], history: Vector[InterviewTurnRecord], caseId: CaseId, responseVersion: Int = 1,
   statementAnswers: Set[WitnessAnswerId] = Set.empty, recordedStatements: Vector[FixtureClue] = Vector.empty, promptVersion: Int = 1,
   activeFocus: Option[RecordedDialogueFocus] = None, claimOptions: Vector[InterviewClaimOption] = Vector.empty)
 object InterviewContext:

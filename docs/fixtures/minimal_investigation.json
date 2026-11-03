@@ -1,8 +1,5 @@
 {
   "id": "fixture_drawer",
-  "revision": {
-    "value": 1
-  },
   "schemaVersion": {
     "value": 2
   },
@@ -285,7 +282,8 @@
     "requirementBindings": [],
     "movement": {
       "maximumStepMeters": 2
-    }
+    },
+    "bundleId": "study"
   },
   "investigation": {
     "clues": [

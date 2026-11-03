@@ -2,7 +2,7 @@ import { test, expect, type Page } from '@playwright/test';
 import { randomUUID } from 'node:crypto';
 import { writeFileSync } from 'node:fs';
 const headers = { 'X-Detective-Client': 'web' };
-const key = 'detective-scenic:server-session:v6';
+const key = 'detective-scenic:investigation-session';
 async function state(page: Page) {
   const sessionId = await page.evaluate(key => JSON.parse(localStorage.getItem(key)!).sessionId, key);
   const response = await page.request.post('/api/getinvestigationsnapshot', { headers, data: { sessionId } });
@@ -11,14 +11,13 @@ async function state(page: Page) {
 async function go(page: Page, name: string) {
   await page.getByRole('navigation', { name: '调查导航' }).getByRole('link', { name, exact: true }).click();
 }
-test('revision25 offers every existing contact without clues and persists early Archer testimony', async ({ page }) => {
+test('offers every existing contact without clues and persists early Archer testimony', async ({ page }) => {
   expect((await page.request.post('/api/openlocalidentity', { headers, data: {} })).status()).toBe(200);
   const sessionId = randomUUID();
-  expect((await page.request.post('/api/openinvestigation', { headers, data: { sessionId, caseId: 'vicarage_study', revision: { value: 25 } } })).status()).toBe(200);
+  expect((await page.request.post('/api/openinvestigation', { headers, data: { sessionId, caseId: 'vicarage_study' } })).status()).toBe(200);
   await page.addInitScript(({ key, sessionId }) => localStorage.setItem(key, JSON.stringify({ version: 1, sessionId, creationPending: false, pending: null })), { key, sessionId });
   await page.goto('/case');
   await expect(page.getByRole('heading', { name: '案件简介', exact: true })).toBeVisible();
-  expect((await state(page)).caseRevision.value).toBe(25);
   await go(page, '警方交流');
   const arrangements = page.getByRole('region', { name: '调查安排', exact: true });
   await expect(arrangements.getByRole('button')).toHaveCount(4);

@@ -129,12 +129,12 @@ class ModelHttpSuite extends FunSuite:
     provider(200,envelope("""{"reply":"那座钟我一直拨快一刻钟。","disclosureIds":["clement_habit"]}"""),requests).use { port => for
       client <- ChatCompletionClient.fromSettings(settings(port))
       _ <- DatabaseSession.connection(url).use(c => DatabaseSchema.initialize(c) *> LocalIdentityTableInitializer.initialize(c) *>
-        DatabaseSession.transaction(c)(ImportCaseMessage(Paths.get("../docs/fixtures/browser_investigation_v21.json")).plan(c)).void)
+        DatabaseSession.transaction(c)(ImportCaseMessage(Paths.get("../docs/fixtures/investigation_base.json")).plan(c).flatTap(record => services.TestCases.publish(c,record.caseId))).void)
       saved <- LocalHttpServer.resource(url,0,client).use { server =>
         val local=server.getAddress.getPort
         for
           identity <- send(local,"openlocalidentity","{}")
-          _ <- send(local,"openstudy",s"""{"sessionId":"$session"}""",identity._3)
+          _ <- send(local,"openinvestigation",s"""{"sessionId":"$session","caseId":"vicarage_study"}""",identity._3)
           missing <- send(local,"askwitness",body)
           forged <- send(local,"askwitness",body.replace("\"evidence\":[]","\"evidence\":[\"future_report\"]"),identity._3)
           _ = assertEquals(Vector(missing._1,forged._1),Vector(401,403))

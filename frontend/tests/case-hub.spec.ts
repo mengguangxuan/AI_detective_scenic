@@ -1,5 +1,5 @@
 import { test, expect, type Page } from '@playwright/test';
-const key = 'detective-scenic:server-session:v6';
+const key = 'detective-scenic:investigation-session';
 const headers = { 'X-Detective-Client': 'web' };
 async function savedList(page: Page) {
   const response = await page.request.post('/api/listinvestigations', { data: {}, headers });
@@ -18,7 +18,7 @@ async function begin(page: Page) {
 
 test('first visit shows the theatre and catalogue without starting or restoring a game', async ({ page }) => {
   const gameRequests: string[] = [];
-  page.on('request', request => { if (/\/api\/(openstudy|openinvestigation|getinvestigationsnapshot)$/.test(request.url())) gameRequests.push(request.url()); });
+  page.on('request', request => { if (/\/api\/(openinvestigation|getinvestigationsnapshot)$/.test(request.url())) gameRequests.push(request.url()); });
   await page.goto('/');
   await expect(page.getByRole('heading', { name: '真相，等你亲自发现。', exact: true })).toBeVisible();
   await expect(page.getByText('还没有保存的调查。先选择一个案件开始吧。', { exact: true })).toBeVisible();
@@ -35,7 +35,7 @@ test('first visit shows the theatre and catalogue without starting or restoring 
   expect(await savedList(page)).toEqual([]);
   await page.getByRole('link', { name: '进入案件区', exact: true }).click();
   await expect(page).toHaveURL(/\/cases$/);
-  await page.getByRole('link', { name: '查看案件', exact: true }).click();
+  await page.locator('article').filter({ has: page.getByRole('heading', { name: /牧师寓所谋杀案/ }) }).getByRole('link', { name: '查看案件', exact: true }).click();
   await expect(page.getByRole('region', { name: '案件介绍', exact: true })).toBeVisible();
   expect(gameRequests).toEqual([]);
   expect(await page.evaluate(locatorKey => localStorage.getItem(locatorKey), key)).toBeNull();
@@ -56,7 +56,7 @@ test('explicit start, a second investigation and restoring the first keep indepe
   const learned = await state(page);
   await page.getByRole('button', { name: '返回案件区', exact: true }).click();
   await expect(page.getByRole('heading', { name: '我的调查', exact: true })).toBeVisible();
-  await page.getByRole('link', { name: '查看案件', exact: true }).click();
+  await page.locator('article').filter({ has: page.getByRole('heading', { name: /牧师寓所谋杀案/ }) }).getByRole('link', { name: '查看案件', exact: true }).click();
   await page.getByRole('button', { name: '开始新调查', exact: true }).click();
   await expect(page.getByRole('heading', { name: '案件简介', exact: true })).toBeVisible();
   const second = await state(page);
@@ -84,7 +84,7 @@ test('a lost opening response preserves the exact selected case and resumes one 
   await expect(page.getByRole('button', { name: '重新连接', exact: true })).toBeVisible();
   await page.getByRole('button', { name: '返回案件区', exact: true }).click();
   await expect(page.getByRole('button', { name: '返回待确认调查', exact: true })).toBeVisible();
-  await page.getByRole('link', { name: '查看案件', exact: true }).click();
+  await page.locator('article').filter({ has: page.getByRole('heading', { name: /牧师寓所谋杀案/ }) }).getByRole('link', { name: '查看案件', exact: true }).click();
   await expect(page.getByRole('button', { name: '开始新调查', exact: true })).toBeDisabled();
   await page.getByRole('button', { name: '返回待确认调查', exact: true }).click();
   await page.getByRole('button', { name: '重新连接', exact: true }).click();

@@ -21,11 +21,13 @@ final case class CaseContent(place: PlaceId, placeName: String, initialStoryTime
   clock: Option[InvestigationClock] = None, externalChecks: Vector[ExternalCheckSpec] = Vector.empty,
   followUps: Vector[WitnessFollowUpSpec] = Vector.empty, statementComparisons: Vector[StatementComparisonSpec] = Vector.empty, conclusion: Option[CaseConclusionSpec] = None,
   continuousInterviews: Vector[ContinuousInterviewSpec] = Vector.empty, interviewPromptVersion: Int = 1,
-  sceneLocations: Vector[SceneLocation] = Vector.empty, claimRules: Vector[WitnessClaimRule] = Vector.empty)
+  sceneLocations: Vector[SceneLocation] = Vector.empty, claimRules: Vector[WitnessClaimRule] = Vector.empty, sceneBundle: String, calendarOrigin: Option[java.time.OffsetDateTime] = None, sceneBlueprint: Option[services.cases.objects.scene.SceneBlueprint] = None)
 
 object CaseContent:
   given Encoder[CaseContent] = deriveEncoder[CaseContent].mapJson(json =>
-    val semantic=if json.hcursor.get[Vector[WitnessClaimRule]]("claimRules").contains(Vector.empty) then json.mapObject(_.remove("claimRules")) else json
+    val rendered=if json.hcursor.get[Option[services.cases.objects.scene.SceneBlueprint]]("sceneBlueprint").contains(None) then json.mapObject(_.remove("sceneBlueprint")) else json
+    val calendar=if rendered.hcursor.get[Option[java.time.OffsetDateTime]]("calendarOrigin").contains(None) then rendered.mapObject(_.remove("calendarOrigin")) else rendered
+    val semantic=if calendar.hcursor.get[Vector[WitnessClaimRule]]("claimRules").contains(Vector.empty) then calendar.mapObject(_.remove("claimRules")) else calendar
     val located=if json.hcursor.get[Vector[SceneLocation]]("sceneLocations").contains(Vector.empty) then semantic.mapObject(_.remove("sceneLocations")) else semantic
     val versioned=if json.hcursor.get[Int]("interviewPromptVersion").contains(1) then located.mapObject(_.remove("interviewPromptVersion")) else located
     if json.hcursor.get[Vector[ContinuousInterviewSpec]]("continuousInterviews").contains(Vector.empty) then versioned.mapObject(_.remove("continuousInterviews")) else versioned)

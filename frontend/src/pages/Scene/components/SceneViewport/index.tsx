@@ -9,6 +9,7 @@ import type { RouteId } from '../../../../objects/RouteId';
 import type { SceneCameraMemory } from '../../objects/SceneCameraMemory';
 import ObjectMenu from './ObjectMenu';
 import ContextLifecycle from './ContextLifecycle';
+const AuthoredScene = lazy(() => import('./AuthoredScene'));
 const StudyScene = lazy(() => import('./StudyScene'));
 const WoodlandScene = lazy(() => import('./WoodlandScene'));
 class SceneBoundary extends Component<{ children: ReactNode; onFailure: () => void }, { failed: boolean }> {
@@ -30,6 +31,7 @@ type Props = { cameraMemory: RefObject<SceneCameraMemory | null>; snapshot: Inve
   onInspect: (object: SceneObjectBinding) => void; onExecute: (operation: OperationId) => void; onInvestigate: (route: RouteId) => void };
 export default function SceneViewport({ snapshot, selected, disabled, onInspect, onExecute, onInvestigate, cameraMemory }: Props) {
   const woodland = snapshot.scene.bundleId === 'woodland';
+  const sceneKey = `${snapshot.scene.bundleId}:${snapshot.scene.placeId ?? ''}`;
   const [webgl, setWebgl] = useState<boolean | null>(null);
   const [contextLost, setContextLost] = useState(false);
   const [renderFailed, setRenderFailed] = useState(false);
@@ -72,16 +74,16 @@ export default function SceneViewport({ snapshot, selected, disabled, onInspect,
       Math.max(52, Math.min(event.clientY - rect.top, rect.height - 310)));
   }
   return <section aria-label="现场探索" className="min-w-0 overflow-hidden rounded-2xl border border-white/10 bg-[#202d2b]">
-    <div ref={frame} aria-label={woodland ? '树林三维场景' : '书房三维场景'} className="relative h-[460px] min-w-0 lg:h-[540px]"
+    <div ref={frame} aria-label={snapshot.scene.bundleId === 'authored' ? `${snapshot.scene.placeName}三维场景` : woodland ? '树林三维场景' : '书房三维场景'} className="relative h-[460px] min-w-0 lg:h-[540px]"
       onPointerDownCapture={event => { gesture.current = { x: event.clientX, y: event.clientY, dragged: false }; }}
       onPointerMoveCapture={event => { if (Math.hypot(event.clientX - gesture.current.x, event.clientY - gesture.current.y) > 5) gesture.current.dragged = true; }}>
-      <div className="pointer-events-none absolute left-4 top-4 z-10 rounded-full bg-stone-950/60 px-3 py-2 text-xs text-stone-200">{woodland ? '周五 · 林间小径' : '牧师寓所 / 书房'}</div>
+      <div className="pointer-events-none absolute left-4 top-4 z-10 rounded-full bg-stone-950/60 px-3 py-2 text-xs text-stone-200">{snapshot.scene.placeName}</div>
       <button type="button" onClick={() => { setResetVersion(v => v + 1); setMenu(null); }} className="absolute right-4 top-4 z-10 rounded-lg border border-white/25 bg-stone-950/70 px-3 py-2 text-xs text-stone-100 hover:bg-stone-800">恢复全景</button>
-      <SceneBoundary key={`${snapshot.scene.bundleId}:${attempt}`} onFailure={() => setRenderFailed(true)}><Suspense fallback={<p className="p-16 text-stone-300">{woodland ? '正在准备林地…' : '正在准备书房…'}</p>}>
-        {webgl ? <Canvas key={`${snapshot.scene.bundleId}:${attempt}`} shadows frameloop={woodland ? 'demand' : 'always'} dpr={woodland ? 1 : [1, 1.5]} camera={{ position: [4, 3.5, 5], fov: woodland ? 48 : 43, far: 80 }} onPointerMissed={() => { if (!gesture.current.dragged) setMenu(null); }}
+      <SceneBoundary key={`${sceneKey}:${attempt}`} onFailure={() => setRenderFailed(true)}><Suspense fallback={<p className="p-16 text-stone-300">正在准备现场…</p>}>
+        {webgl ? <Canvas key={`${sceneKey}:${attempt}`} shadows frameloop={woodland ? 'demand' : 'always'} dpr={woodland ? 1 : [1, 1.5]} camera={{ position: [4, 3.5, 5], fov: woodland ? 48 : 43, far: 80 }} onPointerMissed={() => { if (!gesture.current.dragged) setMenu(null); }}
           fallback={<p className="p-16">暂时无法初始化三维画面，请重试或使用下方物品列表。</p>}>
           <ContextLifecycle onLost={setContextLost}/>
-          {woodland ? <WoodlandScene snapshot={snapshot} cameraMemory={cameraMemory} resetVersion={resetVersion} onPick={pickModel}/>
+          {snapshot.scene.bundleId === 'authored' ? <AuthoredScene snapshot={snapshot} cameraMemory={cameraMemory} resetVersion={resetVersion} onPick={pickModel}/> : woodland ? <WoodlandScene snapshot={snapshot} cameraMemory={cameraMemory} resetVersion={resetVersion} onPick={pickModel}/>
             : <StudyScene scene={snapshot.scene} sessionId={snapshot.sessionId} cameraMemory={cameraMemory} resetVersion={resetVersion} onPick={pickModel}/>}
         </Canvas> : <p role="status" className="p-16 text-stone-300">{webgl === null ? '正在准备三维视图…' : '暂时无法初始化三维画面，请重试或使用下方物品列表。'}</p>}
       </Suspense></SceneBoundary>

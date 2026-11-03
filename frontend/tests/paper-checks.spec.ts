@@ -1,7 +1,7 @@
 import { writeFileSync } from 'node:fs';
 import { test, expect, type Page } from './support/investigation-test';
 async function snapshot(page: Page) {
-  const saved = await page.evaluate(() => JSON.parse(localStorage.getItem('detective-scenic:server-session:v6')!));
+  const saved = await page.evaluate(() => JSON.parse(localStorage.getItem('detective-scenic:investigation-session')!));
   const response = await page.request.post('/api/getinvestigationsnapshot', { data: { sessionId: saved.sessionId }, headers: { 'X-Detective-Client': 'web' } });
   expect(response.status()).toBe(200); return response.json();
 }
@@ -14,7 +14,6 @@ async function paper(page: Page) {
   await page.getByRole('button', { name: '纸张原位置', exact: true }).click();
   await expect(page.getByRole('dialog', { name: '纸张原位置操作', exact: true })).toContainText('原件由警方保管');
   await page.keyboard.press('Escape');
-  expect((await snapshot(page)).caseRevision.value).toBe(21);
   await go(page, '警方交流');
 }
 async function waitForTime(page: Page, minutes: number, label: string) {

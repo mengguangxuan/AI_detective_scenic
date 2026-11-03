@@ -8,7 +8,7 @@ import java.util.UUID
 import munit.FunSuite
 import services.cases.api.ImportCaseMessage
 import services.cases.objects.*
-import services.cases.tables.CaseRevisionTable.CaseRevisionTable
+import services.cases.tables.CaseTable.CaseTable
 import services.games.api.*
 import services.games.objects.*
 import services.models.api.ChatCompletionClient
@@ -23,7 +23,7 @@ class CallChecksSuite extends FunSuite:
     DatabaseSession.connection(url).use(c => DatabaseSession.transaction(c)(f(c)))
   private def setup(url: String,id: SessionId): IO[Unit]=DatabaseSession.connection(url).use(c =>
     DatabaseSchema.initialize(c) *> DatabaseSession.transaction(c)(
-      ImportCaseMessage(Paths.get("../docs/fixtures/browser_investigation_v21.json")).plan(c) *> OpenStudyMessage(owner,id).plan(c)).void)
+      ImportCaseMessage(Paths.get("../docs/fixtures/investigation_base.json")).plan(c) *> services.TestCases.open(owner,id,CaseId("vicarage_study"))(c)).void)
   private def view(url: String,id: SessionId)=tx(url)(GetInvestigationSnapshotMessage(owner,id).plan)
   private def read(url: String,id: SessionId,point: String,route: String): IO[Unit]=for
     s <- view(url,id)
@@ -62,7 +62,6 @@ class CallChecksSuite extends FunSuite:
     (for
       _ <- setup(url,id)
       initial <- view(url,id)
-      _ = assertEquals(initial.caseRevision,Revision(21))
       _ = assert(initial.externalChecks.filter(_.id.value.startsWith("call_")).forall(!_.available))
       early <- request(url,id,"call_origin").attempt
       _ = assertEquals(code(early),Some(ErrorCode.ConditionFailed))
@@ -162,26 +161,5 @@ class CallChecksSuite extends FunSuite:
       _ = assert(Set("clue_call","clue_call_origin","clue_call_lodge_scene","clue_call_lodge_phone").map(ClueId.apply).subsetOf(saved.police.get.sharedClues))
       _ = assert(!saved.asJson.noSpaces.contains("伪装女声"))
       _ = assert(!saved.asJson.noSpaces.contains("privateContext"))
-    yield ()).unsafeRunSync()
-  }
-
-  test("revision 13 keeps its original reenactment and receipt without new call checks") {
-    val url=database;val id=SessionId(UUID.randomUUID().toString)
-    (for
-      _ <- DatabaseSession.connection(url).use(DatabaseSchema.initialize)
-      _ <- tx(url) { c => for
-        latest <- ImportCaseMessage(Paths.get("../docs/fixtures/browser_investigation_v21.json")).plan(c)
-        old=latest.copy(revision=Revision(13),content=LegacyFixture.withoutCallChecks(latest.content))
-        _ <- CaseRevisionTable.insert(c,old)
-        _ <- StartGameMessage(owner,id,old.caseId,old.revision).plan(c)
-      yield () }
-      _ <- read(url,id,"point_clement","route_call")
-      saved <- tx(url)(OpenStudyMessage(owner,id).plan)
-      _ = assertEquals(saved.caseRevision,Revision(13))
-      _ = assertEquals(saved.externalChecks.size,5)
-      denied <- request(url,id,"call_origin").attempt
-      _ = assertEquals(code(denied),Some(ErrorCode.AccessDenied))
-      restored <- view(url,id)
-      _ = assertEquals(restored,saved)
     yield ()).unsafeRunSync()
   }

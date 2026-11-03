@@ -1,6 +1,6 @@
 import { test, expect, type Page } from './support/investigation-test';
 import { PerspectiveCamera, Vector3 } from 'three';
-const sessionKey = 'detective-scenic:server-session:v6';
+const sessionKey = 'detective-scenic:investigation-session';
 async function go(page: Page, name: string) {
   const link = page.getByRole('navigation', { name: '调查导航' }).getByRole('link', { name, exact: true });
   if (await link.getAttribute('aria-current') !== 'page') await link.click();
@@ -102,8 +102,8 @@ test('clicking models opens live drawer and window menus, and paper opens its co
   await clickModel(page, [0, 1.27, 0.12], '纸张原位置');
   await expect(page.getByRole('dialog', { name: '纸张原位置操作', exact: true })).toContainText('亲爱的克莱门特');
   const saved = await snapshot(page);
-  expect(saved.scene.windowOpened).toBe(true);
-  expect(saved.scene.drawerOpened).toBe(false);
+  expect(saved.scene.openedEntities).toContain('window');
+  expect(saved.scene.openedEntities).not.toContain('drawer');
   expect(saved.clues).toHaveLength(1);
   await page.screenshot({ path: 'test-results/study-item-menu.png', fullPage: true });
   await page.reload();

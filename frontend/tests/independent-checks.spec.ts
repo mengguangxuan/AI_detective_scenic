@@ -3,7 +3,7 @@ async function go(page: Page, name: string) {
   await page.getByRole('navigation', { name: '调查导航' }).getByRole('link', { name, exact: true }).click();
 }
 async function snapshot(page: Page) {
-  const saved = await page.evaluate(() => JSON.parse(localStorage.getItem('detective-scenic:server-session:v6')!));
+  const saved = await page.evaluate(() => JSON.parse(localStorage.getItem('detective-scenic:investigation-session')!));
   const response = await page.request.post('/api/getinvestigationsnapshot', { data: { sessionId: saved.sessionId }, headers: { 'X-Detective-Client': 'web' } });
   expect(response.status()).toBe(200);
   return response.json();
@@ -52,11 +52,10 @@ test('independent witnesses are explicitly contacted, actually questioned and co
   await expect(page.getByRole('button', { name: '用原请求重试', exact: true })).toHaveCount(0);
   expect(payloads).toHaveLength(2); expect(payloads[0]).toBe(payloads[1]);
   await page.getByRole('button', { name: '联系男仆，核查枪的来源', exact: true }).click();
-  await expect(page.getByRole('region', { name: '已联系的核查对象', exact: true })).toContainText('斯通博士');
+  await expect(page.getByRole('region', { name: '当前可问询的人物', exact: true })).toContainText('斯通博士');
   let state = await snapshot(page);
-  expect(state.caseRevision.value).toBe(21);
   expect(state.clues.some((c: { id: string }) => c.id === 'clue_valet_gun' || c.id === 'clue_stone_inn')).toBe(false);
-  await page.getByRole('link', { name: '前往人物问询，核查证言', exact: true }).click();
+  await page.getByRole('link', { name: '前往人物问询', exact: true }).click();
   await choose(page, '上校的贴身男仆'); await expect(await send(page, '上校梳妆台的抽屉里有枪吗？')).toContainText('那里有的话我会看见');
   await choose(page, '斯通博士'); await send(page, '你何时遇见安妮和雷丁？');
   await expect(await send(page, '雷丁什么时候离开蓝野猪？')).toContainText('六点四十');
@@ -71,7 +70,7 @@ test('independent witnesses are explicitly contacted, actually questioned and co
   expect(state.clues.some((c: { id: string }) => c.id === 'clue_police_movement_check')).toBe(true);
   expect(state.stage.completed).toBe(false);
   await page.reload();
-  await expect(page.getByRole('region', { name: '已联系的核查对象', exact: true })).toContainText('上校的贴身男仆');
+  await expect(page.getByRole('region', { name: '当前可问询的人物', exact: true })).toContainText('上校的贴身男仆');
   expect(await snapshot(page)).toEqual(state);
   await page.context().storageState({ path: '.build-cache/independent-checks-state.json' });
   await page.screenshot({ path: 'test-results/independent-checks-police.png', fullPage: true });

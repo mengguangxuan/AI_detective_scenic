@@ -16,7 +16,7 @@ private[games] object RecordedInterviewRules:
 
   private[games] def ownClues(content: CaseContent,witness: WitnessId,records: Vector[SessionRecord],turns: Vector[InterviewTurnRecord]): Set[ClueId] =
     val person=content.witnesses.find(_.id == witness)
-    val fixed=records.filter(r => person.exists(_.point == r.point)).flatMap(_.disclosedClues)
+    val fixed=records.filter(r => person.exists(p => r.point.contains(p.point))).flatMap(_.disclosedClues)
     val spoken=turns.filter(t => t.witness == witness && t.mode == InterviewReplyMode.Answered).flatMap(_.answerIds)
       .flatMap(id => person.toVector.flatMap(_.answers.filter(_.id == id))).flatMap(_.routes)
       .flatMap(id => content.routes.filter(_.id == id)).flatMap(_.clues)

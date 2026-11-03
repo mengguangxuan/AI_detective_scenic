@@ -5,7 +5,7 @@ import io.circe.{Decoder, Encoder}
 import io.circe.generic.semiauto.*
 import java.sql.Connection
 import services.games.objects.apiTypes.GetGameStateResponse
-import services.cases.tables.CaseRevisionTable.CaseRevisionTable
+import services.cases.tables.CaseTable.CaseTable
 import services.games.tables.SessionTable.SessionTable
 import services.games.utils.{FixtureRules, MutationSupport}
 import services.system.api.APIMessage
@@ -16,8 +16,8 @@ final case class GetGameStateMessage(userId: UserId, sessionId: SessionId) exten
     for
       _ <- IO.blocking(require(!connection.getAutoCommit, "Message requires transaction"))
       row <- SessionTable.find(connection,sessionId).flatMap(MutationSupport.owned(_,userId))
-      revision <- CaseRevisionTable.find(connection,row.caseId,row.caseRevision).flatMap(value => IO.fromOption(value)(GameError(ErrorCode.InvalidValue,"案件修订不存在。")))
-    yield FixtureRules.view(revision.content,row)
+      caseRecord <- CaseTable.find(connection,row.caseId).flatMap(value => IO.fromOption(value)(GameError(ErrorCode.InvalidValue,"案件不存在。")))
+    yield FixtureRules.view(caseRecord.content,row)
 
 object GetGameStateMessage:
   given Encoder[GetGameStateMessage] = deriveEncoder[GetGameStateMessage]

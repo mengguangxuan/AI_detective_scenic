@@ -18,7 +18,7 @@ export default function CasePage({ snapshot, onSelect }: { snapshot: Investigati
         <div><dt className="text-xs text-stone-400">调查记录</dt><dd className="mt-2 text-2xl text-amber-100">{snapshot.journal.length}</dd></div>
       </dl>
       <p className="mt-5 text-sm leading-7 text-stone-400">调查结果会自动保存。你可以随时切换页面，回看材料和对话，再继续检查现场。</p>
-      {snapshot.police ? <InvestigationLink href="/police" className="mt-4 inline-block text-sm text-amber-200 underline underline-offset-4">向警方了解情况与医生的初查意见</InvestigationLink> : null}
+      {snapshot.police ? <InvestigationLink href="/police" className="mt-4 inline-block text-sm text-amber-200 underline underline-offset-4">与{snapshot.police.name}交流</InvestigationLink> : null}
     </section>
     {snapshot.people.length ? <section aria-labelledby="case-people-title" className="space-y-4">
       <div><h3 id="case-people-title" className="text-lg font-medium">案中人物</h3><p className="mt-2 text-sm leading-7 text-stone-400">先认识相关人物，详细经过可以在交谈中了解。</p></div>

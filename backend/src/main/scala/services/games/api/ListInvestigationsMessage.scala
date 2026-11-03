@@ -19,5 +19,5 @@ final case class ListInvestigationsMessage(userId: UserId) extends APIMessage[Ve
         case None if row.legacySubmitted => SavedInvestigationStatus.LegacySubmitted
         case None if row.reasoning.attempts.lastOption.exists(_.status == ReasoningStatus.Established) => SavedInvestigationStatus.Established
         case None => SavedInvestigationStatus.Investigating
-      SavedInvestigationView(row.sessionId,row.caseId,row.revision,row.title,row.sequence,row.updatedAtMillis,status)
+      SavedInvestigationView(row.sessionId,row.caseId,row.title,row.sequence,row.updatedAtMillis,status)
     })

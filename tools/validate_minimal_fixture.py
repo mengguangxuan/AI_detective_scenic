@@ -130,7 +130,7 @@ def validate(case: dict) -> None:
         require(not truth[group], f'unsupported fixture truth: {group}')
     require(not world['connections'] and not world['relationships'] and not world['environments'] and not world['scenes'], 'unsupported fixture world features')
     require(not scene['requirementBindings'] and not scene['cues'], 'fixture is not scene publication approval')
-    require(case['revision']['value'] > 0 and case['schemaVersion']['value'] == 2, 'invalid fixture version')
+    require(case['schemaVersion']['value'] == 2, 'invalid fixture schema')
     require(scene['movement']['maximumStepMeters'] > 0, 'invalid movement policy')
     for place in places.values():
         require(place['parent'] is None and place['walkable'], 'fixture requires root walkable place')

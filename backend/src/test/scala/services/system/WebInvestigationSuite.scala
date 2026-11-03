@@ -12,19 +12,20 @@ import munit.FunSuite
 import services.system.api.*
 import services.accounts.tables.LocalIdentityTable.LocalIdentityTableInitializer
 import services.cases.api.ImportCaseMessage
+import services.cases.objects.EntityId
 
 class WebInvestigationSuite extends FunSuite:
   private val client = HttpClient.newHttpClient()
   private def setup(url: String): IO[Unit] = DatabaseSession.connection(url).use { c =>
     DatabaseSchema.initialize(c) *> LocalIdentityTableInitializer.initialize(c) *>
-      DatabaseSession.transaction(c)(ImportCaseMessage(Paths.get("../docs/fixtures/browser_investigation_v21.json")).plan(c)).void
+      DatabaseSession.transaction(c)(ImportCaseMessage(Paths.get("../docs/fixtures/investigation_base.json")).plan(c).flatTap(record => services.TestCases.publish(c,record.caseId))).void
   }
   private def send(port: Int,name: String,body: String = "{}",cookie: Option[String] = None,origin: Option[String] = None): IO[(Int,Json,Option[String])] = IO.blocking {
     val request = HttpRequest.newBuilder(URI.create(s"http://127.0.0.1:$port/api/$name"))
       .header("Content-Type","application/json").header("X-Detective-Client","web")
     cookie.foreach(request.header("Cookie",_))
     origin.foreach(request.header("Origin",_))
-    val response = client.send(request.POST(HttpRequest.BodyPublishers.ofString(body)).build(),HttpResponse.BodyHandlers.ofString())
+    val response = client.send(request.POST(HttpRequest.BodyPublishers.ofString(if name == "openinvestigation" then parser.parse(body).toOption.get.mapObject(_.add("caseId",Json.fromString("vicarage_study"))).noSpaces else body)).build(),HttpResponse.BodyHandlers.ofString())
     val setCookie = response.headers.firstValue("Set-Cookie")
     (response.statusCode,parser.parse(response.body).toOption.get,if setCookie.isPresent then Some(setCookie.get.split(';').head) else None)
   }
@@ -41,14 +42,14 @@ class WebInvestigationSuite extends FunSuite:
     withServer { port => for
       identity <- send(port,"openlocalidentity")
       id = UUID.randomUUID().toString
-      initial <- send(port,"openstudy",payload(id),identity._3)
+      initial <- send(port,"openinvestigation",payload(id),identity._3)
       _ = assertEquals(initial._1,200)
       _ = assert(!initial._2.noSpaces.contains("今晚"))
       _ = assert(!initial._2.noSpaces.contains("route_clock_presented"))
       _ = assertEquals(initial._2.hcursor.downField("clues").focus.get.asArray.get.size,0)
       _ = assertEquals(initial._2.hcursor.downField("stage").get[Boolean]("completed"),Right(false))
       _ <- send(port,"executeoperation",execute(id),identity._3)
-      resumed <- send(port,"openstudy",payload(id),identity._3)
+      resumed <- send(port,"openinvestigation",payload(id),identity._3)
       _ = assertEquals(resumed._2.hcursor.downField("sequence").get[Long]("value"),Right(1L))
     yield () }
   }
@@ -57,7 +58,7 @@ class WebInvestigationSuite extends FunSuite:
       identity <- send(port,"openlocalidentity")
       other <- send(port,"openlocalidentity")
       id = UUID.randomUUID().toString
-      _ <- send(port,"openstudy",payload(id),identity._3)
+      _ <- send(port,"openinvestigation",payload(id),identity._3)
       missing <- send(port,"getinvestigationsnapshot",payload(id))
       foreign <- send(port,"getinvestigationsnapshot",payload(id),other._3)
       forged <- send(port,"getinvestigationsnapshot",s"""{"sessionId":"$id","userId":"victim"}""",identity._3)
@@ -72,7 +73,7 @@ class WebInvestigationSuite extends FunSuite:
     withServer { port => for
       identity <- send(port,"openlocalidentity")
       id = UUID.randomUUID().toString
-      _ <- send(port,"openstudy",payload(id),identity._3)
+      _ <- send(port,"openinvestigation",payload(id),identity._3)
       hidden <- send(port,"investigate",investigate(id,seq=0).replace("point_clock","point_clement").replace("route_clock","route_clock_presented"),identity._3)
       opened <- send(port,"executeoperation",execute(id),identity._3)
       learned <- send(port,"investigate",investigate(id),identity._3)
@@ -102,7 +103,7 @@ class WebInvestigationSuite extends FunSuite:
         val port = server.getAddress.getPort
         for
           identity <- send(port,"openlocalidentity")
-          _ <- send(port,"openstudy",payload(id),identity._3)
+          _ <- send(port,"openinvestigation",payload(id),identity._3)
           _ <- send(port,"executeoperation",execute(id),identity._3)
           _ <- send(port,"investigate",investigate(id),identity._3)
           _ <- send(port,"executeoperation",execute(id,"close-before-restart",2).replace("open_drawer","close_drawer"),identity._3)
@@ -125,7 +126,7 @@ class WebInvestigationSuite extends FunSuite:
     withServer { port => for
       identity <- send(port,"openlocalidentity")
       id = UUID.randomUUID().toString
-      replies <- Vector(1,2).parTraverse(_ => send(port,"openstudy",payload(id),identity._3))
+      replies <- Vector(1,2).parTraverse(_ => send(port,"openinvestigation",payload(id),identity._3))
       _ = assertEquals(replies.map(_._1),Vector(200,200))
       _ = assertEquals(replies.head._2,replies.last._2)
     yield () }
@@ -135,7 +136,7 @@ class WebInvestigationSuite extends FunSuite:
     withServer { port => for
       identity <- send(port,"openlocalidentity")
       id = UUID.randomUUID().toString
-      initial <- send(port,"openstudy",payload(id),identity._3)
+      initial <- send(port,"openinvestigation",payload(id),identity._3)
       _ = assertEquals(initial._2.hcursor.downField("observations").focus.get.asArray.get.size,8)
       badClose <- send(port,"executeoperation",execute(id,"bad-close",0).replace("open_drawer","close_drawer"),identity._3)
       _ = assertEquals(badClose._1,409)
@@ -147,7 +148,7 @@ class WebInvestigationSuite extends FunSuite:
       afterClose <- send(port,"getinvestigationsnapshot",payload(id),identity._3)
       _ = assertEquals(closed._1,200)
       _ = assertEquals(retry._2,closed._2)
-      _ = assertEquals(afterClose._2.hcursor.downField("scene").get[Boolean]("drawerOpened"),Right(false))
+      _ = assertEquals(afterClose._2.hcursor.downField("scene").get[Set[EntityId]]("openedEntities").map(_.contains(EntityId("drawer"))),Right(false))
       _ = assertEquals(afterClose._2.hcursor.downField("clues").focus.get.asArray.get.size,1)
       hidden <- send(port,"investigate",investigate(id,"hidden",3).replace("route_clock","route_clock_presented").replace("point_clock","point_clement"),identity._3)
       _ = assertEquals(hidden._1,409)
@@ -183,7 +184,7 @@ class WebInvestigationSuite extends FunSuite:
         val port = server.getAddress.getPort
         for
           identity <- send(port,"openlocalidentity")
-          initial <- send(port,"openstudy",payload(id),identity._3)
+          initial <- send(port,"openinvestigation",payload(id),identity._3)
           _ = assertEquals(initial._2.hcursor.downField("stage").get[Boolean]("hasTimeComparison"),Right(false))
           _ <- requiredPath.zipWithIndex.traverse_ { case ((point,route),index) =>
             send(port,"investigate",inquiry(id,point,route,index.toLong,s"step-$index"),identity._3).map(reply => assertEquals(reply._1,200))
@@ -209,7 +210,7 @@ class WebInvestigationSuite extends FunSuite:
       _ <- requiredPath.indices.toVector.traverse_ { skip =>
         val id = UUID.randomUUID().toString
         for
-          _ <- send(port,"openstudy",payload(id),identity._3)
+          _ <- send(port,"openinvestigation",payload(id),identity._3)
           end <- requiredPath.zipWithIndex.filterNot(_._2 == skip).foldLeft(IO.pure(0L)) { case (sequence,((point,route),index)) =>
             sequence.flatMap(seq => send(port,"investigate",inquiry(id,point,route,seq,s"without-$skip-$index"),identity._3)
               .map(reply => if reply._1 == 200 then seq+1 else seq))
@@ -229,7 +230,7 @@ class WebInvestigationSuite extends FunSuite:
     withServer { port => for
       identity <- send(port,"openlocalidentity")
       id = UUID.randomUUID().toString
-      initial <- send(port,"openstudy",payload(id),identity._3)
+      initial <- send(port,"openinvestigation",payload(id),identity._3)
       _ = assertEquals(initial._2.hcursor.downField("scene").get[Vector[Json]]("objects").toOption.get.size,9)
       _ = assert(initial._2.hcursor.get[Vector[Json]]("points").toOption.get.forall(_.hcursor.get[Vector[Json]]("findings").toOption.get.isEmpty))
       learned <- send(port,"investigate",inquiry(id,"paper","paper",0,"paper"),identity._3)
@@ -246,19 +247,19 @@ class WebInvestigationSuite extends FunSuite:
     withServer { port => for
       identity <- send(port,"openlocalidentity")
       id = UUID.randomUUID().toString
-      _ <- send(port,"openstudy",payload(id),identity._3)
+      _ <- send(port,"openinvestigation",payload(id),identity._3)
       bad <- send(port,"executeoperation",execute(id).replace("open_drawer","close_window"),identity._3)
       _ = assertEquals(bad._1,409)
       body = execute(id).replace("open_drawer","open_window")
       opened <- send(port,"executeoperation",body,identity._3)
       retry <- send(port,"executeoperation",body,identity._3)
-      afterOpen <- send(port,"openstudy",payload(id),identity._3)
+      afterOpen <- send(port,"openinvestigation",payload(id),identity._3)
       _ = assertEquals(opened._1,200)
       _ = assertEquals(retry._2,opened._2)
-      _ = assertEquals(afterOpen._2.hcursor.downField("scene").get[Boolean]("windowOpened"),Right(true))
+      _ = assertEquals(afterOpen._2.hcursor.downField("scene").get[Set[EntityId]]("openedEntities").map(_.contains(EntityId("window"))),Right(true))
       _ <- send(port,"executeoperation",execute(id,"close-window",1).replace("open_drawer","close_window"),identity._3)
       afterClose <- send(port,"getinvestigationsnapshot",payload(id),identity._3)
-      _ = assertEquals(afterClose._2.hcursor.downField("scene").get[Boolean]("windowOpened"),Right(false))
+      _ = assertEquals(afterClose._2.hcursor.downField("scene").get[Set[EntityId]]("openedEntities").map(_.contains(EntityId("window"))),Right(false))
       _ = assertEquals(afterClose._2.hcursor.get[Vector[Json]]("clues").toOption.get.size,0)
       _ = assertEquals(afterClose._2.hcursor.downField("sequence").get[Long]("value"),Right(2L))
     yield () }

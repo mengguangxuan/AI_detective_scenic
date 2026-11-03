@@ -31,7 +31,7 @@ function Rocks() {
 const entry = { x: 0, y: 0, z: 5 };
 export default function WoodlandScene({ snapshot, cameraMemory, resetVersion, onPick }: Props) {
   const { scene } = snapshot;
-  const collected = snapshot.clues.some(c => c.id === 'clue_woodland_sample');
+  const collected = !snapshot.scene.objects.some(o => o.node === woodlandNodes.fragment);
   const revealed = snapshot.observations.some(o => o.node === woodlandNodes.fragment);
   function item(node: SceneNodeId, children: ReactNode) {
     return scene.objects.some(o => o.node === node) ? <SceneItem node={node} objects={scene.objects} onPick={onPick}>{children}</SceneItem> : <group>{children}</group>;
@@ -54,6 +54,6 @@ export default function WoodlandScene({ snapshot, cameraMemory, resetVersion, on
     </group>)}
     {revealed && !collected ? item(woodlandNodes.fragment, <mesh position={[2.8, 0.11, -4.5]} rotation={[0.1, 0.5, 0.3]} scale={[0.22, 0.1, 0.28]} castShadow><icosahedronGeometry args={[1, 0]}/><meshStandardMaterial color="#936c35" roughness={0.38} metalness={0.12} flatShading/></mesh>) : null}
     {[-1.5, 1.4, 4].map((x, n) => <mesh key={n} position={[x - 1, 4.5, -5 - n]} rotation={[0.06, 0, -0.45]}><coneGeometry args={[0.9, 10, 20, 1, true]}/><meshBasicMaterial color="#fff0bf" transparent opacity={0.025} depthWrite={false} side={2}/></mesh>)}
-    <WoodlandCamera position={scene.playerPosition ?? entry} resetVersion={resetVersion} memory={cameraMemory} sessionId={snapshot.sessionId}/>
+    <WoodlandCamera sceneKey={`${scene.bundleId}:${scene.placeId ?? ''}`} position={scene.playerPosition ?? entry} resetVersion={resetVersion} memory={cameraMemory} sessionId={snapshot.sessionId}/>
   </>;
 }

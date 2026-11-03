@@ -1,5 +1,4 @@
 import { OpenLocalIdentityAPI } from '../../../apis/accounts/OpenLocalIdentityAPI';
-import { OpenStudyAPI } from '../../../apis/games/OpenStudyAPI';
 import { OpenInvestigationAPI } from '../../../apis/games/OpenInvestigationAPI';
 import { GetInvestigationSnapshotAPI } from '../../../apis/games/GetInvestigationSnapshotAPI';
 import type { InvestigationSnapshot } from '../../../apis/games/objects/InvestigationSnapshot';
@@ -20,8 +19,8 @@ async function connect(initial: BrowserSession) {
   let stored = initial;
   await new OpenLocalIdentityAPI().send();
   const snapshot = stored.creationPending ? stored.creation
-    ? await new OpenInvestigationAPI(stored.sessionId, stored.creation.caseId, stored.creation.revision).send()
-    : await new OpenStudyAPI(stored.sessionId).send()
+    ? await new OpenInvestigationAPI(stored.sessionId, stored.creation.caseId).send()
+    : (() => { throw new Error('开局请求缺少案件，请从案件区重新选择。'); })()
     : await new GetInvestigationSnapshotAPI(stored.sessionId).send();
   if (snapshot.sessionId !== stored.sessionId) throw new Error('返回的会话编号不匹配。');
   stored = { ...stored, creationPending: false };
@@ -33,9 +32,9 @@ async function connect(initial: BrowserSession) {
   saveBrowserSession(stored);
   return { stored, snapshot };
 }
-export function newBrowserSession(caseId: string, revision: number): void {
+export function newBrowserSession(caseId: string): void {
   const previous = loadBrowserSession();
   if (previous?.pending || previous?.creationPending) throw new Error('请先返回原调查确认上次请求结果。');
   saveBrowserSession({ version: 1, sessionId: sessionIdSchema.parse(crypto.randomUUID()), creationPending: true,
-    creation: { caseId, revision }, pending: null });
+    creation: { caseId }, pending: null });
 }

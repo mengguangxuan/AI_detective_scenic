@@ -3,7 +3,7 @@ async function go(page: Page, name: string) {
   await page.getByRole('navigation', { name: '调查导航' }).getByRole('link', { name, exact: true }).click();
 }
 async function snapshot(page: Page) {
-  const saved = await page.evaluate(() => JSON.parse(localStorage.getItem('detective-scenic:server-session:v6')!));
+  const saved = await page.evaluate(() => JSON.parse(localStorage.getItem('detective-scenic:investigation-session')!));
   const response = await page.request.post('/api/getinvestigationsnapshot', { data: { sessionId: saved.sessionId }, headers: { 'X-Detective-Client': 'web' } });
   expect(response.status()).toBe(200); return response.json();
 }
@@ -21,9 +21,10 @@ async function send(page: Page, question: string) {
 
 test('public map shows connected distances and route estimates; browsing and refresh consume no story time', async ({ page }) => {
   await page.goto('/map');
+  await page.getByLabel('起点', { exact: true }).selectOption('study');
+  await page.getByLabel('终点', { exact: true }).selectOption('old_hall');
   await expect(page.getByRole('region', { name: '步行路线估算', exact: true })).toContainText('1060 米');
   const initial = await snapshot(page);
-  expect(initial.caseRevision.value).toBe(21);
   expect(initial.clock.elapsedSeconds).toBe(0);
   expect(initial.areaMap.locations).toHaveLength(15);
   expect(JSON.stringify(initial)).not.toContain('clue_gun_verification');
@@ -91,7 +92,7 @@ test('police model answers from pending state and then actual completed results 
   test.skip(process.env.DETECTIVE_TEST_MODEL !== '1', 'Uses local model fixture.');
   await page.goto('/police');
   await page.getByRole('button', { name: '申请核验手枪与弹头', exact: true }).click();
-  await expect(await send(page, '手枪核验还要多久？')).toContainText('预计周五 09:20');
+  await expect(await send(page, '手枪核验还要多久？')).toContainText('预计周五上午初查 09:20');
   const before = await snapshot(page);
   expect(before.clues.some((c: { id: string }) => c.id === 'clue_gun_verification')).toBe(false);
   await waitForTime(page, 15, '09:19');

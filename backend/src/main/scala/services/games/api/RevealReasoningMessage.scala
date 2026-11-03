@@ -5,7 +5,7 @@ import io.circe.{Decoder, Encoder}
 import io.circe.generic.semiauto.*
 import java.sql.Connection
 import services.cases.objects.*
-import services.cases.tables.CaseRevisionTable.CaseRevisionTable
+import services.cases.tables.CaseTable.CaseTable
 import services.games.objects.apiTypes.CommandResult
 import services.games.tables.InterviewTurnTable.InterviewTurnTable
 import services.games.tables.SessionTable.SessionTable
@@ -27,10 +27,10 @@ final case class RevealReasoningMessage(userId: UserId, sessionId: SessionId, re
         case None =>
           for
             _ <- MutationSupport.checkSequence(session,expectedSequence)
-            revision <- CaseRevisionTable.find(connection,session.caseId,session.caseRevision).flatMap(value =>
-              IO.fromOption(value)(GameError(ErrorCode.InvalidValue,"案件修订不存在。")))
+            caseRecord <- CaseTable.find(connection,session.caseId).flatMap(value =>
+              IO.fromOption(value)(GameError(ErrorCode.InvalidValue,"案件不存在。")))
             turns <- InterviewTurnTable.list(connection,sessionId)
-            plan <- IO.fromEither(ReasoningRules.reveal(RecordedInterviewRules.content(revision.content,turns),session,requestId,abandon))
+            plan <- IO.fromEither(ReasoningRules.reveal(RecordedInterviewRules.content(caseRecord.content,turns),session,requestId,abandon))
             result <- MutationSupport.commit(connection,session,requestId,digest,plan)
           yield result
     yield result

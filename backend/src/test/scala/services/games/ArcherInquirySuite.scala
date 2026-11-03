@@ -7,7 +7,7 @@ import java.util.UUID
 import munit.FunSuite
 import services.cases.api.ImportCaseMessage
 import services.cases.objects.*
-import services.cases.tables.CaseRevisionTable.CaseRevisionTable
+import services.cases.tables.CaseTable.CaseTable
 import services.games.api.*
 import services.games.objects.*
 import services.models.api.ChatCompletionClient
@@ -19,7 +19,7 @@ class ArcherInquirySuite extends FunSuite:
   private val owner=UserId("archer-owner")
   private def database=s"jdbc:h2:mem:${UUID.randomUUID()};DB_CLOSE_DELAY=-1;LOCK_TIMEOUT=3000"
   private def tx[A](url: String)(run: java.sql.Connection => IO[A]): IO[A]=DatabaseSession.connection(url).use(c => DatabaseSession.transaction(c)(run(c)))
-  private def setup(url: String,id: SessionId)=DatabaseSession.connection(url).use(c => DatabaseSchema.initialize(c) *> DatabaseSession.transaction(c)(ImportCaseMessage(Paths.get("../docs/fixtures/browser_investigation_v21.json")).plan(c) *> OpenStudyMessage(owner,id).plan(c)).void)
+  private def setup(url: String,id: SessionId)=DatabaseSession.connection(url).use(c => DatabaseSchema.initialize(c) *> DatabaseSession.transaction(c)(ImportCaseMessage(Paths.get("../docs/fixtures/investigation_base.json")).plan(c) *> services.TestCases.open(owner,id,CaseId("vicarage_study"))(c)).void)
   private def view(url: String,id: SessionId)=tx(url)(GetInvestigationSnapshotMessage(owner,id).plan)
   private def read(url: String,id: SessionId,who: String,route: String): IO[Unit]=for
     before <- view(url,id)
@@ -82,7 +82,6 @@ class ArcherInquirySuite extends FunSuite:
     (for
       _ <- setup(url,id)
       initial <- view(url,id)
-      _ = assertEquals(initial.caseRevision,Revision(21))
       _ = assert(initial.people.find(_.id == PersonId("mrs_archer")).get.witness.isEmpty)
       contact <- execute(url,id,"open_archer_meeting").attempt
       fixed <- read(url,id,"archer","route_archer_gun_memory").attempt
@@ -162,29 +161,5 @@ class ArcherInquirySuite extends FunSuite:
       retried <- tx(url)(contact.plan)
       _ = assertEquals(restored,saved)
       _ = assertEquals(retried,accepted)
-    yield ()).unsafeRunSync()
-  }
-
-  test("revision 10 keeps its original cast and receipt after revision 11 is published") {
-    val url=database;val id=SessionId(UUID.randomUUID().toString)
-    (for
-      _ <- DatabaseSession.connection(url).use(DatabaseSchema.initialize)
-      _ <- tx(url) { c => for
-        latest <- ImportCaseMessage(Paths.get("../docs/fixtures/browser_investigation_v21.json")).plan(c)
-        old=latest.copy(revision=Revision(10),content=LegacyFixture.withoutArcher(latest.content))
-        _ <- CaseRevisionTable.insert(c,old)
-        _ <- StartGameMessage(owner,id,old.caseId,old.revision).plan(c)
-      yield () }
-      _ <- read(url,id,"redding","route_redding_account")
-      saved <- tx(url)(OpenStudyMessage(owner,id).plan)
-      _ = assertEquals(saved.caseRevision,Revision(10))
-      _ = assert(!saved.people.exists(_.id == PersonId("mrs_archer")))
-      _ = assert(!saved.points.flatMap(_.operations).exists(_.id == OperationId("open_archer_meeting")))
-      denied <- execute(url,id,"open_archer_meeting").attempt
-      _ = assertEquals(code(denied),Some(ErrorCode.AccessDenied))
-      receipt <- tx(url)(InvestigateMessage(owner,id,RequestId("route_redding_account"),Sequence(0),PointId("point_redding"),RouteId("route_redding_account")).plan)
-      _ = assertEquals(receipt.sequence,Sequence(1))
-      unchanged <- view(url,id)
-      _ = assertEquals(unchanged,saved)
     yield ()).unsafeRunSync()
   }

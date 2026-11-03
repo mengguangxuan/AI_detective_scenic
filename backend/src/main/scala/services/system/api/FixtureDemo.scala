@@ -26,8 +26,8 @@ object FixtureDemo extends IOApp.Simple:
       expected <- DatabaseSession.connection(url).use { connection =>
         for
           _ <- DatabaseSchema.initialize(connection)
-          revision <- DatabaseSession.transaction(connection)(ImportCaseMessage(Paths.get("../docs/fixtures/minimal_investigation.json")).plan(connection))
-          started <- DatabaseSession.transaction(connection)(StartGameMessage(user,id,revision.caseId,revision.revision).plan(connection))
+          caseRecord <- DatabaseSession.transaction(connection)(ImportCaseMessage(Paths.get("../docs/fixtures/minimal_investigation.json")).plan(connection))
+          started <- DatabaseSession.transaction(connection)(StartGameMessage(user,id,caseRecord.caseId).plan(connection))
           hidden <- DatabaseSession.transaction(connection)(InvestigateMessage(user, id, RequestId("too-early"), Sequence(0), PointId("point_letter"), RouteId("route_letter")).plan(connection)).attempt
           _ <- IO.println(s"会话 ${started.session.value}；提前阅读：${hidden.left.map(_.getMessage)}")
           opened <- DatabaseSession.transaction(connection)(ExecuteOperationMessage(user, id, RequestId("open"), Sequence(0), OperationId("open_drawer")).plan(connection))

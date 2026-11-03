@@ -10,7 +10,7 @@ import java.util.concurrent.atomic.AtomicInteger
 import munit.FunSuite
 import services.cases.api.ImportCaseMessage
 import services.cases.objects.*
-import services.cases.tables.CaseRevisionTable.CaseRevisionTable
+import services.cases.tables.CaseTable.CaseTable
 import services.games.api.*
 import services.games.objects.*
 import services.games.tables.InterviewRequestTable.InterviewRequestTable
@@ -28,7 +28,7 @@ class SemanticInterviewSuite extends FunSuite:
   private def tx[A](url: String)(f: java.sql.Connection => IO[A])=DatabaseSession.connection(url).use(c => DatabaseSession.transaction(c)(f(c)))
   private def setup(url: String,id: SessionId)=DatabaseSession.connection(url).use(c => DatabaseSchema.initialize(c) *>
     DatabaseSession.transaction(c)(ImportCaseMessage(Paths.get("../docs/fixtures/browser_investigation.json")).plan(c) *>
-      StartGameMessage(owner,id,CaseId("vicarage_study"),Revision(26)).plan(c)))
+      StartGameMessage(owner,id,CaseId("vicarage_study")).plan(c)))
   private def view(url: String,id: SessionId)=tx(url)(GetInvestigationSnapshotMessage(owner,id).plan)
   private def read(url: String,id: SessionId,route: String)=for
     before <- view(url,id)
@@ -97,7 +97,7 @@ class SemanticInterviewSuite extends FunSuite:
     val reply="我把座钟设得快十五分钟，这是我一向的习惯。"
     (for
       _ <- setup(url,fixed)
-      _ <- tx(url)(StartGameMessage(owner,free,CaseId("vicarage_study"),Revision(26)).plan)
+      _ <- tx(url)(StartGameMessage(owner,free,CaseId("vicarage_study")).plan)
       _ <- read(url,fixed,"route_habit")
       _ <- AskWitnessMessage(owner,free,RequestId("equivalent-question"),Sequence(0),WitnessId("clement"),"你是不是习惯让钟走快一点？",Set.empty).run(url,provider(reply,"clue_habit"))
       a <- view(url,fixed)
@@ -128,7 +128,7 @@ class SemanticInterviewSuite extends FunSuite:
         case _ => fail("Expected request")
       _ = assert(row.context.evidence.exists(_.id == ClueId("clue_clock")))
       _ = assert(!row.context.evidence.exists(_.id == ClueId("clue_anne_statement")))
-      content <- tx(url)(CaseRevisionTable.find(_,CaseId("vicarage_study"),Revision(26))).map(_.get.content)
+      content <- tx(url)(CaseTable.find(_,CaseId("vicarage_study"))).map(_.get.content)
       state <- tx(url)(SessionTable.find(_,id)).map(_.get)
       turns <- tx(url)(InterviewTurnTable.list(_,id))
       other=InterviewRules.context(content,state,WitnessId("mary"),"看过这份记录吗？",Set.empty,turns,Vector.empty).toOption.get
@@ -177,14 +177,14 @@ class SemanticInterviewSuite extends FunSuite:
     val aliasId=ClueId("clue_clock_equivalent")
     (for
       _ <- setup(url,initial)
-      original <- tx(url)(CaseRevisionTable.find(_,CaseId("vicarage_study"),Revision(26))).map(_.get)
+      original <- tx(url)(CaseTable.find(_,CaseId("vicarage_study"))).map(_.get)
       clock=original.content.clues.find(_.id == ClueId("clue_clock")).get
       content=original.content.copy(clues=original.content.clues :+ clock.copy(id=aliasId,title=Text("同一座钟读数的另一份记录")),
         routes=original.content.routes.map(r => if r.id == RouteId("route_clock") then r.copy(clues=Vector(aliasId)) else r))
       alternate=original.copy(caseId=CaseId("equivalent_material_case"),content=content)
-      _ <- tx(url)(CaseRevisionTable.insert(_,alternate))
-      _ <- tx(url)(RegisterPlayableCaseMessage(CaseReleaseRecord(alternate.caseId,alternate.revision,"同义材料协议测试",Vector.empty,"study","6")).plan)
-      _ <- tx(url)(StartGameMessage(owner,id,alternate.caseId,alternate.revision).plan)
+      _ <- tx(url)(CaseTable.insert(_,alternate))
+      _ <- tx(url)(RegisterPlayableCaseMessage(CaseReleaseRecord(alternate.caseId,"同义材料协议测试",Vector.empty,"study")).plan)
+      _ <- tx(url)(StartGameMessage(owner,id,alternate.caseId).plan)
       _ <- read(url,id,"route_clock")
       _ <- read(url,id,"route_habit")
       _ <- read(url,id,"route_clock_presented")

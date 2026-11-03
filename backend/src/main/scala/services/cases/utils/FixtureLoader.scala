@@ -127,7 +127,7 @@ private[cases] object FixtureLoader:
       }
     yield FixtureOperation(id, point, effects, c.get[String]("label").getOrElse(id.value),repeatable.getOrElse(false),requirement,required)
 
-  private[cases] def decode(raw: String): Either[GameError, CaseRevisionRecord] =
+  private[cases] def decode(raw: String): Either[GameError, CaseRecord] =
     (for
       json <- parse(raw)
       c = json.hcursor
@@ -138,6 +138,9 @@ private[cases] object FixtureLoader:
       world <- c.get[Json]("world")
       truth <- c.get[Json]("truth")
       scene <- c.get[Json]("scene")
+      sceneBundle <- scene.hcursor.get[String]("bundleId")
+      blueprint <- scene.hcursor.get[Option[services.cases.objects.scene.SceneBlueprint]]("blueprint")
+      _ <- check(c.keys.exists(_.toSet.subsetOf(Set("id","schemaVersion","reducerVersion","title","initialStoryTime","timeOriginLabel","calendarOrigin","assets","world","truth","publicInfo","scene","investigation","characters"))), "案件包含不支持的顶层字段", c)
       investigation <- c.get[Json]("investigation")
       _ <- empty(world.hcursor, "connections", "environments", "relationships", "scenes")
       _ <- empty(truth.hcursor, "persons", "privateContexts", "motives", "events", "incidents", "claims")
@@ -152,11 +155,11 @@ private[cases] object FixtureLoader:
       place <- c.downField("investigation").downField("initial").get[PlaceId]("spawnPlace")
       playable <- places.find(_.hcursor.get[PlaceId]("id").contains(place)).toRight(DecodingFailure("Unknown playable place",c.history))
       caseId <- c.get[CaseId]("id")
-      revision <- c.get[Revision]("revision")
       title <- c.get[String]("title")
       placeName <- playable.hcursor.get[String]("name")
       time <- c.downField("initialStoryTime").get[Long]("seconds")
       origin <- c.get[String]("timeOriginLabel")
+      calendarOrigin <- c.get[Option[java.time.OffsetDateTime]]("calendarOrigin")
       rawNodes <- scene.hcursor.get[Vector[Json]]("nodes")
       nodes <- decodeEntries(rawNodes, "scene.nodes")(node)
       locations <- scene.hcursor.get[Option[Vector[SceneLocation]]]("locations").map(_.getOrElse(Vector.empty))
@@ -210,8 +213,8 @@ private[cases] object FixtureLoader:
         case _ => true
       }, "investigation.operations.effects：效果引用了未知实体", c)
       _ <- check(operations.forall(_.openedRequirement.forall(r => entityIds.contains(r.entity))),"investigation.operations.openedRequirement：前提引用了未知实体",c)
-      content = CaseContent(place, placeName, time, origin, position, nodes, points, facts, clues, routes, operations, opened, unlocked, common, observations, stage, sceneObjects, people._2, people._3, people._1, areaMap, clock, checks, followUps, comparisons, conclusion, continuous, promptVersion, locations, claimRules)
-      record = CaseRevisionRecord(caseId, revision, 1, title, content)
+      content = CaseContent(place, placeName, time, origin, position, nodes, points, facts, clues, routes, operations, opened, unlocked, common, observations, stage, sceneObjects, people._2, people._3, people._1, areaMap, clock, checks, followUps, comparisons, conclusion, continuous, promptVersion, locations, claimRules, sceneBundle, calendarOrigin, blueprint)
+      record = CaseRecord(caseId, 1, title, content)
       _ <- validation(record).left.map(message => DecodingFailure(message,c.history))
     yield record).left.map(error => GameError(ErrorCode.InvalidValue, s"案件数据不合法：${error.getMessage}"))
 
@@ -226,17 +229,17 @@ private[cases] object FixtureLoader:
 
   private def finite(p: Vec3): Boolean = Vector(p.x, p.y, p.z).forall(_.isFinite)
 
-  // Shared by imports and stored revisions; the Boolean entry remains for existing callers.
-  private[cases] def valid(record: CaseRevisionRecord): Boolean = validation(record).isRight
+  // The same validation applies to imported and stored case content.
+  private[cases] def valid(record: CaseRecord): Boolean = validation(record).isRight
 
-  private[cases] def validation(record: CaseRevisionRecord): Either[String, Unit] =
+  private[cases] def validation(record: CaseRecord): Either[String, Unit] =
     val f = record.content
     for
       _ <- f.conclusion.traverse_ { spec =>
         val people=f.publicPersons.map(_.id).toSet
         val clues=f.clues.map(_.id).toSet
         rule(spec.candidates.nonEmpty && spec.candidates.subsetOf(people) && spec.culprits.nonEmpty && spec.culprits.subsetOf(spec.candidates) &&
-          spec.evidenceGroups.size == 5 && spec.evidenceGroups.map(_.label).distinct.size == 5 &&
+          (spec.evaluation.nonEmpty || spec.evidenceGroups.nonEmpty) && spec.evidenceGroups.map(_.label).distinct.size == spec.evidenceGroups.size &&
           spec.evidenceGroups.forall(g => g.label.trim.nonEmpty && g.requiredClues.nonEmpty && g.requiredClues.subsetOf(clues)) &&
           spec.reviewSections.size <= 10 && spec.reviewSections.map(_.title).distinct.size == spec.reviewSections.size &&
           spec.reviewSections.forall(s => s.title.trim.nonEmpty && s.title.length <= 100 && s.explanation.trim.nonEmpty && s.explanation.length <= 3000 &&
@@ -260,14 +263,14 @@ private[cases] object FixtureLoader:
       _ <- validateStatementComparisons(f)
     yield ()
 
-  private def validateHeader(record: CaseRevisionRecord): Either[String, Unit] =
+  private def validateHeader(record: CaseRecord): Either[String, Unit] =
     val f = record.content
     for
-      _ <- rule(record.revision.value > 0, "revision", "修订号必须大于零")
       _ <- rule(record.contentSchemaVersion == 1, "contentSchemaVersion", "不支持的存储版本")
       _ <- rule(record.title.trim.nonEmpty, "title", "标题不能为空")
       _ <- rule(f.placeName.trim.nonEmpty, "placeName", "地点名称不能为空")
       _ <- rule(f.timeOriginLabel.trim.nonEmpty, "timeOriginLabel", "时间原点说明不能为空")
+      _ <- rule(f.calendarOrigin.forall(origin => scala.util.Try(origin.plusSeconds(f.initialStoryTimeSeconds)).isSuccess), "calendarOrigin", "公历原点与开局剧情时刻超出支持范围")
       _ <- rule(finite(f.spawnPosition), "investigation.initial.spawnPosition", "坐标必须是有限数值")
     yield ()
 
@@ -277,12 +280,14 @@ private[cases] object FixtureLoader:
     def validChain(id: SceneNodeId, seen: Set[SceneNodeId], place: PlaceId): Boolean =
       !seen(id) && nodes.get(id).exists(n => n.place == place && n.parent.forall(validChain(_, seen + id,place)))
     for
+      _ <- rule(Set("study","woodland","authored")(f.sceneBundle), "scene.bundleId", "未登记的场景能力")
+      _ <- validateBlueprint(f)
       _ <- unique(f.sceneLocations.map(_.place), "scene.locations")
       _ <- rule(f.sceneLocations.isEmpty || f.sceneLocations.exists(l => l.place == f.place && l.stops.contains(f.spawnPosition)),"scene.locations","初始位置需要已登记的行走点")
       _ <- entries(f.sceneLocations,"scene.locations") { (l,path) =>
         rule(l.name.trim.nonEmpty && l.stops.nonEmpty && l.stops.size <= 12 && l.stops.distinct.size == l.stops.size &&
-          Set(("study","5"),("woodland","1"))((l.bundleId,l.revision)) &&
-          l.stops.forall(p => finite(p) && p.y == 0 && math.abs(p.x) <= 8 && p.z >= -10 && p.z <= 8),path,"不支持的场景版本或行走点越界")
+          Set("study","woodland","authored")(l.bundleId) &&
+          l.stops.forall(p => finite(p) && p.y == 0 && math.abs(p.x) <= 8 && p.z >= -10 && p.z <= 8),path,"不支持的场景能力或行走点越界")
       }
       _ <- unique(f.nodes.map(_.id), "scene.nodes")
       _ <- unique(f.points.map(_.id), "scene.points")
@@ -435,6 +440,15 @@ private[cases] object FixtureLoader:
       _ <- f.clock.traverse_ { c =>
         for
           _ <- rule(c.startMinutesOfDay >= 0 && c.startMinutesOfDay < 1440, "investigation.clock.startMinutesOfDay", "起始分钟必须在一天内")
+          _ <- rule(c.playableUntilSeconds.forall(end => end > f.initialStoryTimeSeconds), "investigation.clock.playableUntilSeconds", "阶段结束必须晚于开局")
+          _ <- rule(c.operationDurations.map(_.operation).distinct.size == c.operationDurations.size && c.operationDurations.forall(d => f.operations.exists(_.id == d.operation) && d.seconds >= 0 && d.seconds <= 3600), "investigation.clock.operationDurations", "行动耗时重复、引用未知操作或超出0至3600秒")
+          _ <- rule(c.targets.size <= 8 && c.targets.map(_.label).distinct.size == c.targets.size && c.targets.forall(t => t.label.trim.nonEmpty && t.label.length <= 100 && t.seconds > f.initialStoryTimeSeconds), "investigation.clock.targets", "时间目标标签或时刻不合法")
+          _ <- rule(c.startWeekday.forall(day => day >= 1 && day <= 7), "investigation.clock.startWeekday", "星期必须为1至7（周一至周日）")
+          _ <- f.calendarOrigin.traverse_ { origin =>
+            val opening=origin.plusSeconds(f.initialStoryTimeSeconds)
+            rule(opening.getHour*60+opening.getMinute == c.startMinutesOfDay && c.startWeekday.forall(_ == opening.getDayOfWeek.getValue),
+              "calendarOrigin", "公历原点与开局剧情时刻、时钟或星期不一致")
+          }
           _ <- rule(c.actionSeconds >= 60 && c.actionSeconds <= 600 && c.actionSeconds % 60 == 0, "investigation.clock.actionSeconds", "行动耗时必须为1至10分钟的整分钟")
         yield ()
       }
@@ -527,6 +541,22 @@ private[cases] object FixtureLoader:
                 f.followUps.find(_.witness == p.witness).exists(phase => f.routes.filter(_.clues.contains(r.revised)).forall(_.prerequisite.contains(phase.operation))), s"$rowPath.revised", "后续版本缺少本人连续问询或历史阶段配置")
             yield ()
           }
+        yield ()
+      }
+    yield ()
+
+  private def validateBlueprint(f: CaseContent): Either[String,Unit] =
+    def color(value: String)=value.matches("#[0-9a-fA-F]{6}")
+    def size(v: Vec3)=finite(v) && Vector(v.x,v.y,v.z).forall(n => n > 0 && n <= 20)
+    for
+      _ <- rule((f.sceneBundle == "authored") == f.sceneBlueprint.nonEmpty,"scene.blueprint","数据场景必须明确提供表现蓝图，模板场景不得混入蓝图")
+      _ <- f.sceneBlueprint.traverse_ { b =>
+        for
+          _ <- rule(b.rooms.map(_.place).distinct.size == b.rooms.size && b.rooms.map(_.place).toSet == f.sceneLocations.map(_.place).toSet,"scene.blueprint.rooms","房间须唯一且覆盖登记地点")
+          _ <- rule(f.sceneLocations.forall(_.bundleId == "authored"),"scene.locations","蓝图地点必须使用登记的数据场景能力")
+          _ <- rule(b.rooms.forall(r => r.description.trim.nonEmpty && r.description.length <= 2000 && size(r.floorSize) && color(r.color) && finite(r.cameraPosition) && finite(r.cameraTarget) && Vector(r.cameraPosition,r.cameraTarget).forall(p => Vector(p.x,p.y,p.z).forall(n => math.abs(n) <= 30))),"scene.blueprint.rooms","房间布局或相机参数不合法")
+          _ <- rule(b.visuals.size <= 100 && b.visuals.map(_.node).distinct.size == b.visuals.size && b.visuals.map(_.node).toSet == f.sceneObjects.map(_.node).toSet,"scene.blueprint.visuals","表现须唯一覆盖登记物品，不得引用隐藏的未登记节点")
+          _ <- rule(b.visuals.forall(v => f.nodes.exists(_.id == v.node) && v.parts.nonEmpty && v.parts.size <= 20 && v.parts.forall(p => size(p.size) && finite(p.offset) && Vector(p.offset.x,p.offset.y,p.offset.z).forall(n => math.abs(n) <= 10) && color(p.color))),"scene.blueprint.visuals","未知节点、过量几何或非法尺寸颜色")
         yield ()
       }
     yield ()

@@ -25,13 +25,13 @@ class MinimalFixtureSuite extends FunSuite:
   private val session = SessionId("session")
   private val fixturePath = Paths.get("../docs/fixtures/minimal_investigation.json")
 
-  private def setup(connection: Connection): IO[CaseRevisionRecord] = for
+  private def setup(connection: Connection): IO[CaseRecord] = for
     _ <- DatabaseSchema.initialize(connection)
     fixture <- DatabaseSession.transaction(connection)(ImportCaseMessage(fixturePath).plan(connection))
-    _ <- DatabaseSession.transaction(connection)(StartGameMessage(user, session, fixture.caseId, fixture.revision).plan(connection))
+    _ <- DatabaseSession.transaction(connection)(StartGameMessage(user, session, fixture.caseId).plan(connection))
   yield fixture
 
-  private def withGame[A](f: (String, Connection, CaseRevisionRecord) => IO[A]): A =
+  private def withGame[A](f: (String, Connection, CaseRecord) => IO[A]): A =
     val url = s"jdbc:h2:mem:${UUID.randomUUID()};DB_CLOSE_DELAY=-1;LOCK_TIMEOUT=10000"
     DatabaseSession.connection(url).use(c => setup(c).flatMap(fixture => f(url, c, fixture)))
       .guarantee(DatabaseSession.connection(url).use(c => IO.blocking(c.createStatement().execute("SHUTDOWN")).void)).unsafeRunSync()
@@ -187,7 +187,7 @@ class MinimalFixtureSuite extends FunSuite:
         for
           _ <- DatabaseSession.connection(restoreUrl).use { c => for
             fixture <- DatabaseSession.transaction(c)(ImportCaseMessage(fixturePath).plan(c))
-            _ <- DatabaseSession.transaction(c)(StartGameMessage(user, id, fixture.caseId, fixture.revision).plan(c))
+            _ <- DatabaseSession.transaction(c)(StartGameMessage(user, id, fixture.caseId).plan(c))
             _ <- DatabaseSession.transaction(c)(ExecuteOperationMessage(user, id, RequestId("open"), Sequence(0), OperationId("open_drawer")).plan(c))
             _ <- DatabaseSession.transaction(c)(InvestigateMessage(user, id, RequestId("read"), Sequence(1), PointId("point_letter"), RouteId("route_letter")).plan(c))
           yield () }
@@ -214,24 +214,11 @@ class MinimalFixtureSuite extends FunSuite:
     assertEquals(errorCode(outcome), ErrorCode.InvalidValue)
   }
 
-  test("case revisions are frozen for existing sessions") {
-    withGame { (_, c, original) => for
-      _ <- DatabaseSession.transaction(c)(services.cases.tables.CaseRevisionTable.CaseRevisionTable.insert(c,
-        original.copy(revision = Revision(2), title = "修订后的案件")))
-      _ <- DatabaseSession.transaction(c)(StartGameMessage(user, SessionId("new"), original.caseId, Revision(2)).plan(c))
-      old <- SessionTable.find(c, session)
-      fresh <- SessionTable.find(c, SessionId("new"))
-      duplicate <- DatabaseSession.transaction(c)(services.cases.tables.CaseRevisionTable.CaseRevisionTable.insert(c, original)).attempt
-      _ = assertEquals(old.get.caseRevision, original.revision)
-      _ = assertEquals(fresh.get.caseRevision, Revision(2))
-      _ = assert(duplicate.isLeft)
-    yield () }
-  }
 
   test("record identifiers can repeat across sessions") {
-    withGame { (_, c, revision) => for
+    withGame { (_, c, caseRecord) => for
       _ <- open(c)
-      _ <- DatabaseSession.transaction(c)(StartGameMessage(user, SessionId("second"), revision.caseId, revision.revision).plan(c))
+      _ <- DatabaseSession.transaction(c)(StartGameMessage(user, SessionId("second"), caseRecord.caseId).plan(c))
       _ <- DatabaseSession.transaction(c)(ExecuteOperationMessage(user, SessionId("second"), RequestId("open"), Sequence(0), OperationId("open_drawer")).plan(c))
       first <- SessionRecordTable.list(c, session)
       second <- SessionRecordTable.list(c, SessionId("second"))

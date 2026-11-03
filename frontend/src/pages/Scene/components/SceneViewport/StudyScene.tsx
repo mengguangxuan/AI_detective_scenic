@@ -16,13 +16,16 @@ function Box({ position, size, color }: { position: [number, number, number]; si
   return <mesh position={position} castShadow receiveShadow><boxGeometry args={size}/><meshStandardMaterial color={color} roughness={0.8}/></mesh>;
 }
 export default function StudyScene({ scene, resetVersion, onPick, sessionId, cameraMemory }: Props) {
-  const [initialDrawerZ] = useState(() => scene.drawerOpened ? 0.75 : 0.18);
-  const [initialWindowAngle] = useState(() => scene.windowOpened ? -1.15 : 0);
+  const isOpened = (node: string) => scene.objects.some(object => object.node === node && scene.openedEntities.includes(object.entity));
+  const drawerOpened = isOpened(studyNodes.drawer);
+  const windowOpened = isOpened(studyNodes.window);
+  const [initialDrawerZ] = useState(() => drawerOpened ? 0.75 : 0.18);
+  const [initialWindowAngle] = useState(() => windowOpened ? -1.15 : 0);
   const drawer = useRef<Group>(null);
   const sash = useRef<Group>(null);
   useFrame((_, delta) => {
-    if (drawer.current) drawer.current.position.z = MathUtils.damp(drawer.current.position.z, scene.drawerOpened ? 0.75 : 0.18, 10, delta);
-    if (sash.current) sash.current.rotation.y = MathUtils.damp(sash.current.rotation.y, scene.windowOpened ? -1.15 : 0, 10, delta);
+    if (drawer.current) drawer.current.position.z = MathUtils.damp(drawer.current.position.z, drawerOpened ? 0.75 : 0.18, 10, delta);
+    if (sash.current) sash.current.rotation.y = MathUtils.damp(sash.current.rotation.y, windowOpened ? -1.15 : 0, 10, delta);
   });
   const item = { objects: scene.objects, onPick };
   return <>
@@ -88,6 +91,6 @@ export default function StudyScene({ scene, resetVersion, onPick, sessionId, cam
       <Box position={[0.47, 0.02, -0.4]} size={[1, 0.04, 1.2]} color="#858063"/>
       <Box position={[0.47, 1.08, -0.65]} size={[0.9, 2.05, 0.02]} color="#536d4a"/>
     </group></SceneItem> : null}
-    <ObservationCamera resetVersion={resetVersion} sessionId={sessionId} memory={cameraMemory}/>
+    <ObservationCamera sceneKey={`${scene.bundleId}:${scene.placeId ?? ''}`} resetVersion={resetVersion} sessionId={sessionId} memory={cameraMemory}/>
   </>;
 }

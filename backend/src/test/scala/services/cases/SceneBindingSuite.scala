@@ -6,7 +6,7 @@ import munit.FunSuite
 import services.cases.utils.FixtureLoader
 
 class SceneBindingSuite extends FunSuite:
-  private def source = parser.parse(Files.readString(Paths.get("../docs/fixtures/browser_investigation_v21.json"))).toOption.get
+  private def source = parser.parse(Files.readString(Paths.get("../docs/fixtures/investigation_base.json"))).toOption.get
   private def changeObjects(change: Vector[Json] => Vector[Json]): Json =
     source.hcursor.downField("scene").downField("objects").withFocus(json =>
       Json.fromValues(change(json.asArray.get.toVector))).top.get
@@ -27,7 +27,7 @@ class SceneBindingSuite extends FunSuite:
     json.hcursor.downField("scene").downField("observations").withFocus(value =>
       Json.fromValues(change(value.asArray.get.toVector))).top.get
 
-  test("inherited observation labels compile to the same immutable revision as explicit labels") {
+  test("inherited observation labels compile to the same immutable caseRecord as explicit labels") {
     val bindings = source.hcursor.downField("scene").get[Vector[Json]]("objects").toOption.get
     val labels = bindings.map(item => item.hcursor.get[String]("node").toOption.get ->
       item.hcursor.get[String]("label").toOption.get).toMap

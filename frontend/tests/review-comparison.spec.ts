@@ -1,7 +1,7 @@
-import { existsSync, readFileSync, writeFileSync } from 'node:fs';
+import { writeFileSync } from 'node:fs';
 import { test, expect, type Page } from './support/investigation-test';
 async function snapshot(page: Page) {
-  const saved = await page.evaluate(() => JSON.parse(localStorage.getItem('detective-scenic:server-session:v6')!));
+  const saved = await page.evaluate(() => JSON.parse(localStorage.getItem('detective-scenic:investigation-session')!));
   const response = await page.request.post('/api/getinvestigationsnapshot', { data: { sessionId: saved.sessionId }, headers: { 'X-Detective-Client': 'web' } });
   expect(response.status()).toBe(200); return response.json();
 }
@@ -50,33 +50,4 @@ test('explicit reveal without an attempt freezes acquired observations, survives
   expect(errors).toEqual([]);
   await page.context().storageState({ path: '.build-cache/review-comparison-state.json' });
   writeFileSync('.build-cache/review-comparison-snapshot.json', JSON.stringify(later));
-});
-test.describe('actual revision 19 ending compatibility', () => {
-  test.use({ storageState: '.build-cache/pre-review-v19-state.json' });
-  test('real-model solved history keeps its exact original review and has no newly inserted sections', async ({ page }) => {
-    await page.goto('/conclusion');
-    const panel = page.getByRole('region', { name: '本案收尾与复盘', exact: true });
-    await expect(panel).toContainText('已记录推理成立后的结案');
-    await expect(page.getByRole('region', { name: '结案前最后一次推理', exact: true })).toBeVisible();
-    const state = await snapshot(page);
-    expect(state).toEqual(JSON.parse(readFileSync('.build-cache/pre-review-v19-snapshot.json', 'utf8')));
-    expect(state.caseRevision.value).toBe(19); expect(state.reasoning.ending).not.toHaveProperty('sections');
-    await expect(page.getByRole('region', { name: '结案时的材料对照', exact: true })).toHaveCount(0);
-  });
-});
-
-const realSnapshot = '.build-cache/completion-live-solved-snapshot.json';
-if (existsSync(realSnapshot) && JSON.parse(readFileSync(realSnapshot, 'utf8')).caseRevision.value === 20) test.describe('real TokenHub ending', () => {
-  test.use({ storageState: '.build-cache/completion-live-solved-state.json' });
-  test('the real supported reconstruction shows its original explanation and frozen source observations', async ({ page }) => {
-    await page.goto('/conclusion');
-    await expect(page.getByRole('region', { name: '结案前最后一次推理', exact: true })).toContainText('我认为安妮与雷丁共谋');
-    const comparisons = page.getByRole('region', { name: '结案时的材料对照', exact: true });
-    await expect(comparisons.getByRole('article')).toHaveCount(6);
-    const call = comparisons.getByRole('article', { name: '假电话与牧师离开', exact: true });
-    await call.getByText('牧师接到的电话 · 末次已引用', { exact: true }).click();
-    await expect(call).toContainText('病人比前几天还好些');
-    expect(await snapshot(page)).toEqual(JSON.parse(readFileSync(realSnapshot, 'utf8')));
-    await page.screenshot({ path: '.build-cache/review-comparison-desktop.png', fullPage: true });
-  });
 });

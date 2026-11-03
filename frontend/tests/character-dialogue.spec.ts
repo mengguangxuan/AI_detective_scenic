@@ -1,14 +1,14 @@
 import { test, expect, type Page } from '@playwright/test';
 import { randomUUID } from 'node:crypto';
 const headers = { 'X-Detective-Client': 'web' };
-const key = 'detective-scenic:server-session:v6';
+const key = 'detective-scenic:investigation-session';
 async function post(page: Page, name: string, data: object = {}) {
   const response = await page.request.post('/api/' + name, { headers, data });
   expect(response.status()).toBe(200); return response.json();
 }
 async function start(page: Page) {
   await post(page, 'openlocalidentity'); const sessionId = randomUUID();
-  await post(page, 'openinvestigation', { sessionId, caseId: 'vicarage_study', revision: { value: 23 } });
+  await post(page, 'openinvestigation', { sessionId, caseId: 'vicarage_study' });
   const snapshot = () => post(page, 'getinvestigationsnapshot', { sessionId });
   async function change(name: string, payload: object) {
     const state = await snapshot(); await post(page, name, { sessionId, requestId: randomUUID(), expectedSequence: state.sequence, ...payload });
@@ -78,7 +78,7 @@ test('an ambiguous follow-up can clarify and the saved question clears when answ
   await page.context().storageState({ path: '.build-cache/focus-browser-state.json' });
 });
 
-test('revision23 fixed fallback needs actual challenges and still reaches Archer without a phase button', async ({ page }) => {
+test('fixed fallback needs actual challenges and still reaches Archer without a phase button', async ({ page }) => {
   const game = await start(page);
   await game.read('route_redding_account'); await game.read('route_redding_gun');
   let state = await game.snapshot();
@@ -92,7 +92,7 @@ test('revision23 fixed fallback needs actual challenges and still reaches Archer
   for (const route of ['route_redding_revised', 'route_redding_gun_revised', 'route_anne_revised', 'route_police_revised_review']) await game.read(route);
   await game.change('executeoperation', { operation: 'open_archer_meeting' });
   await game.read('route_archer_gun_memory'); await game.read('route_archer_household'); await game.read('route_police_archer_review');
-  state = await game.snapshot(); expect(state.followUps).toEqual([]); expect(state.caseRevision.value).toBe(23);
+  state = await game.snapshot(); expect(state.followUps).toEqual([]);
   expect(state.clues.some((c: { id: string }) => c.id === 'clue_redding_gun')).toBe(true);
   expect(state.clues.some((c: { id: string }) => c.id === 'clue_police_archer_review')).toBe(true);
   await page.goto('/interviews'); await page.getByRole('button', { name: '与阿彻太太交谈', exact: true }).click();

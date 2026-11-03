@@ -21,9 +21,9 @@ export default function InterviewsPage({ ready, actions }: Props) {
     {unavailable.length ? <section aria-label="暂不可当面交谈的人物" className="rounded-xl border border-white/15 bg-[#182421] p-5">
       <h3 className="font-medium">已认识，当前无法当面交谈</h3>
       <p className="mt-2 text-sm leading-7 text-stone-300">{unavailable.map(w => w.name).join('、')}。你当前位于{ready.snapshot.scene.placeName}，需先前往会面地点再问询。</p>
-      <InvestigationLink href="/map" className="mt-3 inline-block text-sm text-amber-200 underline underline-offset-4">查看地点与可行走路线</InvestigationLink>
+      {ready.snapshot.areaMap || (ready.snapshot.scene.travel?.length ?? 0) > 0 ? <InvestigationLink href="/map" className="mt-3 inline-block text-sm text-amber-200 underline underline-offset-4">查看地点与可行走路线</InvestigationLink> : null}
     </section> : null}
-    {!points.length && !unavailable.length ? <p className="text-sm leading-7 text-stone-300">当前没有可当面问询的对象。可前往警方交流查看会面安排，或通过地图前往其他地点。</p> : null}
+    {!points.length && !unavailable.length ? <p className="text-sm leading-7 text-stone-300">当前没有可当面问询的对象。请查看当前调查中可用的入口。</p> : null}
     {followUp && selected ? <FollowUpPanel followUp={followUp} disabled={ready.mutation.kind !== 'idle'} operationLabel={selected.operations.find(item => item.id === followUp.operation)?.label ?? '开始补充问询'} lastReply={actions.lastReply?.point === selected.id ? actions.lastReply.text : undefined}
       onBegin={operation => actions.execute(operation, selected.id)} onQuestion={route => actions.investigate(route, selected.id)}/> : null}
     {witness && ready.snapshot.continuousWitnesses.includes(witness.id) ? <p className="text-sm leading-7 text-stone-300">可以直接追问或出示材料。不同时间的说法会分别记录，在线索整理中对照。</p> : null}
