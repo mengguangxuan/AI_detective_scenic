@@ -13,7 +13,7 @@ import java.util.UUID
 import java.util.concurrent.{ConcurrentLinkedQueue,Executors}
 import munit.FunSuite
 import services.models.api.ChatCompletionClient
-import services.models.objects.{ChatCompletionExchange,ChatCompletionInput,ModelApiSettings}
+import services.models.objects.{ChatCompletionImage,ChatCompletionExchange,ChatCompletionInput,ModelApiSettings}
 import services.system.api.*
 import services.accounts.tables.LocalIdentityTable.LocalIdentityTableInitializer
 import services.cases.api.ImportCaseMessage
@@ -95,6 +95,38 @@ class ModelHttpSuite extends FunSuite:
     yield () }.unsafeRunSync()
   }
 
+  test("screenshots use inline image content and preserve text and conversation history") {
+    val requests=new ConcurrentLinkedQueue[(Boolean,Json)]()
+    val png="iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+aOuoAAAAASUVORK5CYII="
+    val input=ChatCompletionInput("review as json","inspect this room",Vector(ChatCompletionExchange("earlier","answer")),Vector(ChatCompletionImage("image/png",png)))
+    provider(200,envelope("{}"),requests).use { port => for
+      client <- ChatCompletionClient.fromSettings(settings(port))
+      _ <- client.complete(input)
+      messages=requests.peek()._2.hcursor.get[Vector[Json]]("messages").toOption.get
+      _ = assertEquals(messages.map(_.hcursor.get[String]("role").toOption.get),Vector("system","user","assistant","user"))
+      content=messages.last.hcursor.get[Vector[Json]]("content").toOption.get
+      _ = assertEquals(content.head.hcursor.get[String]("text"),Right(input.user))
+      _ = assertEquals(content(1).hcursor.downField("image_url").get[String]("url"),Right("data:image/png;base64,"+png))
+      _ = assertEquals(input.asJson.as[ChatCompletionInput],Right(input))
+      _ = assert(requests.peek()._1)
+    yield () }.unsafeRunSync()
+  }
+
+  test("invalid and oversized screenshots fail inside IO before a provider request") {
+    val requests=new ConcurrentLinkedQueue[(Boolean,Json)]()
+    val png=ChatCompletionImage("image/png","iVBORw0KGgo=")
+    val invalid=Vector(Vector(png.copy(mediaType="image/svg+xml")),Vector(png.copy(base64Data="https://private.invalid/SECRET")),
+      Vector(png.copy(base64Data="AAAA")),Vector(png.copy(base64Data="A"*(8*1024*1024+1))),Vector.fill(7)(png))
+    provider(200,envelope("{}"),requests).use { port => for
+      client <- ChatCompletionClient.fromSettings(settings(port))
+      _ <- invalid.foldLeft(IO.unit)((previous,images) => previous *> client.complete(ChatCompletionInput("json","room",images=images)).attempt.map { result =>
+        assert(result.isLeft)
+        assertEquals(result.left.toOption.get.asInstanceOf[services.models.objects.ModelRequestFailure].code,services.models.objects.ModelFailureCode.InvalidInput)
+      })
+      _ = assertEquals(requests.size(),0)
+    yield () }.unsafeRunSync()
+  }
+
   test("provider errors, truncated output and timeouts fail without leaking headers or body") {
     val cases=Vector((401,"DO_NOT_LEAK_PROVIDER_BODY",0L),(200,envelope("partial","length"),0L),(200,envelope("{}"),3000L))
     cases.foreach { case (status,body,delay) =>
@@ -153,4 +185,52 @@ class ModelHttpSuite extends FunSuite:
         _ = assertEquals(requests.size(),1)
       yield () }
     yield () }.unsafeRunSync()
+  }
+
+  test("scene generation uses the central model client with a bounded larger response and usage metadata") {
+    val requests=new ConcurrentLinkedQueue[(Boolean,Json)]()
+    val code="a"*18000
+    val result=parser.parse(envelope(code)).toOption.get.deepMerge(Json.obj("usage"->Json.obj("total_tokens"->Json.fromLong(4321))))
+    provider(200,result.noSpaces,requests).use { port => for
+      client <- ChatCompletionClient.fromSettings(settings(port))
+      scene <- client.completeScene(ChatCompletionInput("json","source"),5500)
+      _ = assertEquals(scene.content,code)
+      _ = assertEquals(scene.totalTokens,4321L)
+      _ = assertEquals(requests.peek()._2.hcursor.get[Int]("max_tokens"),Right(5500))
+      invalid <- client.completeScene(ChatCompletionInput("json","source"),6001).attempt
+      _ = assert(invalid.isLeft)
+      _ = assertEquals(requests.size(),1)
+    yield () }.unsafeRunSync()
+  }
+
+  test("scene failures retain bounded completion diagnostics and never forward provider error bodies") {
+    import services.models.objects.{ModelRequestFailure,ModelFailureCode}
+    val truncated=parser.parse(envelope("partial scene code","length")).toOption.get.deepMerge(Json.obj("usage"->Json.obj("total_tokens"->Json.fromLong(77))))
+    val cases=Vector(
+      (200,truncated.noSpaces,ModelFailureCode.IncompleteOutput),
+      (429,"DO_NOT_LEAK_PROVIDER_BODY dummy-test-key",ModelFailureCode.ProviderHttpError),
+      (200,"DO_NOT_LEAK_INVALID_JSON",ModelFailureCode.InvalidEnvelope),
+      (200,envelope(""),ModelFailureCode.EmptyOutput),
+      (200,envelope("x"*90001),ModelFailureCode.ContentTooLarge),
+      (200,"x"*262145,ModelFailureCode.ResponseTooLarge)
+    )
+    cases.foreach { case (status,body,code) =>
+      val requests=new ConcurrentLinkedQueue[(Boolean,Json)]()
+      provider(status,body,requests).use { port => for
+        client <- ChatCompletionClient.fromSettings(settings(port))
+        result <- client.completeScene(ChatCompletionInput("json","original fields"),4500).attempt
+        failure=result.left.toOption.get.asInstanceOf[ModelRequestFailure]
+        _ = assertEquals(failure.code,code)
+        _ = assertEquals(failure.providerStatus,Some(status))
+        _ = assertEquals(failure.maxTokens,Some(4500))
+        _ = assertEquals(requests.size(),1)
+        _ = assert(!failure.asJson.noSpaces.contains("DO_NOT_LEAK"))
+        _ = assert(!failure.asJson.noSpaces.contains("dummy-test-key"))
+        _ = if code==ModelFailureCode.IncompleteOutput then
+          assertEquals(failure.finishReason,Some("length"))
+          assertEquals(failure.partialContent,Some("partial scene code"))
+          assertEquals(failure.totalTokens,77L)
+        _ = assert(failure.partialContent.forall(_.length<=90000))
+      yield () }.unsafeRunSync()
+    }
   }

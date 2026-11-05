@@ -2,13 +2,14 @@ package services.models.api
 
 import cats.effect.IO
 import java.nio.file.Path
-import services.models.objects.{ChatCompletionInput,ModelApiSettings}
+import services.models.objects.{ChatCompletionInput,ModelApiSettings,SceneCompletionResult}
 import services.models.utils.{OpenAICompatibleChatClient, ModelSettingsLoader}
 
 // Outbound transport contract (not a browser API). It deliberately has no JDBC argument.
 // Implement this interface to replace the provider or inject a deterministic test service.
 trait ChatCompletionClient:
   def complete(input: ChatCompletionInput): IO[String]
+  def completeScene(input: ChatCompletionInput,maxTokens: Int): IO[SceneCompletionResult] = complete(input).map(SceneCompletionResult(_,0))
 
 object ChatCompletionClient:
   val unconfigured: ChatCompletionClient = new ChatCompletionClient:

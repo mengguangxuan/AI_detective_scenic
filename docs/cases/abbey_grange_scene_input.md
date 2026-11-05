@@ -1,0 +1,413 @@
+# 《格兰其庄园》餐厅：前端场景制作输入
+
+这次选用柯南·道尔的 **The Adventure of the Abbey Grange**，本文件以《格兰其庄园》称呼。本文件只准备一个房间的制作资料，不是完整可玩案件上传包。
+
+本案例用于另一房间的生成验收，不取代《斑点带子案》作为项目的独立案件验收案。原文对该餐厅的建筑、陈设、物件和空间关系有较具体的描写，适合检查模型能否从原始字段完成设计、组装与审核。
+
+## 1. 前端怎么填
+
+打开[场景制作页面](http://127.0.0.1:5173/create-scene)，新建草稿：
+
+| 页面字段 | 填写内容 |
+| --- | --- |
+| 制作名称 | 格兰其庄园餐厅 · 遗体移走后的复查 |
+| 目标场景 | `abbey_grange_dining_room`（粘贴下方JSON后，可从地点列表选择） |
+| 作者原始字段 | 点“查看原始JSON”，将第3节代码块中的整个JSON对象粘贴进去 |
+
+然后点“保存草稿”并检查资料；准备好后再点“开始模型制作”。模型提出布局后先由你确认，再继续生成与审核。
+
+当前“导入作者JSON”只接受JSON文件，不能直接导入本Markdown。你可以粘贴第3节，或只把该代码块保存为`.json`后导入。不要把制作名称、目标场景和作者字段再包成API请求，也不要粘贴Markdown标题或代码围栏。
+
+页面的六个基础字段已经包含在JSON顶层，其余扩展字段会原样保存并交给模型。**不要只复制`sourceText`**：原著事实、物件清单和本次制作边界在其他字段中。
+
+## 2. 来源与本次选择
+
+- 原著依据：[英文全文及餐厅现场描写](https://www.arthur-conan-doyle.com/wiki/The_Adventure_of_the_Abbey_Grange)、[英文原著PDF](https://sherlock-holm.es/stories/pdf/letter/2-sided/abbe.pdf)、[Project Gutenberg《归来记》](https://www.gutenberg.org/files/108/108-h/108-h.htm#chap12)。JSON内每条事实记录来源ID和可搜索的段落位置。
+- 时点采用遗体已经移走的复查阶段，依据原著复查段落；人物、遗体和血迹的具体渲染按本次输入范围处理。这是场景样例，不提供破案结论。
+- 中文事实是按原文整理的摘要，英文短摘录才是直接引文。输入明确标记为“按用户要求准备的作者字段样例”，不冒充用户此前填写的原始表单。
+- 原著没有给出房间数值尺寸和完整平面图。本文件保留缺省，让模型提出制作选择并由你确认，不预先手写尺寸、坐标、部件代码或组装器。
+- `sceneObjects`、`sourceFacts`等是本次开放作者字段，供模型理解；它们不是已经接通玩家操作的后端协议。稳定ID仅用于场景登记和后续关联，不能自动授予线索。
+
+## 3. 可直接粘贴的作者字段JSON
+
+```json
+{
+  "sceneName": "格兰其庄园（Abbey Grange）的餐厅",
+  "era": "英国维多利亚时代后期，肯特郡Chislehurst附近的乡间庄园，冬季。此处不指定原文之外的精确日期。",
+  "storyTime": "同日白天，福尔摩斯重返餐厅进行独立复查；遗体已经移走，其他现场陈设保留。不是昨夜案发过程，也不安排新的案件发生。精确钟点未设定。",
+  "sourceText": "这是按英文原著整理、供用户审阅采用的中文场景字段样例，不是用户既有表单，也不是原文逐字翻译。sourceFacts列明有原著依据的场景事实，sourceExcerpts保留短原文供核对。只构建目标餐厅；本输入不提供完整案件真相，不把人物对案发经过的说法变成确定事实。",
+  "requirements": "依据sourceFacts保持物件数量、材质和相对关系；所有精确尺寸、坐标、正常餐椅数量与未指定的位置，均由模型提出并标为production_choice，先交用户确认布局。先保证餐厅完整可辨，再表现现场细节。关键物件使用sceneObjects的稳定ID。壁炉、餐桌主位与特殊扶手椅的关系须同时成立；窗帘不能遮死通向草坪的出入口。铃绳分为高处仍连接拉线的短段和留在椅子上的长段，不能做成从天花板一直连到椅子的完整绳，也不能悬空。餐具柜上的瓶、塞、三杯以及抽屉内物件要有实际承托。保留观察柜面、查看抽屉内部及接近壁炉和椅子的通路。具体造型、部件划分、组装、视角和修正均由生成模型完成。",
+  "atmosphere": "制作期望：富裕但压抑的乡间庄园餐厅，冬日日光偏冷，深色木材、织物和少量金属器物呈现有维护的旧宅质感。紧张感来自沉静的空间、异常绳结、弯曲金属和用过的酒具；不布置成废弃鬼屋，不靠全局压暗制造悬疑。整体视角应看清房间，近景应看清待核对物件。不要添加现代警戒带、荧光标记或推理结论文字。",
+  "inputProvenance": {
+    "origin": "assistant_prepared_source_based_author_sample_at_user_request",
+    "preparedAt": "2026-11-04",
+    "workTitle": "The Adventure of the Abbey Grange",
+    "author": "Arthur Conan Doyle",
+    "scope": "scene_authoring_only",
+    "note": "用户要求准备另一案件的制作字段。助手只摘取并整理原著事实及明确的验收范围，不预先设计具体房间布局或填写猜测尺寸；本样例未经真实模型生成或视觉验收。"
+  },
+  "places": [
+    {
+      "id": "abbey_grange_dining_room",
+      "name": "格兰其庄园餐厅"
+    }
+  ],
+  "sourceExcerpts": [
+    {
+      "id": "excerpt_room",
+      "sourceId": "source_gutenberg",
+      "text": "It was a very large and high chamber, with carved oak ceiling, oaken panelling",
+      "note": "原文短摘录；其他中文事实是整理摘要，不冒充直接引文。"
+    }
+  ],
+  "sourceFacts": [
+    {
+      "id": "fact_room_shell",
+      "sourceId": "source_doyle",
+      "locator": "以It was a very large and high chamber开头的现场描写段",
+      "text": "餐厅宽大且高，雕刻橡木天花板、橡木墙板，墙上有鹿头与古兵器陈列。"
+    },
+    {
+      "id": "fact_openings",
+      "sourceId": "source_doyle",
+      "locator": "同一现场描写段；前文女主人提到窗外草坪",
+      "text": "从室内入口望向房间深处，远端是一扇高大的法式落地门窗，通往草坪；右侧有三扇较小的窗。原文还提到厚窗帘。"
+    },
+    {
+      "id": "fact_fireplace",
+      "sourceId": "source_doyle",
+      "locator": "On the left was a large, deep fireplace及相邻句",
+      "text": "左侧是大而深的壁炉，上方有厚重、向外突出的橡木壁炉台；壁炉旁有带扶手和下部横档的重橡木椅。"
+    },
+    {
+      "id": "fact_chair_table",
+      "sourceId": "source_doyle",
+      "locator": "the oaken chair which stands at the head of the dining-room table",
+      "text": "那把特殊橡木椅是餐桌主位椅；不能忽略它同时靠近壁炉这一关系。"
+    },
+    {
+      "id": "fact_chair_cord",
+      "sourceId": "source_doyle",
+      "locator": "In and out through the open woodwork及随后解释",
+      "text": "猩红绳索穿过椅子开放木架，两边固定在下部横档。人已被解开，原先固定的绳结仍留在椅子上。"
+    },
+    {
+      "id": "fact_hearthrug_poker",
+      "sourceId": "source_doyle",
+      "locator": "tiger-skin hearthrug；heavy poker, bent into a curve",
+      "text": "壁炉前有虎皮炉毯；现场有被打弯的重拨火棍。遗体移走后仍保留其他物件的位置关系，不把拨火棍归回工具架。"
+    },
+    {
+      "id": "fact_wine",
+      "sourceId": "source_pdf",
+      "locator": "正文餐具柜检查段，The three glasses were grouped together",
+      "text": "餐具柜上聚着三个用过的酒杯，都有酒迹，仅一杯有酒渣。旁有约剩三分之二酒的酒瓶和一枚长而染色的瓶塞；瓶身有积尘。"
+    },
+    {
+      "id": "fact_drawer",
+      "sourceId": "source_pdf",
+      "locator": "Hopkins pointed to a half-opened drawer",
+      "text": "一只抽屉半开，里面有餐用织物和一把大型拔塞钻。原文未明确给出抽屉所属家具及精确位置，不能把推定说成原著事实。"
+    },
+    {
+      "id": "fact_candles",
+      "sourceId": "source_pdf",
+      "locator": "these candles on the mantelpiece have been lighted",
+      "text": "壁炉台上有使用过的蜡烛；不能由曾点燃直接推定复查时仍燃烧。"
+    },
+    {
+      "id": "fact_revisit",
+      "sourceId": "source_gutenberg",
+      "locator": "Holmes重返庄园、独占餐厅复查的段落",
+      "text": "复查时遗体已移走，其他现场保持原样；福尔摩斯从内侧锁上室内门进行检查。"
+    },
+    {
+      "id": "fact_upper_cord",
+      "sourceId": "source_gutenberg",
+      "locator": "Far above his head hung the few inches of red cord及随后解释",
+      "text": "高处还有一小段红绳连接金属拉线。壁炉台附近墙上有木托架，可供攀近绳头；高处残端整齐切断，椅上长段的自由端被弄散。"
+    },
+    {
+      "id": "fact_inspection_details",
+      "sourceId": "source_gutenberg",
+      "locator": "木托架、椅座与绳头的近距离复查",
+      "text": "木托架积尘中有受压痕迹，椅座有血迹；这些细节不作为本轮必须几何渲染的要求，也不能因未显示就断言不存在。"
+    }
+  ],
+  "sceneObjects": [
+    {
+      "id": "room_shell",
+      "name": "餐厅围护结构与木作",
+      "sourceFactIds": [
+        "fact_room_shell"
+      ],
+      "purpose": "建筑与材质"
+    },
+    {
+      "id": "interior_door",
+      "name": "室内入口门",
+      "sourceFactIds": [
+        "fact_openings",
+        "fact_revisit"
+      ],
+      "purpose": "房间出入口"
+    },
+    {
+      "id": "french_window",
+      "name": "通向草坪的法式落地门窗",
+      "sourceFactIds": [
+        "fact_openings"
+      ],
+      "purpose": "空间连接"
+    },
+    {
+      "id": "small_window_1",
+      "name": "右侧小窗一",
+      "sourceFactIds": [
+        "fact_openings"
+      ],
+      "purpose": "采光"
+    },
+    {
+      "id": "small_window_2",
+      "name": "右侧小窗二",
+      "sourceFactIds": [
+        "fact_openings"
+      ],
+      "purpose": "采光"
+    },
+    {
+      "id": "small_window_3",
+      "name": "右侧小窗三",
+      "sourceFactIds": [
+        "fact_openings"
+      ],
+      "purpose": "采光"
+    },
+    {
+      "id": "heavy_curtains",
+      "name": "厚窗帘",
+      "sourceFactIds": [
+        "fact_openings"
+      ],
+      "purpose": "可识别的软装与出入口净空"
+    },
+    {
+      "id": "wall_display",
+      "name": "鹿头与古兵器陈列",
+      "sourceFactIds": [
+        "fact_room_shell"
+      ],
+      "purpose": "原著陈设；数量未指定"
+    },
+    {
+      "id": "fireplace",
+      "name": "大而深的壁炉",
+      "sourceFactIds": [
+        "fact_fireplace"
+      ],
+      "purpose": "建筑与空间关系"
+    },
+    {
+      "id": "oak_mantelpiece",
+      "name": "厚重橡木壁炉台",
+      "sourceFactIds": [
+        "fact_fireplace"
+      ],
+      "purpose": "承托与空间关系"
+    },
+    {
+      "id": "dining_table",
+      "name": "餐桌",
+      "sourceFactIds": [
+        "fact_chair_table"
+      ],
+      "purpose": "餐厅基本家具"
+    },
+    {
+      "id": "head_chair",
+      "name": "主位重橡木扶手椅",
+      "sourceFactIds": [
+        "fact_fireplace",
+        "fact_chair_table",
+        "fact_chair_cord"
+      ],
+      "purpose": "关键物件；有下部横档和开放木架"
+    },
+    {
+      "id": "chair_rope",
+      "name": "留在椅上的长红绳与绳结",
+      "sourceFactIds": [
+        "fact_chair_cord",
+        "fact_upper_cord"
+      ],
+      "purpose": "关键附着关系"
+    },
+    {
+      "id": "upper_rope_stub",
+      "name": "高处短红绳与金属拉线连接处",
+      "sourceFactIds": [
+        "fact_upper_cord"
+      ],
+      "purpose": "与椅上绳分离的残段"
+    },
+    {
+      "id": "wall_bracket",
+      "name": "壁炉台附近的墙面木托架",
+      "sourceFactIds": [
+        "fact_upper_cord"
+      ],
+      "purpose": "攀近高处绳头的空间关系"
+    },
+    {
+      "id": "hearthrug",
+      "name": "虎皮炉毯",
+      "sourceFactIds": [
+        "fact_hearthrug_poker"
+      ],
+      "purpose": "壁炉前地面物件"
+    },
+    {
+      "id": "bent_poker",
+      "name": "弯曲的重拨火棍",
+      "sourceFactIds": [
+        "fact_hearthrug_poker"
+      ],
+      "purpose": "现场异常物件"
+    },
+    {
+      "id": "sideboard",
+      "name": "餐具柜",
+      "sourceFactIds": [
+        "fact_wine"
+      ],
+      "purpose": "承托酒具的家具"
+    },
+    {
+      "id": "wine_bottle",
+      "name": "余酒酒瓶",
+      "sourceFactIds": [
+        "fact_wine"
+      ],
+      "purpose": "柜面物件"
+    },
+    {
+      "id": "wine_glass_1",
+      "name": "有酒迹的酒杯一",
+      "sourceFactIds": [
+        "fact_wine"
+      ],
+      "purpose": "柜面物件"
+    },
+    {
+      "id": "wine_glass_2",
+      "name": "有酒迹的酒杯二",
+      "sourceFactIds": [
+        "fact_wine"
+      ],
+      "purpose": "柜面物件"
+    },
+    {
+      "id": "wine_glass_3",
+      "name": "有酒渣的酒杯三",
+      "sourceFactIds": [
+        "fact_wine"
+      ],
+      "purpose": "三个杯中唯一的沉渣杯；编号只是制作标识"
+    },
+    {
+      "id": "wine_cork",
+      "name": "长瓶塞",
+      "sourceFactIds": [
+        "fact_wine"
+      ],
+      "purpose": "瓶旁小物件"
+    },
+    {
+      "id": "linen_drawer",
+      "name": "半开的抽屉",
+      "sourceFactIds": [
+        "fact_drawer"
+      ],
+      "purpose": "开合检查；所属家具由模型作制作决定"
+    },
+    {
+      "id": "table_linen",
+      "name": "抽屉内餐用织物",
+      "sourceFactIds": [
+        "fact_drawer"
+      ],
+      "purpose": "抽屉内容物"
+    },
+    {
+      "id": "large_corkscrew",
+      "name": "抽屉内大型拔塞钻",
+      "sourceFactIds": [
+        "fact_drawer"
+      ],
+      "purpose": "抽屉内容物"
+    },
+    {
+      "id": "used_candles",
+      "name": "壁炉台上的使用过的蜡烛",
+      "sourceFactIds": [
+        "fact_candles"
+      ],
+      "purpose": "小型陈设；不指定数量"
+    }
+  ],
+  "initialPresentation": {
+    "characters": "不制作人物或遗体模型；空场景预览是本次制作范围，不表示所有人物在案件世界中均不在场。",
+    "interiorDoor": "初态关闭；复查时内锁状态作为背景，不要求本阶段实现玩家解锁。",
+    "frenchWindow": "本次预览初态关闭，保留开启的表现能力；这是制作选择，不声称原著明确指定复查瞬间开合状态。",
+    "curtains": "本次预览留出能识别门窗和出入口的开口；开合程度属于制作选择。",
+    "drawer": "按原文半开，能在近景看到内容物；可登记平移开合以便预览检查。",
+    "fireAndCandles": "本次不要求火焰、烟雾或动态粒子；保留炉膛与使用过的蜡烛，不把效果省略解释成原著未生火。",
+    "bloodAndInjury": "遵守当前项目遗体、血迹渲染暂缓的范围；不制作伤口、血液或血迹几何／贴图。对应事实保留，不把未显示作为否定证据。",
+    "adjacentSpace": "法式落地门窗外只需表达草坪相接的局部环境，室内门外只需表达相邻空间；本次不生成整栋庄园、厨房或花园地图。"
+  },
+  "modelDecisionsNeeded": [
+    "房间长宽高、建筑轴向、门窗尺寸、具体门扇结构、壁炉与家具尺寸；原著没有给出的数字由模型决定并明确来源为制作选择。",
+    "在已知相对关系内安排餐具柜、餐桌、其他正常餐椅和通路，不由输入固定坐标。",
+    "抽屉所属家具可合理选择，但必须说明这是模型制作推定；不能据此新增调查结论。",
+    "地板铺设、织物颜色、未指定的装饰细节、附加普通餐椅数量、陈列数量和具体古兵器类别，由模型决定，不添加新线索。",
+    "整体和近景照明、材质、视角、必要的剖切展示，以及部件拆分与组装器实现。"
+  ],
+  "acceptanceFocus": [
+    "整体像一间完整的庄园餐厅，能够同时理解入口、远端落地门窗、右侧三窗与左侧壁炉的关系。",
+    "主位椅既属于餐桌，又处于壁炉旁；正常餐椅与通道具备使用空间。",
+    "两段铃绳分别有可见依托，绳结穿绕椅架；不能漂浮或错误接回完整铃绳。",
+    "三个杯、瓶、塞和抽屉内容物的数量与摆放可核对；没有新增盗贼、证物标签或结论提示。",
+    "抽屉打开时不穿透柜体或其他家具；模型预览动作不等于玩家已获准搜查或取得线索。",
+    "至少提供整体、门窗／窗帘、壁炉／椅绳及柜面／抽屉的实际渲染检查视角；关键细节不能仅靠文字自评。"
+  ],
+  "sources": [
+    {
+      "id": "source_doyle",
+      "title": "The Arthur Conan Doyle Encyclopedia：原著全文",
+      "url": "https://www.arthur-conan-doyle.com/wiki/The_Adventure_of_the_Abbey_Grange",
+      "use": "餐厅建筑、家具与现场关系；采用正文，不依据页首剧情简介生成结论。"
+    },
+    {
+      "id": "source_pdf",
+      "title": "Sherlock-Holm.es：英文原著PDF",
+      "url": "https://sherlock-holm.es/stories/pdf/letter/2-sided/abbe.pdf",
+      "use": "餐具柜酒具、半开抽屉和壁炉台蜡烛的观察段落。"
+    },
+    {
+      "id": "source_gutenberg",
+      "title": "Project Gutenberg：《归来记》第十二篇",
+      "url": "https://www.gutenberg.org/files/108/108-h/108-h.htm#chap12",
+      "use": "短原文摘录、遗体移走后的复查及高处铃绳／木托架的观察段落。"
+    }
+  ]
+}
+```
+
+## 4. 第一次测试重点
+
+先观察模型是否读到了完整JSON、是否正确区分原著事实和制作选择，以及布局是否同时满足输入中的相对关系。不要因为JSON保存成功就认为模型已通过验收。
+
+生成后的重点见`acceptanceFocus`。如果模型认为事实不足，应指明具体缺口；仅缺尺寸、未指定装饰或普通家具细节时，应作为制作选择提出，不应凭记忆补写案情。未经实际截图的视觉审核与独立整体复核，不把候选当成已通过成品。
+
+本文件仅完成资料准备，尚未提交模型，没有产生场景生成或视觉调用。

@@ -1,0 +1,12 @@
+import assert from 'node:assert/strict';
+import {limits,resumeState} from './policy.mjs';
+const issues=[{file:'assembler',error:'motion initial pose mismatch'}];
+assert.deepEqual(resumeState({stage:'needs_attention',round:3,issues},true),{run:true,startRound:3,issues});
+assert.equal(resumeState({stage:'needs_attention',round:10,issues},true).run,false);
+assert.equal(resumeState({stage:'passed',round:4},true).run,false);
+assert.throws(()=>resumeState({stage:'failed',round:3},false),/refusing to regenerate/);
+assert.equal(limits.maxRounds,10);
+assert(limits.maxCalls>32);
+assert.equal(Object.hasOwn(limits,'maxTokens'),false);
+assert.equal(resumeState({stage:'failed',round:7,tokens:617201,issues},true).run,true);
+console.log('PASS: resume at fourth review without regenerating; tenth-round stop; accepted scenes stay stopped; missing files never trigger regeneration.');

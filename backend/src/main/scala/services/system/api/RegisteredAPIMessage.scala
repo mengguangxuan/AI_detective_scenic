@@ -11,7 +11,7 @@ import services.system.objects.apiTypes.HttpReply
 
 // Every route declares its transaction boundary. Long-running workflows own multiple short transactions.
 final case class RegisteredAPIMessage(name: String,fields: Set[String],
-  run: (Json,Option[String],String) => IO[HttpReply],longTextFields: Set[String] = Set.empty)
+  run: (Json,Option[String],String) => IO[HttpReply],longTextFields: Set[String] = Set.empty,maxRequestBytes: Int = 8192)
 object RegisteredAPIMessage:
   def nameOf[M: ClassTag]: String =
     summon[ClassTag[M]].runtimeClass.getSimpleName.stripSuffix("Message").toLowerCase(java.util.Locale.ROOT)

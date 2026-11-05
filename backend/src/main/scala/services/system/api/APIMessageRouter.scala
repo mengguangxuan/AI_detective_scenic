@@ -29,8 +29,9 @@ object APIMessageRouter:
             routes.getOrElse(path.stripPrefix("/api/"),throw GameError(ErrorCode.InvalidValue,"未注册的 API。"))
           }
           payload <- IO.blocking {
-            val bytes = exchange.getRequestBody.readNBytes(8193)
-            if bytes.length > 8192 then throw GameError(ErrorCode.InvalidValue,"请求内容过长。")
+            val limit=math.min(route.maxRequestBytes,200000)
+            val bytes = exchange.getRequestBody.readNBytes(limit+1)
+            if bytes.length > limit then throw GameError(ErrorCode.InvalidValue,"请求内容过长。")
             parser.parse(new String(bytes,StandardCharsets.UTF_8)).fold(_ => throw GameError(ErrorCode.InvalidValue,"请求不是合法 JSON。"),identity)
           }
           _ <- IO.blocking(validate(payload,route.fields,route.longTextFields))

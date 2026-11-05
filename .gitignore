@@ -26,3 +26,5 @@ frontend/test-results/
 frontend/playwright-report/
 # Windows junctions appear as symlinks to WSL Git
 frontend/node_modules
+detective_scenic_source.zip
+docs/handoff/

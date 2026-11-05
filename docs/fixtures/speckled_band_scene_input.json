@@ -1,0 +1,34 @@
+{
+  "inputOrigin": "author_sample_with_direct_original_excerpts",
+  "sourceDocument": "docs/fixtures/speckled_band_author_draft.json",
+  "targetPlaceId": "middle_room",
+  "fieldSelection": [
+    "metadata",
+    "places",
+    "entities",
+    "sceneRequirements",
+    "opening"
+  ],
+  "sourceExcerpts": [
+    {
+      "sourceUrl": "https://en.wikisource.org/wiki/The_Adventures_of_Sherlock_Holmes_(1892,_US)/The_Adventure_of_the_Speckled_Band",
+      "origin": "public_domain_original_text",
+      "scope": "middle_room",
+      "text": "It was a homely little room, with a low ceiling and a gaping fireplace, after the fashion of old country-houses. A brown chest of drawers stood in one corner, a narrow white-counterpaned bed in another, and a dressing-table on the left-hand side of the window. These articles, with two small wicker-work chairs, made up all the furniture in the room, save for a square of Wilton carpet in the centre. The boards round and the panelling of the walls were of brown, worm-eaten oak, so old and discolored that it may have dated from the original building of the house."
+    },
+    {
+      "sourceUrl": "https://en.wikisource.org/wiki/The_Adventures_of_Sherlock_Holmes_(1892,_US)/The_Adventure_of_the_Speckled_Band",
+      "origin": "public_domain_original_text",
+      "scope": "middle_room",
+      "text": "a thick bell-rope which hung down beside the bed, the tassel actually lying upon the pillow."
+    },
+    {
+      "sourceUrl": "https://en.wikisource.org/wiki/The_Adventures_of_Sherlock_Holmes_(1892,_US)/The_Adventure_of_the_Speckled_Band",
+      "origin": "public_domain_original_text",
+      "scope": "middle_room",
+      "text": "You can see now that it is fastened to a hook just above where the little opening for the ventilator is."
+    }
+  ],
+  "authorOverrides": {},
+  "provenanceNote": "此前作者字段样例，不冒充用户新填表单；本次用户授权字段不足时补填，补充仅为原著直接摘录，无助手改写场景描述。"
+}

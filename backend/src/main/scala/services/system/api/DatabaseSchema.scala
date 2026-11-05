@@ -13,6 +13,7 @@ import services.games.tables.InterviewTurnTable.InterviewTurnTableInitializer
 import services.games.tables.PoliceExchangeTable.PoliceExchangeTableInitializer
 
 // Startup infrastructure; each table still owns its own DDL.
+import services.sceneproduction.tables.SceneProductionTable.SceneProductionTableInitializer
 object DatabaseSchema:
   def initialize(connection: Connection): IO[Unit] =
     CaseTableInitializer.initialize(connection) *>
@@ -23,4 +24,5 @@ object DatabaseSchema:
       InterviewRequestTableInitializer.initialize(connection) *>
       InterviewTurnTableInitializer.initialize(connection) *>
       PoliceExchangeTableInitializer.initialize(connection) *>
-      ReasoningRequestTableInitializer.initialize(connection)
+      ReasoningRequestTableInitializer.initialize(connection) *>
+      SceneProductionTableInitializer.initialize(connection)

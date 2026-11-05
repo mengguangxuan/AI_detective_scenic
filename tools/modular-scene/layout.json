@@ -1,0 +1,17 @@
+{
+  "title":"斑点带子案卧室 · 固定接口实验",
+  "confirmation":{"status":"confirmed","basis":"用户明确选择采用本次6×5米实验布局；尺寸为制作补充"},
+  "interior":[6,2.8,5],
+  "instances":[
+    {"id":"room","module":"shell","kind":"shell","size":[6.2,2.9,5.2],"position":[0,0,0],"bindings":["window","shutter","door","vent"],"openings":{"window":{"center":[-1.2,1.6,-2.5],"size":[1.2,1.2]},"door":{"center":[3,1.05,0.15],"size":[0.95,2.1]},"vent":{"center":[-3,1.95,-0.85],"size":[0.24,0.2]}}},
+    {"id":"bed","module":"bed","kind":"bed","size":[1.05,2.1,2.1],"position":[-2.2,0,-0.1],"bindings":["bed","bell_rope"],"sockets":{"pillow":[-0.35,0.78,-0.75],"rope_top":[-0.45,1.75,-0.75],"rope_end":[-0.45,0.8,-0.75]}},
+    {"id":"chest","module":"cabinet","kind":"cabinet","size":[1.2,1.1,0.55],"position":[2,0,-2.125],"bindings":["chest","drawer"]},
+    {"id":"dressing_table","module":"furnishings","kind":"dressing_table","size":[0.95,1.5,0.5],"position":[-2.35,0,-2.15],"bindings":["dressing_table"]},
+    {"id":"fireplace","module":"furnishings","kind":"fireplace","size":[1.25,1.3,0.55],"position":[0.35,0,-2.15],"bindings":["fireplace"]},
+    {"id":"chair_1","module":"furnishings","kind":"chair","size":[0.55,1,0.6],"position":[1.4,0,1.6],"rotationY":-0.35,"bindings":["chair"]},
+    {"id":"chair_2","module":"furnishings","kind":"chair","size":[0.55,1,0.6],"position":[2.25,0,1.6],"rotationY":0.25,"bindings":["chair"]},
+    {"id":"rug","module":"furnishings","kind":"rug","size":[1.8,0.03,1.8],"position":[0,0,0.3],"bindings":["rug"]}
+  ],
+  "facts":["仅一张白床罩窄床、一个棕色抽屉柜、一张窗左梳妆台、两把藤椅、一块方毯和一个壁炉","床固定；厚拉绳垂向枕边，上方孔口位于通向相邻房间的侧墙","一扇外窗与一扇通走廊的门；地板为旧橡木并有护墙","抽屉演示为空，不补造线索；固定尺寸、孔位与家具摆放不可由模块更改"],
+  "reviewViews":["overview","bedside","drawer-open","complete-shell"]
+}

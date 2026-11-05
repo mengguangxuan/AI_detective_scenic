@@ -8,16 +8,21 @@ import services.accounts.routes.AccountsRoutes
 import services.games.routes.GamesRoutes
 import services.cases.routes.CasesRoutes
 import services.models.api.ChatCompletionClient
+import services.sceneproduction.api.SceneProductionWorker
+import services.sceneproduction.routes.SceneProductionRoutes
 object LocalHttpServer:
-  def resource(databaseUrl: String,port: Int,modelClient: ChatCompletionClient = ChatCompletionClient.unconfigured)(using IORuntime): Resource[IO,HttpServer] =
+  def resource(databaseUrl: String,port: Int,modelClient: ChatCompletionClient = ChatCompletionClient.unconfigured,sceneWorker: Option[SceneProductionWorker] = None)(using IORuntime): Resource[IO,HttpServer] =
+    sceneWorker.fold(SceneProductionWorker.managed(modelClient))(Resource.pure[IO,SceneProductionWorker]).flatMap { worker =>
     Resource.make(IO.blocking {
       val server = HttpServer.create(new InetSocketAddress("127.0.0.1",port),32)
       val executor = Executors.newFixedThreadPool(8)
       try
         server.setExecutor(executor)
-        server.createContext("/api/",APIMessageRouter.handler(databaseUrl,AccountsRoutes.apiMessages ++ CasesRoutes.apiMessages ++ GamesRoutes.apiMessages ++ GamesRoutes.interviewMessages(modelClient),server.getAddress.getPort))
+        server.createContext("/api/",APIMessageRouter.handler(databaseUrl,AccountsRoutes.apiMessages ++ CasesRoutes.apiMessages ++ SceneProductionRoutes.apiMessages(worker) ++ GamesRoutes.apiMessages ++ GamesRoutes.interviewMessages(modelClient),server.getAddress.getPort))
         server.start()
         (server,executor)
       catch
         case error: Throwable => server.stop(0); executor.shutdownNow(); throw error
     }) { case (server,executor) => IO.blocking { server.stop(1); executor.shutdownNow(); () } }.map(_._1)
+
+    }

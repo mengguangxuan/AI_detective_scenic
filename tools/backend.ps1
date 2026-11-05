@@ -1,8 +1,15 @@
 param(
-    [ValidateSet('doctor', 'compile', 'test', 'run', 'serve', 'stop-serve', 'inspect-interviews')]
-    [string]$Task = 'doctor'
+    [ValidateSet('doctor', 'compile', 'test', 'run', 'serve', 'stop-serve', 'inspect-interviews', 'diagnose-scene')]
+    [string]$Task = 'doctor',
+    [string]$ProductionId = '',
+    [int]$ModelRequestNumber = 2,
+    [int]$ExpectedCalls = -1
 )
 $ErrorActionPreference = 'Stop'
+if ($Task -eq 'serve' -and $ProductionId) {
+    if ($ProductionId -notmatch '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$' -or $ExpectedCalls -lt 0 -or $ExpectedCalls -ge 88) { throw 'Explicit resume requires a valid production ID and expected call count.' }
+    $env:DETECTIVE_RESUME_SCENE = "${ProductionId}:$ExpectedCalls"
+}
 $ProjectRoot = Split-Path $PSScriptRoot -Parent
 $Backend = Join-Path $ProjectRoot 'backend'
 $BuildCache = Join-Path $Backend '.build-cache'
@@ -113,7 +120,10 @@ try {
         '-Dsbt.boot.server=false', '-Dsbt.server.autostart=false'
         '-Dsbt.supershell=false', '-Dsbt.log.noformat=true'
         '-Dsbt.override.build.repos=true', "-Dsbt.repository.config=$Repositories"
-        '-jar', $Launcher, $(if ($Task -eq 'serve') { 'runMain services.system.api.WebDemo' } elseif ($Task -eq 'inspect-interviews') { 'runMain services.games.api.InspectInterviewEvidence' } else { $Task })
+        '-jar', $Launcher, $(if ($Task -eq 'serve') { 'runMain services.system.api.WebDemo' } elseif ($Task -eq 'inspect-interviews') { 'runMain services.games.api.InspectInterviewEvidence' } elseif ($Task -eq 'diagnose-scene') {
+            if ($ProductionId -notmatch '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$' -or $ModelRequestNumber -lt 1 -or $ModelRequestNumber -gt 88) { throw 'A valid production ID and request number are required.' }
+            "runMain services.sceneproduction.api.DiagnoseSceneRequest $ProductionId $ModelRequestNumber"
+        } else { $Task })
     )
     Write-Host "[log]   $Log"
     Write-Host '[info] First dependency resolution may take several minutes. sbt output follows.'

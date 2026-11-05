@@ -8,6 +8,7 @@ import services.cases.api.ImportCaseMessage
 import services.cases.objects.{CaseId, CaseReleaseRecord}
 import services.games.api.RegisterPlayableCaseMessage
 import services.models.api.ChatCompletionClient
+import services.sceneproduction.api.{SceneProductionWorker,ResumeSceneOnStartup}
 object WebDemo extends IOApp.Simple:
   override def run: IO[Unit] =
     val platform = if System.getProperty("os.name").toLowerCase(java.util.Locale.ROOT).contains("windows") then "windows" else "linux"
@@ -33,6 +34,9 @@ object WebDemo extends IOApp.Simple:
       modelPath = Option(System.getenv("DETECTIVE_MODEL_CONFIG")).filter(_.trim.nonEmpty)
         .map(Paths.get(_)).getOrElse(Paths.get("config","model-api.local.json"))
       modelClient <- ChatCompletionClient.configured(modelPath)
-      _ <- LocalHttpServer.resource(url,8080,modelClient).use(_ =>
-        IO.println(s"[HTTP ready] http://127.0.0.1:8080/api/ (local demo only); database: $database.mv.db") *> waitForStop).guarantee(IO.blocking(Files.deleteIfExists(stopFile)).void)
+      _ <- SceneProductionWorker.managed(modelClient).use { worker =>
+        ResumeSceneOnStartup.run(worker,url,Option(System.getenv("DETECTIVE_RESUME_SCENE"))) *>
+          LocalHttpServer.resource(url,8080,modelClient,Some(worker)).use(_ =>
+            IO.println(s"[HTTP ready] http://127.0.0.1:8080/api/ (local demo only); database: $database.mv.db") *> waitForStop)
+      }.guarantee(IO.blocking(Files.deleteIfExists(stopFile)).void)
     yield ()
